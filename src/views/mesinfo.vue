@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" style="height: 650px;">
     <el-input v-model="serachmes.source" placeholder="起点" class="handle-input mr10"></el-input>
     <el-input v-model="serachmes.target" placeholder="终点" class="handle-input mr10"></el-input>
     <el-button type="primary" :icon="Search" @click="handleSearch(serachmes.source, serachmes.target)">搜索</el-button>
@@ -21,7 +21,7 @@
       </el-table-column>
     </el-table>
     <div class="pagination">
-      <el-pagination background layout="total, prev, pager, next" :current-page="query.pageIndex"
+      <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query.pageIndex"
         :page-size="query.pageSize" :total="pageTotal" @current-change="handlePageChange"></el-pagination>
     </div>
   </div>
@@ -52,6 +52,11 @@ const choosestate = reactive({
   choosemesForuser: 0,//选取消息高亮用户
 });
 
+const pagestate = reactive({
+  choosemespage: 0,//分页是检索还是原始数据
+  choosenum: 0,//分页数据量
+});
+
 const query = reactive({
   address: "",
   name: "",
@@ -62,73 +67,97 @@ const tableData = ref<any>([]);
 const pageTotal = ref(0);
 const infoALL = store;
 // 获取表格数据
-const getData = (searchstate=0) => {
+const getData = (searchstate = 0) => {
   fetchMesData().then((res) => {
-    if(searchstate==1){
-    tableData.value=[]
-    for (let index in res.data.list){   
-    if (serachmes.source == res.data.list[index].source && serachmes.target == res.data.list[index].target) {
-      tableData.value.push(res.data.list[index])  
+    if (searchstate == 1) {
+      tableData.value = []
+      pagestate.choosenum = 0
+      for (let index in res.data.list) {
+        if (serachmes.source == res.data.list[index].source && serachmes.target == res.data.list[index].target) {
+          tableData.value.push(res.data.list[index])
+          pagestate.choosenum = pagestate.choosenum + 1
+        }
+      }
+      tableData.value = tableData.value.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex) * query.pageSize);
+      pageTotal.value = pagestate.choosenum || 0;
+      console.log(pagestate.choosenum);
     }
-    pageTotal.value = tableData.value.leghth || 0; 
-  }}
-  else{
-    tableData.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex - 1) * query.pageSize + 10);
-    // tableData.value.push(res.data.list[serachmes.source],res.data.list[serachmes.source])
-    pageTotal.value = res.data.pageTotal || 50;
-  }
+    else {
+      tableData.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex) * query.pageSize);
+      // tableData.value.push(res.data.list[serachmes.source],res.data.list[serachmes.source])
+      pageTotal.value = res.data.pageTotal || 50;
+    }
   });
 };
+
 getData();
 // 分页导航
 const handlePageChange = (val: number) => {
   query.pageIndex = val;
-  // console.log("val:"+val);
-  getData();
+  if (pagestate.choosemespage == 1) {
+    getData(1);
+  } else {
+    // console.log("val:"+val);
+    getData();
+  }
 };
 // 选取操作
 const handleChoose = (index: number) => {
-  if(choosestate.choosemesForuser==0){
-  let highlightId = index + (query.pageIndex - 1) * 10 + 1;
-  // infoALL.state.chooseUser.soure = infoALL.state.mesinfo.list[highlightId - 1].source;
-  // infoALL.state.chooseUser.target = infoALL.state.mesinfo.list[highlightId - 1].target;
-  ElMessage.success("选取成功");
-  for (let index in infoALL.state.userinfo.list) {
-    if (infoALL.state.mesinfo.list[highlightId - 1].source == infoALL.state.userinfo.list[index].name) {
-      infoALL.state.chooseUser.soure = index
+  if (choosestate.choosemesForuser == 0) {
+    let highlightId = index + (query.pageIndex - 1) * query.pageSize + 1;
+    // infoALL.state.chooseUser.soure = infoALL.state.mesinfo.list[highlightId - 1].source;
+    // infoALL.state.chooseUser.target = infoALL.state.mesinfo.list[highlightId - 1].target;
+    for (let index in infoALL.state.userinfo.list) {
+      if (infoALL.state.mesinfo.list[highlightId - 1].source == infoALL.state.userinfo.list[index].name) {
+        infoALL.state.chooseUser.soure = Number(index)
+      }
+      if (infoALL.state.mesinfo.list[highlightId - 1].target == infoALL.state.userinfo.list[index].name) {
+        infoALL.state.chooseUser.target = Number(index)
+      }
     }
-    if (infoALL.state.mesinfo.list[highlightId - 1].target == infoALL.state.userinfo.list[index].name) {
-      infoALL.state.chooseUser.target = index
+    ElMessage.success("选取成功");
+  }
+  else {
+    for (let index in infoALL.state.userinfo.list) {
+      if (serachmes.source == infoALL.state.userinfo.list[index].name) {
+        infoALL.state.chooseUser.soure = Number(index)
+      }
+      if (serachmes.target == infoALL.state.userinfo.list[index].name) {
+        infoALL.state.chooseUser.target = Number(index)
+      }
     }
-  }}
-  else{
     ElMessage.success("选取成功");
   }
 
 };
-// 获取表格数据
-const getDataForSourceTarget = () => {
-  fetchMesData().then((res) => {
-    // tableData.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex - 1) * query.pageSize + 10);
-    tableData.value = res.data.list[0]
-    pageTotal.value = res.data.pageTotal || 50;
-  });
-};
+
 // 查询操作
 const handleSearch = (sourcename: string, targetname: string) => {
-  ElMessage.success("检索成功");
-  infoALL.state.chooseUser.soure = serachmes.source
-  infoALL.state.chooseUser.target = serachmes.target
-  choosestate.choosemesForuser = 1;
-  getData(1);
+  if (serachmes.source == "" && serachmes.target == "") {
+    ElMessage.error("检索失败，请输入数据");
+    return 0;
+  }
+  if (serachmes.source == "") {
+    serachmes.source = serachmes.target
+  }
+  if (serachmes.target == "") {
+    serachmes.target = serachmes.source
+  }
+  console.log(serachmes);
   
+  ElMessage.success("检索成功");
+  choosestate.choosemesForuser = 1;
+  pagestate.choosemespage = 1;
+  handleChoose(1);
+  getData(1);
 };
 
 // 重置操作
 const handleReset = (sourcename: string, targetname: string) => {
   choosestate.choosemesForuser = 0;
-  serachmes.source =""
-  serachmes.target =""
+  pagestate.choosemespage = 0;
+  serachmes.source = ""
+  serachmes.target = ""
   getData();
 };
 </script>

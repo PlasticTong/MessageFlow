@@ -9,9 +9,8 @@ export const store = createStore({
 			mesinfo: mestable,
 			userinfo: usertable,
 			chooseUser: {
-				soure: 1,
-				target: 1
-
+				soure: 0,
+				target: 0
 			}
 
 		}

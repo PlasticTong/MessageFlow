@@ -1,19 +1,16 @@
 <template>
-  <div class="container">
+  <div class="container" style="height: 650px;">
     <h2 class="mb10">所选用户</h2>
     <el-table
       :data="[infoALL.state.userinfo.list[infoALL.state.chooseUser.soure], infoALL.state.userinfo.list[infoALL.state.chooseUser.target]]"
       border class="table" ref="multipleTable" header-cell-class-name="table-header">
-      <!-- <el-table-column prop="source" label="起点">
-      </el-table-column>
-      <el-table-column prop="target" label="终点"></el-table-column> -->
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
       <el-table-column prop="name" label="用户名"></el-table-column>
       <el-table-column prop="state" label="身份">
       </el-table-column>
       <el-table-column prop="address" label="地址"></el-table-column>
     </el-table>
-    <div style="padding-top: 20px;"></div>
+    <div style="padding-top: 50px;"></div>
     <h2 class="mb10">用户数据</h2>
     <el-table
       :data="infoALL.state.userinfo.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex ) * query.pageSize )"
@@ -25,10 +22,9 @@
       </el-table-column>
       <el-table-column prop="address" label="地址"></el-table-column>
     </el-table>
-
     <div class="pagination">
-      <el-pagination background layout="total, prev, pager, next" :current-page="query.pageIndex"
-        :page-size="query.pageSize" :total="pageTotal" @current-change="handlePageChange"></el-pagination>
+      <el-pagination background layout="total, prev, pager, next,jumper" :current-page="query.pageIndex"
+        :page-size="query.pageSize" :total="pageTotal" @current-change="handlePageChange"></el-pagination>     
     </div>
   </div>
 </template>
@@ -57,23 +53,10 @@ const query = reactive({
   pageIndex: 1,
   pageSize: 8,
 });
-let tableData = ref<TableItem[]>([]);
-let tableDataChoose = ref<TableItem[]>([]);
-let tableDataChoose2: Object[];
 const pageTotal = ref(0);
 pageTotal.value = infoALL.state.userinfo.pageTotal || 50;
-let sourceid: number = -1;
-let targetid: number = -1;
-// // 获取表格数据
-// const getData = () => {
-//   fetchData().then((res) => {
-//     tableDataChoose.value = [res.data.list[infoALL.state.chooseUser.soure-1], res.data.list[infoALL.state.chooseUser.soure-1]]
-//     tableData.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex - 1) * query.pageSize + 10);
-//   });
-// };
-// getData();
 
-const tableRowClassName = (row) => {
+const tableRowClassName = (row:any) => {
   if (row.row.id - 1 == infoALL.state.chooseUser.soure) {
     infoALL.state.userinfo.list[row.row.id - 1].state = 1;
     return 'current-row';
@@ -87,10 +70,6 @@ const tableRowClassName = (row) => {
   return '';
 }
 
-// 查询操作
-const handleSearch = () => {
-  query.pageIndex = 1;
-};
 // 分页导航
 const handlePageChange = (val: number) => {
   query.pageIndex = val;
