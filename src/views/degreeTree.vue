@@ -16,110 +16,7 @@ export default {
     name: 'dagre',
     data() {
         return {
-            nodes: [
-                {
-                    id: 0,
-                    nodeName: '节点0',
-                },
-                {
-                    id: 1,
-                    nodeName: '节点1',
-                },
-                {
-                    id: 2,
-                    nodeName: '节点2',
-                },
-                {
-                    id: 3,
-                    nodeName: '节点3',
-                },
-                {
-                    id: 4,
-                    nodeName: '节点4',
-                },
-                {
-                    id: 5,
-                    nodeName: '节点5',
-                },
-                {
-                    id: 6,
-                    nodeName: '节点6',
-                },
-                {
-                    id: 7,
-                    nodeName: '节点7',
-                },
-                {
-                    id: 8,
-                    nodeName: '节点8',
-                },
-                {
-                    id: 9,
-                    nodeName: '节点9',
-                },
-                {
-                    id: 10,
-                    nodeName: '节点10',
-                },
-                {
-                    id: 11,
-                    nodeName: '节点11',
-                },
-                {
-                    id: 12,
-                    nodeName: '节点12',
-                },
-            ],
-            edges: [
-                {
-                    start: 1,
-                    end: 0,
-                },
-                {
-                    start: 2,
-                    end: 1,
-                },
-                {
-                    start: 3,
-                    end: 2,
-                },
-                {
-                    start: 4,
-                    end: 3,
-                },
-                {
-                    start: 5,
-                    end: 3,
-                },
-                {
-                    start: 6,
-                    end: 5,
-                },
-                {
-                    start: 7,
-                    end: 2,
-                },
-                {
-                    start: 8,
-                    end: 7,
-                },
-                {
-                    start: 9,
-                    end: 1,
-                },
-                {
-                    start: 9,
-                    end: 10,
-                },
-                {
-                    start: 11,
-                    end: 10,
-                },
-                {
-                    start: 12,
-                    end: 11,
-                },
-            ],
+            
         };
     },
     mounted() {
@@ -128,17 +25,36 @@ export default {
     methods: {
         // 绘制简单的流程图
         draw() {
-            log
+            const dataEdge = store.state.markov
             // 创建 Graph 对象
             const g = new dagreD3.graphlib.Graph().setGraph({
                 rankdir: 'TB', // 流程图从下向上显示，默认'TB'，可取值'TB'、'BT'、'LR'、'RL'
             }).setDefaultEdgeLabel(function () { return {}; });
 
+
+
+            const dataEdgeForDraw = [];
+            const dataNodeForDraw = [];
+            for(let index in dataEdge.markov){
+                for(let index2 in dataEdge.markov[index].flow){
+                    let stateDrawForNode = [{id:store.state.userinfo.list.find(e=>e.name==store.state.mesinfo.list[dataEdge.markov[index].flow[index2]-1].source).id,name:store.state.userinfo.list.find(e=>e.name==store.state.mesinfo.list[dataEdge.markov[index].flow[index2]-1].source).name}]
+                    let stateDrawForNode2 = [{id:store.state.userinfo.list.find(e=>e.name==store.state.mesinfo.list[dataEdge.markov[index].flow[index2]-1].target).id,name:store.state.userinfo.list.find(e=>e.name==store.state.mesinfo.list[dataEdge.markov[index].flow[index2]-1].target).name}]
+                    let stateDraw = [store.state.userinfo.list.find(e=>e.name==store.state.mesinfo.list[dataEdge.markov[index].flow[index2]-1].source).id,store.state.userinfo.list.find(e=>e.name==store.state.mesinfo.list[dataEdge.markov[index].flow[index2]-1].target).id]
+                    dataNodeForDraw.push(stateDrawForNode,stateDrawForNode2)
+                    dataEdgeForDraw.push(stateDraw)
+                }
+            }
+            console.log(dataNodeForDraw);
+
+
+
             // Graph添加节点
-            this.nodes.forEach(node => {
-                g.setNode(node.id, {
-                    id: node.id,
-                    label: node.nodeName,
+            for (let index in dataNodeForDraw) {
+                let node = dataNodeForDraw[index]
+                console.log(node[0].name);
+                g.setNode(node[0].id, {
+                    id: node[0].id,
+                    label:node[0].name,
                     shape: 'rect',  //节点形状，可以设置rect(长方形),circle,ellipse(椭圆),diamond(菱形) 四种形状，还可以使用render.shapes()自定义形状
                     style: 'fill:#61b2e4;stroke:#fff',  //节点样式,可设置节点的颜色填充、节点边框
                     labelStyle: 'fill: #fff;font-weight:bold',  //节点标签样式, 可设置节点标签的文本样式（颜色、粗细、大小）
@@ -149,17 +65,34 @@ export default {
                     paddingRight: 20,
                     paddingTop: 15,
                 });
-            });
-
+            }
+            // this.nodes.forEach(node => {
+            //     g.setNode(node.id, {
+            //         id: node.id,
+            //         label: node.nodeName,
+            //         shape: 'rect',  //节点形状，可以设置rect(长方形),circle,ellipse(椭圆),diamond(菱形) 四种形状，还可以使用render.shapes()自定义形状
+            //         style: 'fill:#61b2e4;stroke:#fff',  //节点样式,可设置节点的颜色填充、节点边框
+            //         labelStyle: 'fill: #fff;font-weight:bold',  //节点标签样式, 可设置节点标签的文本样式（颜色、粗细、大小）
+            //         rx: 5,  // 设置圆角
+            //         ry: 5,  // 设置圆角
+            //         paddingBottom: 15,
+            //         paddingLeft: 20,
+            //         paddingRight: 20,
+            //         paddingTop: 15,
+            //     });
+            // });
+           
+            
             // Graph添加节点之间的连线
-            if (this.nodes.length > 1) {
-                this.edges.forEach(edge => {
-                    g.setEdge(edge.start, edge.end, {
+            if (dataNodeForDraw.length > 1) {
+                for (let index in dataEdgeForDraw) {
+                let edge = dataEdgeForDraw[index]
+                g.setEdge(edge[0], edge[1], {
                         style: 'stroke: #0fb2cc; fill: none; stroke-width: 2px',  // 连线样式
                         arrowheadStyle: 'fill: #0fb2cc;stroke: #0fb2cc;',  //箭头样式，可以设置箭头颜色
                         arrowhead: 'normal',  //箭头形状，可以设置 normal,vee,undirected 三种样式，默认为 normal
                     })
-                });
+            }
             }
 
             // 获取要绘制流程图的绘图容器
