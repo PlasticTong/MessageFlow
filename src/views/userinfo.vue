@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="height: 650px;">
+  <div class="container" style="height: 700px;">
     <h2 class="mb10">所选用户</h2>
     <el-table
       :data="[infoALL.state.userinfo.list[infoALL.state.chooseUser.soure], infoALL.state.userinfo.list[infoALL.state.chooseUser.target]]"
@@ -10,10 +10,11 @@
       </el-table-column>
       <el-table-column prop="address" label="地址"></el-table-column>
     </el-table>
-    <div style="padding-top: 50px;"></div>
+    <div style="padding-top: 75px;"></div>
     <h2 class="mb10">用户数据</h2>
     <el-table
       :data="infoALL.state.userinfo.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex ) * query.pageSize )"
+      highlight-current-row
       :sortable="'state'" border class="table" ref="multipleTable" header-cell-class-name="table-header"
       :row-class-name="tableRowClassName">
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>

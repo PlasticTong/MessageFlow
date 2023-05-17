@@ -21,12 +21,7 @@
       </el-col>
       <el-col :span="12">
         <el-card shadow="hover">
-          <schart
-            ref="line"
-            class="schart"
-            canvasId="line"
-            :options="options2"
-          ></schart>
+        <dagre></dagre>
         </el-card>
       </el-col>
     </el-row>
@@ -36,6 +31,7 @@
 <script setup lang="ts" name="dashboard">
 import mestable from "../views/mesinfo.vue";
 import usertable from "../views/userinfo.vue";
+import dagre from "../views/degreeTree.vue"
 
 import Schart from "vue-schart";
 import { ref, reactive } from "vue";

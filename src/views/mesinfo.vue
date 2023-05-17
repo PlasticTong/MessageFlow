@@ -1,24 +1,27 @@
 <template>
-  <div class="container" style="height: 650px;">
+  <div class="container" style="height: 700px;">
     <el-input v-model="serachmes.source" placeholder="起点" class="handle-input mr10"></el-input>
     <el-input v-model="serachmes.target" placeholder="终点" class="handle-input mr10"></el-input>
     <el-button type="primary" :icon="Search" @click="handleSearch(serachmes.source, serachmes.target)">搜索</el-button>
     <el-button type="danger" :icon="Delete" @click="handleReset">重置</el-button>
     <div style="padding-top: 20px;"></div>
+    <h2 class="mb10">消息数据</h2>
     <el-table :data="tableData" highlight-current-row border class="table" ref="multipleTable"
-      header-cell-class-name="table-header">
+      header-cell-class-name="table-header"
+      @row-click = handleChoose
+      >
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
       <el-table-column prop="source" label="起始点"></el-table-column>
       <el-table-column prop="target" label="目标点">
       </el-table-column>
       <el-table-column prop="time" label="传递时间"></el-table-column>
-      <el-table-column label="操作" width="220" align="center">
-        <template #default="scope">
+      <!-- <el-table-column label="操作" width="220" align="center"> -->
+        <!-- <template #default="scope">
           <el-button text :icon="Pointer" class="red" @click="handleChoose(scope.$index)" v-permiss="16">
             选择
           </el-button>
-        </template>
-      </el-table-column>
+        </template> -->
+      <!-- </el-table-column> -->
     </el-table>
     <div class="pagination">
       <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query.pageIndex"
@@ -34,7 +37,6 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
 import { fetchMesData } from "../api/index";
 import { store } from "../store/mesinfo"
-import Usertable from "./userinfo.vue"
 
 interface TableItem {
   id: number;
@@ -102,9 +104,11 @@ const handlePageChange = (val: number) => {
   }
 };
 // 选取操作
-const handleChoose = (index: number) => {
+const handleChoose = (row: any) => {
+  console.log(row.id);
   if (choosestate.choosemesForuser == 0) {
-    let highlightId = index + (query.pageIndex - 1) * query.pageSize + 1;
+    let highlightId = row.id;
+    // let highlightId = index + (query.pageIndex - 1) * query.pageSize + 1;
     // infoALL.state.chooseUser.soure = infoALL.state.mesinfo.list[highlightId - 1].source;
     // infoALL.state.chooseUser.target = infoALL.state.mesinfo.list[highlightId - 1].target;
     for (let index in infoALL.state.userinfo.list) {
