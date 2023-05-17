@@ -1,5 +1,10 @@
 <template>
   <div class="container">
+    <el-input v-model="serachmes.source" placeholder="起点" class="handle-input mr10"></el-input>
+    <el-input v-model="serachmes.target" placeholder="终点" class="handle-input mr10"></el-input>
+    <el-button type="primary" :icon="Search" @click="handleSearch(serachmes.source, serachmes.target)">搜索</el-button>
+    <el-button type="danger" :icon="Delete" @click="handleReset">重置</el-button>
+    <div style="padding-top: 20px;"></div>
     <el-table :data="tableData" highlight-current-row border class="table" ref="multipleTable"
       header-cell-class-name="table-header">
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
@@ -20,24 +25,6 @@
         :page-size="query.pageSize" :total="pageTotal" @current-change="handlePageChange"></el-pagination>
     </div>
   </div>
-
-  <!-- 编辑弹出框 -->
-  <el-dialog title="编辑" v-model="editVisible" width="30%">
-    <el-form label-width="70px">
-      <el-form-item label="用户名">
-        <el-input v-model="form.name"></el-input>
-      </el-form-item>
-      <el-form-item label="地址">
-        <el-input v-model="form.address"></el-input>
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="editVisible = false">取 消</el-button>
-        <el-button type="primary" @click="saveEdit">确 定</el-button>
-      </span>
-    </template>
-  </el-dialog>
 </template>
 
 <script setup lang="ts" name="mestable">
@@ -57,7 +44,13 @@ interface TableItem {
   date: string;
   address: string;
 }
-
+const serachmes = reactive({
+  source: "",
+  target: "",
+});
+const choosestate = reactive({
+  choosemesForuser: 0,//选取消息高亮用户
+});
 
 const query = reactive({
   address: "",
@@ -65,15 +58,25 @@ const query = reactive({
   pageIndex: 1,
   pageSize: 10,
 });
-const tableData = ref<TableItem[]>([]);
+const tableData = ref<any>([]);
 const pageTotal = ref(0);
-
 const infoALL = store;
 // 获取表格数据
-const getData = () => {
+const getData = (searchstate=0) => {
   fetchMesData().then((res) => {
+    if(searchstate==1){
+    tableData.value=[]
+    for (let index in res.data.list){   
+    if (serachmes.source == res.data.list[index].source && serachmes.target == res.data.list[index].target) {
+      tableData.value.push(res.data.list[index])  
+    }
+    pageTotal.value = tableData.value.leghth || 0; 
+  }}
+  else{
     tableData.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex - 1) * query.pageSize + 10);
+    // tableData.value.push(res.data.list[serachmes.source],res.data.list[serachmes.source])
     pageTotal.value = res.data.pageTotal || 50;
+  }
   });
 };
 getData();
@@ -83,59 +86,50 @@ const handlePageChange = (val: number) => {
   // console.log("val:"+val);
   getData();
 };
-
-// 删除操作
-const handleDelete = (index: number) => {
-  console.log("number:" + index);
-
-  // 二次确认删除
-  ElMessageBox.confirm("确定要删除吗？", "提示", {
-    type: "warning",
-  })
-    .then(() => {
-      ElMessage.success("删除成功");
-      tableData.value.splice(index, 1);
-    })
-    .catch(() => { });
-};
-const usertableRef = ref<typeof Usertable>();
 // 选取操作
 const handleChoose = (index: number) => {
+  if(choosestate.choosemesForuser==0){
   let highlightId = index + (query.pageIndex - 1) * 10 + 1;
   // infoALL.state.chooseUser.soure = infoALL.state.mesinfo.list[highlightId - 1].source;
   // infoALL.state.chooseUser.target = infoALL.state.mesinfo.list[highlightId - 1].target;
   ElMessage.success("选取成功");
-  console.log(usertableRef.value);
-  for (let index in infoALL.state.userinfo.list) { 
-    if(infoALL.state.mesinfo.list[highlightId - 1].source == infoALL.state.userinfo.list[index].name){
+  for (let index in infoALL.state.userinfo.list) {
+    if (infoALL.state.mesinfo.list[highlightId - 1].source == infoALL.state.userinfo.list[index].name) {
       infoALL.state.chooseUser.soure = index
     }
-    if(infoALL.state.mesinfo.list[highlightId - 1].target == infoALL.state.userinfo.list[index].name){
+    if (infoALL.state.mesinfo.list[highlightId - 1].target == infoALL.state.userinfo.list[index].name) {
       infoALL.state.chooseUser.target = index
     }
-}
+  }}
+  else{
+    ElMessage.success("选取成功");
+  }
+
+};
+// 获取表格数据
+const getDataForSourceTarget = () => {
+  fetchMesData().then((res) => {
+    // tableData.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex - 1) * query.pageSize + 10);
+    tableData.value = res.data.list[0]
+    pageTotal.value = res.data.pageTotal || 50;
+  });
+};
+// 查询操作
+const handleSearch = (sourcename: string, targetname: string) => {
+  ElMessage.success("检索成功");
+  infoALL.state.chooseUser.soure = serachmes.source
+  infoALL.state.chooseUser.target = serachmes.target
+  choosestate.choosemesForuser = 1;
+  getData(1);
   
 };
 
-
-// 表格编辑时弹窗和保存
-const editVisible = ref(false);
-let form = reactive({
-  name: "",
-  address: "",
-});
-let idx: number = -1;
-const handleEdit = (index: number, row: any) => {
-  idx = index;
-  form.name = row.name;
-  form.address = row.address;
-  editVisible.value = true;
-};
-const saveEdit = () => {
-  editVisible.value = false;
-  ElMessage.success(`修改第 ${idx + 1} 行成功`);
-  tableData.value[idx].name = form.name;
-  tableData.value[idx].address = form.address;
+// 重置操作
+const handleReset = (sourcename: string, targetname: string) => {
+  choosestate.choosemesForuser = 0;
+  serachmes.source =""
+  serachmes.target =""
+  getData();
 };
 </script>
 
