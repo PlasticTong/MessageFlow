@@ -5,7 +5,7 @@
 			<el-icon v-if="sidebar.collapse"><Expand /></el-icon>
 			<el-icon v-else><Fold /></el-icon>
 		</div>
-		<div class="logo">后台管理系统</div>
+		<div class="logo">消息流可视化系统</div>
 		<div class="header-right">
 			<div class="header-user-con">
 				<!-- 消息中心 -->

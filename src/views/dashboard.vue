@@ -11,12 +11,7 @@
     <el-row :gutter="20">
       <el-col :span="12">
         <el-card shadow="hover">
-          <schart
-            ref="bar"
-            class="schart"
-            canvasId="bar"
-            :options="options"
-          ></schart>
+          <mtree></mtree>
         </el-card>
       </el-col>
       <el-col :span="12">
@@ -32,6 +27,7 @@
 import mestable from "../views/mesinfo.vue";
 import usertable from "../views/userinfo.vue";
 import dagre from "../views/degreeTree.vue"
+import mtree from "../views/mestree.vue"
 
 import Schart from "vue-schart";
 import { ref, reactive } from "vue";
