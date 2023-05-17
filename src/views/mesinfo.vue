@@ -9,14 +9,6 @@
       <el-table-column prop="time" label="传递时间"></el-table-column>
       <el-table-column label="操作" width="220" align="center">
         <template #default="scope">
-          <!-- <el-button
-            text
-            :icon="Edit"
-            @click="handleEdit(scope.$index, scope.row)"
-            v-permiss="15"
-          >
-            编辑
-          </el-button> -->
           <el-button text :icon="Pointer" class="red" @click="handleChoose(scope.$index)" v-permiss="16">
             选择
           </el-button>
@@ -54,6 +46,8 @@ import { ref, reactive } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
 import { fetchMesData } from "../api/index";
+import { store } from "../store/mesinfo"
+import Usertable from "./userinfo.vue"
 
 interface TableItem {
   id: number;
@@ -64,6 +58,7 @@ interface TableItem {
   address: string;
 }
 
+
 const query = reactive({
   address: "",
   name: "",
@@ -72,13 +67,13 @@ const query = reactive({
 });
 const tableData = ref<TableItem[]>([]);
 const pageTotal = ref(0);
+
+const infoALL = store;
 // 获取表格数据
 const getData = () => {
   fetchMesData().then((res) => {
     tableData.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex - 1) * query.pageSize + 10);
     pageTotal.value = res.data.pageTotal || 50;
-    // console.log(tableData.value);
-    console.log("index:" + query.pageIndex);
   });
 };
 getData();
@@ -103,11 +98,23 @@ const handleDelete = (index: number) => {
     })
     .catch(() => { });
 };
-
+const usertableRef = ref<typeof Usertable>();
 // 选取操作
 const handleChoose = (index: number) => {
-  console.log("number:" + index);
+  let highlightId = index + (query.pageIndex - 1) * 10 + 1;
+  // infoALL.state.chooseUser.soure = infoALL.state.mesinfo.list[highlightId - 1].source;
+  // infoALL.state.chooseUser.target = infoALL.state.mesinfo.list[highlightId - 1].target;
   ElMessage.success("选取成功");
+  console.log(usertableRef.value);
+  for (let index in infoALL.state.userinfo.list) { 
+    if(infoALL.state.mesinfo.list[highlightId - 1].source == infoALL.state.userinfo.list[index].name){
+      infoALL.state.chooseUser.soure = index
+    }
+    if(infoALL.state.mesinfo.list[highlightId - 1].target == infoALL.state.userinfo.list[index].name){
+      infoALL.state.chooseUser.target = index
+    }
+}
+  
 };
 
 
@@ -165,7 +172,7 @@ const saveEdit = () => {
   height: 40px;
 }
 
-.el-table__body tr.current-row>td {
-  background-color: #f80cbd;
+::v-deep .el-table__body tr.current-row>td {
+  background: #f0f9eb !important;
 }
 </style>

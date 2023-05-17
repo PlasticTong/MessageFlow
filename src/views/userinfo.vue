@@ -1,52 +1,44 @@
 <template>
   <div class="container">
+    <h2 class="mb10">所选用户</h2>
     <el-table
-      :data="tableData"
-      border
-      class="table"
-      ref="multipleTable"
-      header-cell-class-name="table-header"
-    >
-      <el-table-column
-        prop="id"
-        label="ID"
-        width="55"
-        align="center"
-      ></el-table-column>
+      :data="[infoALL.state.userinfo.list[infoALL.state.chooseUser.soure], infoALL.state.userinfo.list[infoALL.state.chooseUser.target]]"
+      border class="table" ref="multipleTable" header-cell-class-name="table-header">
+      <!-- <el-table-column prop="source" label="起点">
+      </el-table-column>
+      <el-table-column prop="target" label="终点"></el-table-column> -->
+      <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
       <el-table-column prop="name" label="用户名"></el-table-column>
-      <el-table-column label="身份">
-        <template #default="scope">￥{{ scope.row.money }}</template>
+      <el-table-column prop="state" label="身份">
       </el-table-column>
       <el-table-column prop="address" label="地址"></el-table-column>
-      <!-- <el-table-column label="状态" align="center">
-        <template #default="scope">
-          <el-tag
-            :type="
-              scope.row.state === '成功'
-                ? 'success'
-                : scope.row.state === '失败'
-                ? 'danger'
-                : ''
-            "
-          >
-            {{ scope.row.state }}
-          </el-tag>
-        </template>
-      </el-table-column> -->
     </el-table>
+    <h2 class="mb10">用户数据</h2>
+    <el-table
+      :data="infoALL.state.userinfo.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex - 1) * query.pageSize + 10)"
+      :sortable="'state'" border class="table" ref="multipleTable" header-cell-class-name="table-header"
+      :row-class-name="tableRowClassName">
+      <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
+      <el-table-column prop="name" label="用户名"></el-table-column>
+      <el-table-column prop="state" label="身份">
+      </el-table-column>
+      <el-table-column prop="address" label="地址"></el-table-column>
+      <el-table-column label="操作" width="220" align="center">
+        <template #default="scope">
+          <el-button text :icon="Pointer" class="red" @click="" v-permiss="16">
+            选择
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
     <div class="pagination">
-      <el-pagination
-        background
-        layout="total, prev, pager, next"
-        :current-page="query.pageIndex"
-        :page-size="query.pageSize"
-        :total="pageTotal"
-        @current-change="handlePageChange"
-      ></el-pagination>
+      <el-pagination background layout="total, prev, pager, next" :current-page="query.pageIndex"
+        :page-size="query.pageSize" :total="pageTotal" @current-change="handlePageChange"></el-pagination>
     </div>
   </div>
 
-  <!-- 编辑弹出框 -->
+
   <el-dialog title="编辑" v-model="editVisible" width="30%">
     <el-form label-width="70px">
       <el-form-item label="用户名">
@@ -66,10 +58,12 @@
 </template>
 
 <script setup lang="ts" name="usertable">
+
 import { ref, reactive } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Delete, Edit, Search, Plus } from "@element-plus/icons-vue";
+import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
 import { fetchData } from "../api/index";
+import { store } from "../store/mesinfo"
 
 interface TableItem {
   id: number;
@@ -78,34 +72,61 @@ interface TableItem {
   state: string;
   date: string;
   address: string;
+  thumb: string;
 }
-
+const infoALL = store;
 const query = reactive({
   address: "",
   name: "",
   pageIndex: 1,
   pageSize: 10,
 });
-const tableData = ref<TableItem[]>([]);
+let tableData = ref<TableItem[]>([]);
+let tableDataChoose = ref<TableItem[]>([]);
+let tableDataChoose2: Object[];
 const pageTotal = ref(0);
-// 获取表格数据
-const getData = () => {
-  fetchData().then((res) => {
-    tableData.value = res.data.list.slice((query.pageIndex-1)*query.pageSize,(query.pageIndex-1)*query.pageSize+10);
-    pageTotal.value = res.data.pageTotal || 50;
-  });
-};
-getData();
+pageTotal.value = infoALL.state.userinfo.pageTotal || 50;
+let sourceid: number = -1;
+let targetid: number = -1;
+// // 获取表格数据
+// const getData = () => {
+//   fetchData().then((res) => {
+//     tableDataChoose.value = [res.data.list[infoALL.state.chooseUser.soure-1], res.data.list[infoALL.state.chooseUser.soure-1]]
+//     tableData.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex - 1) * query.pageSize + 10);
+//   });
+// };
+// getData();
+
+const test = () => {
+  console.log(111111111111);
+
+}
+
+const tableRowClassName = (row) => {
+  if (row.row.id - 1 == infoALL.state.chooseUser.soure) {
+    infoALL.state.userinfo.list[row.row.id - 1].state = 1;
+    // sourceid = row.row.id - 1
+    // getData();
+    return 'current-row';
+  } else if (row.row.id - 1 == infoALL.state.chooseUser.target) {
+    infoALL.state.userinfo.list[row.row.id - 1].state = 1;
+    // targetid = row.row.id - 1
+    // getData();
+    return 'current-row';
+  }
+  else {
+    infoALL.state.userinfo.list[row.row.id - 1].state = 0;
+  }
+  return '';
+}
 
 // 查询操作
 const handleSearch = () => {
   query.pageIndex = 1;
-  getData();
 };
 // 分页导航
 const handlePageChange = (val: number) => {
   query.pageIndex = val;
-  getData();
 };
 
 // 删除操作
@@ -118,7 +139,7 @@ const handleDelete = (index: number) => {
       ElMessage.success("删除成功");
       tableData.value.splice(index, 1);
     })
-    .catch(() => {});
+    .catch(() => { });
 };
 
 // 表格编辑时弹窗和保存
@@ -140,6 +161,7 @@ const saveEdit = () => {
   tableData.value[idx].name = form.name;
   tableData.value[idx].address = form.address;
 };
+
 </script>
 
 <style scoped>
@@ -154,20 +176,27 @@ const saveEdit = () => {
 .handle-input {
   width: 300px;
 }
+
 .table {
   width: 100%;
   font-size: 14px;
 }
+
 .red {
   color: #f56c6c;
 }
+
 .mr10 {
   margin-right: 10px;
 }
+
 .table-td-thumb {
   display: block;
   margin: auto;
   width: 40px;
   height: 40px;
 }
-</style>
+
+.el-table .row-row {
+  background-color: #FFFF00 !important;
+}</style>
