@@ -32,7 +32,6 @@ import { ref, reactive } from 'vue';
 import { ElMessageBox } from 'element-plus'
 import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
 import store from '../store/mesinfo';
-import { resetTracking } from '@vue/reactivity';
 
 const filtermes = reactive({
     ip: "",
@@ -47,6 +46,10 @@ const dialogVisble = ref(false)
 const props = defineProps(['user'])
 
 function confirm() {
+    // if(store.state.filtermes.ip=="" && store.state.filtermes.hop!=null){
+    //     ElMessage.error("请输入ip!");
+    //     return;
+    // }
     dialogVisble.value = false
     store.state.filtermes = filtermes;
     console.log(store.state.filtermes);

@@ -17,10 +17,12 @@ export const store = createStore({
 			filtermes:{
 				isempty:"true",
 				ip: "",
-				hop: null,
+				hop: "",
 				content: "",
 				timestart: "",
 				timeend: "",
+			},
+			filtermesres:{
 			}
 
 		}
