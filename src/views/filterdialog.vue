@@ -1,31 +1,46 @@
 <template>
-    <el-dialog title="筛选条件" v-model="dialogVisble" width="30%">
-        <span>这是一段信息</span>
+    <el-dialog title="筛选条件" v-model="dialogVisble" width="50%">
+        <el-form label-width="70px">
+            <el-form-item label="ip">
+                <el-input v-model="filtermes.ip" placeholder="ip"></el-input>
+            </el-form-item>
+            <el-form-item label="跳数">
+                <el-input v-model="filtermes.hop" placeholder="跳数"></el-input>
+            </el-form-item>
+            <el-form-item label="内容">
+                <el-input v-model="filtermes.content" placeholder="内容"></el-input>
+            </el-form-item>
+            <el-form-item label="起始时间">
+                <el-input v-model="filtermes.timestart" placeholder="起始时间"></el-input>
+            </el-form-item>
+            <el-form-item label="结束时间">
+                <el-input v-model="filtermes.timeend" placeholder="结束时间"></el-input>
+            </el-form-item>
+        </el-form>
         <template #footer>
             <span class="dialog-footer">
-                <div>ip</div>
-                <el-input v-model="filtermes.ipname" placeholder="IP地址" class="handle-input mr10"></el-input>
-                <div>内容</div>
-                <el-input v-model="filtermes.content" placeholder="内容" class="handle-input mr10"></el-input>
-                <el-button @click="close">取 消</el-button>
-                <el-button type="primary" @click="confirm">确 定</el-button>
+                <el-button type="primary" :icon="Edit" @click="confirm">确 定</el-button>
+                <el-button type="danger" :icon="Delete" @click="handleReset">重 置</el-button>
+                <!-- <el-button type="primary" @click="confirm">确 定</el-button -->
             </span>
         </template>
     </el-dialog>
 </template>
   
 <script setup>
-import { ref,reactive } from 'vue';
+import { ref, reactive } from 'vue';
 import { ElMessageBox } from 'element-plus'
+import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
+import store from '../store/mesinfo';
+import { resetTracking } from '@vue/reactivity';
 
 const filtermes = reactive({
-    ip:"",
-    hop:1,
-    content:"",
-    timestart:"",
-    timeend:"",
+    ip: "",
+    hop: null,
+    content: "",
+    timestart: "",
+    timeend: "",
 });
-
 // 定义控制弹窗显隐的变量
 const dialogVisble = ref(false)
 
@@ -33,14 +48,22 @@ const props = defineProps(['user'])
 
 function confirm() {
     dialogVisble.value = false
-    console.log(filtermes.content);
+    store.state.filtermes = filtermes;
+    console.log(store.state.filtermes);
 
     // ElMessageBox.confirm('保存筛选吗?').then(() => {
     //     console.log('你点击了确定按钮')
     //     dialogVisble.value = false
     // }).catch(() => { })
 }
-
+function handleReset() {
+    filtermes.ip = '';
+    filtermes.hop = '';
+    filtermes.content = '';
+    filtermes.timestart = '';
+    filtermes.timeend = '';
+    ElMessage.success("重置成功");
+}
 function close() {
     dialogVisble.value = false
 }
@@ -50,4 +73,20 @@ defineExpose({
     dialogVisble
 })
 </script>
+<style>
+.dialog-footer {
+    position: sticky;
+    bottom: 10px;
+    text-align: center;
+    background-color: #ffffff;
+}
+
+.input-red {
+    color: red;
+}
+
+.dialog-message {
+    line-height: 2rem;
+}
+</style>
   

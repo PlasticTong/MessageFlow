@@ -3,11 +3,9 @@
     <Child :user="user" ref="visiableDialog"></Child>
     <el-button type="primary" @click="openDialog">打开弹窗</el-button>
     <h2 class="mb10">筛选条件</h2>
-    <el-input v-model="serachmes.source" placeholder="起点" class="handle-input mr10"></el-input>
-    <el-input v-model="serachmes.target" placeholder="终点" class="handle-input mr10"></el-input>
-    <el-input placeholder="内容" class="handle-input mr10"></el-input>
+    <el-button type="primary" :icon="Search" @click="handleFilter()">test</el-button>
     <el-button type="primary" :icon="Search" @click="handleSearch(serachmes.source, serachmes.target)">搜索</el-button>
-    <el-button type="danger" :icon="Delete" @click="handleReset">重置</el-button>
+    <!-- <el-button type="danger" :icon="Delete" @click="handleReset">重置</el-button> -->
     <div style="padding-top: 20px;"></div>
     <h2 class="mb10">消息数据</h2>
     <el-table :data="tableData" highlight-current-row border class="table" ref="multipleTable"
@@ -194,6 +192,17 @@ const handleReset = (sourcename: string, targetname: string) => {
   serachmes.target = ""
   getData();
 };
+
+// 筛选操作
+const handleFilter = () => {
+  fetchMesData().then((res) => {
+    
+    console.log(res.data.list.filter((e: { source: string; })=>e.source==store.state.filtermes.ip));
+    
+  })
+  
+};
+
 </script>
 
 <style  lang="scss" scoped>

@@ -13,6 +13,14 @@ export const store = createStore({
 			chooseUser: {
 				soure: 0,
 				target: 0
+			},
+			filtermes:{
+				isempty:"true",
+				ip: "",
+				hop: null,
+				content: "",
+				timestart: "",
+				timeend: "",
 			}
 
 		}
