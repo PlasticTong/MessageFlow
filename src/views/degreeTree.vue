@@ -44,14 +44,14 @@ export default {
                     dataEdgeForDraw.push(stateDraw)
                 }
             }
-            console.log(dataNodeForDraw);
+            // console.log(dataNodeForDraw);
 
 
 
             // Graph添加节点
             for (let index in dataNodeForDraw) {
                 let node = dataNodeForDraw[index]
-                console.log(node[0].name);
+                // console.log(node[0].name);
                 g.setNode(node[0].id, {
                     id: node[0].id,
                     label:node[0].name,

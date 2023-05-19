@@ -37,7 +37,7 @@
     methods: {
       generateVis2() {
         let that = this;
-        console.log('D3开始渲染');
+        // console.log('D3开始渲染');
         const svg = d3.select('#chart');
         const width = +svg.attr('width');
         const height = +svg.attr('height');
@@ -163,7 +163,7 @@
       },
       handleCurrentChange(currentRow, oldCurrentRow) {
         let that = this;
-        console.log(currentRow, oldCurrentRow);
+        // console.log(currentRow, oldCurrentRow);
   
         // 恢复上次选择的颜色
         if (oldCurrentRow != null) {
@@ -184,7 +184,7 @@
             .style("stroke-dasharray", 0);
         });
   
-        console.log(that.oldCurrentRow);
+        // console.log(that.oldCurrentRow);
       },
     },
     mounted() {
@@ -193,14 +193,14 @@
     updated() {
       d3.select('#maingroup').remove();
       this.generateVis2();
-      console.log(this.selectvalue);
-      console.log(this.currentRow);
+    //   console.log(this.selectvalue);
+    //   console.log(this.currentRow);
     },
     created() {
-      console.log(Edata);
-      console.log(Vdata);
-      console.log(Mdata);
-      console.log(Mdata.list);
+    //   console.log(Edata);
+    //   console.log(Vdata);
+    //   console.log(Mdata);
+    //   console.log(Mdata.list);
   
       let that = this;
       Mdata.markov.forEach(d => {
@@ -210,7 +210,7 @@
           let now = Edata.list.find(function (e) {
             return e.id == dd;
           });
-          console.log(now);
+        //   console.log(now);
           if (index === 0) {
             newlist.push(now.source);
           }
@@ -231,7 +231,7 @@
         that.minn = Math.min(that.minn, d.time);
         that.maxx = Math.max(that.maxx, d.time + 1);
       });
-      console.log(that.maxx, that.minn);
+    //   console.log(that.maxx, that.minn);
       that.selectvalue = [that.minn, that.maxx];
     }
   };

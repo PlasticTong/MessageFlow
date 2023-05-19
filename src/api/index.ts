@@ -1,4 +1,12 @@
 import request from '../utils/request';
+import requestForFlask from '../utils/requestForFlask.js';
+
+export const testflask = (user:string,pass:number) => {
+    return requestForFlask({
+        url: '/mesfilter/test',
+        method: 'get'
+    });
+};
 
 export const fetchData = () => {
     return request({

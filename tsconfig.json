@@ -11,7 +11,8 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "lib": ["ESNext", "DOM"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowJs": true,// ts支持js
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts","src/**/*.vue", "src/main.js"],
   "references": [{ "path": "./tsconfig.node.json" }]

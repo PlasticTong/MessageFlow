@@ -1,22 +1,24 @@
 <template>
   <div class="container" style="height: 700px;">
+    <Child :user="user" ref="visiableDialog"></Child>
+    <el-button type="primary" @click="openDialog">打开弹窗</el-button>
+    <h2 class="mb10">筛选条件</h2>
     <el-input v-model="serachmes.source" placeholder="起点" class="handle-input mr10"></el-input>
     <el-input v-model="serachmes.target" placeholder="终点" class="handle-input mr10"></el-input>
+    <el-input placeholder="内容" class="handle-input mr10"></el-input>
     <el-button type="primary" :icon="Search" @click="handleSearch(serachmes.source, serachmes.target)">搜索</el-button>
     <el-button type="danger" :icon="Delete" @click="handleReset">重置</el-button>
     <div style="padding-top: 20px;"></div>
     <h2 class="mb10">消息数据</h2>
     <el-table :data="tableData" highlight-current-row border class="table" ref="multipleTable"
-      header-cell-class-name="table-header"
-      @row-click = handleChoose
-      >
+      header-cell-class-name="table-header" @row-click=handleChoose>
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
       <el-table-column prop="source" label="起始点"></el-table-column>
       <el-table-column prop="target" label="目标点">
       </el-table-column>
       <el-table-column prop="time" label="传递时间"></el-table-column>
       <!-- <el-table-column label="操作" width="220" align="center"> -->
-        <!-- <template #default="scope">
+      <!-- <template #default="scope">
           <el-button text :icon="Pointer" class="red" @click="handleChoose(scope.$index)" v-permiss="16">
             选择
           </el-button>
@@ -35,8 +37,35 @@
 import { ref, reactive } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
-import { fetchMesData } from "../api/index";
+import { fetchMesData, testflask } from "../api/index";
 import { store } from "../store/mesinfo"
+import axios from 'axios'
+import Child from "./filterdialog.vue"
+const visiableDialog = ref()
+
+const user = reactive({
+  name: '张三',
+  age: 20
+})
+
+function openDialog() {
+  visiableDialog.value.dialogVisble = true
+  console.log(visiableDialog.value.dialogVisble);
+}
+
+
+
+axios.get("http://localhost:5000//mesfilter/test",
+  {
+    //key: value  key固定写法 params 参数对象
+    params: {
+      //再写用户的参数
+      username: "asdasdasd",
+      password: 1111111
+    }
+  }).then(function (result) {
+    console.log(result.data)
+  })
 
 interface TableItem {
   id: number;
@@ -46,6 +75,7 @@ interface TableItem {
   date: string;
   address: string;
 }
+
 const serachmes = reactive({
   source: "",
   target: "",
@@ -82,7 +112,7 @@ const getData = (searchstate = 0) => {
       }
       tableData.value = tableData.value.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex) * query.pageSize);
       pageTotal.value = pagestate.choosenum || 0;
-      console.log(pagestate.choosenum);
+      // console.log(pagestate.choosenum);
     }
     else {
       tableData.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex) * query.pageSize);
@@ -147,8 +177,8 @@ const handleSearch = (sourcename: string, targetname: string) => {
   if (serachmes.target == "") {
     serachmes.target = serachmes.source
   }
-  console.log(serachmes);
-  
+  // console.log(serachmes);
+
   ElMessage.success("检索成功");
   choosestate.choosemesForuser = 1;
   pagestate.choosemespage = 1;
@@ -166,7 +196,7 @@ const handleReset = (sourcename: string, targetname: string) => {
 };
 </script>
 
-<style scoped>
+<style  lang="scss" scoped>
 .handle-box {
   margin-bottom: 20px;
 }
@@ -201,5 +231,9 @@ const handleReset = (sourcename: string, targetname: string) => {
 
 ::v-deep .el-table__body tr.current-row>td {
   background: #f0f9eb !important;
+}
+
+.cat-button {
+  margin-right: 10px !important;
 }
 </style>
