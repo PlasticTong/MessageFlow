@@ -35,7 +35,7 @@ import store from '../store/mesinfo';
 
 const filtermes = reactive({
     ip: "",
-    hop: null,
+    hop: "",
     content: "",
     timestart: "",
     timeend: "",

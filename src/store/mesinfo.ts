@@ -14,6 +14,7 @@ export const store = createStore({
 				soure: 0,
 				target: 0
 			},
+			//筛选条件
 			filtermes:{
 				isempty:"true",
 				ip: "",
@@ -22,7 +23,11 @@ export const store = createStore({
 				timestart: "",
 				timeend: "",
 			},
+			//筛选消息结果
 			filtermesres:{
+			},
+			//筛选节点结果
+			filteruserres:{
 			}
 
 		}

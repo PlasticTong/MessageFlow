@@ -108,9 +108,11 @@ const handleFilter = () => {
   fetchMesData().then((res) => {
     if (store.state.filtermes.hop == '') {
       console.log("没有跳数过滤");
-      
-      tableData.value = res.data.list.filter((e: { source: string; target: string; time: number; content: string }) => 
-      (store.state.filtermes.ip ? e.source == store.state.filtermes.ip : true) || (store.state.filtermes.ip ? e.target == store.state.filtermes.ip : true) && (store.state.filtermes.timestart ? e.time >= Number(store.state.filtermes.timestart) : true) && (store.state.filtermes.timeend ? e.time <= Number(store.state.filtermes.timeend) : true) && (store.state.filtermes.content ? e.content == store.state.filtermes.content : true))
+      tableData.value = res.data.list.filter((e: { source: string; target: string; time: number; content: string }) =>
+        ((store.state.filtermes.ip ? e.source == store.state.filtermes.ip : true) || (store.state.filtermes.ip ? e.target == store.state.filtermes.ip : true)) &&
+        (store.state.filtermes.timestart ? e.time >= Number(store.state.filtermes.timestart) : true) && (store.state.filtermes.timeend ? e.time <= Number(store.state.filtermes.timeend) : true) &&
+        (store.state.filtermes.content ? e.content == store.state.filtermes.content : true)
+      )
       pageTotal.value = tableData.value.length || 0
       store.state.filtermesres = tableData.value
     }
@@ -118,11 +120,25 @@ const handleFilter = () => {
       console.log("有跳数过滤");
       var resForhop: any[] = [];
       resForhop = getPrevN2(store.state.filtermes.ip, store.state.filtermes.hop).concat(getAfterN(store.state.filtermes.ip, store.state.filtermes.hop))
-      tableData.value = resForhop.filter((e: { source: string; time: number; content: string }) => 
-      (store.state.filtermes.timestart ? e.time >= Number(store.state.filtermes.timestart) : true) && (store.state.filtermes.timeend ? e.time <= Number(store.state.filtermes.timeend) : true) && (store.state.filtermes.content ? e.content == store.state.filtermes.content : true))
+      tableData.value = resForhop.filter((e: { source: string; time: number; content: string }) =>
+        (store.state.filtermes.timestart ? e.time >= Number(store.state.filtermes.timestart) : true) && (store.state.filtermes.timeend ? e.time <= Number(store.state.filtermes.timeend) : true) && (store.state.filtermes.content ? e.content == store.state.filtermes.content : true))
       pageTotal.value = tableData.value.length || 0
       store.state.filtermesres = tableData.value
     }
+
+    //点集选择
+    let filterMesData = [];
+    filterMesData = Object.values(store.state.filtermesres)
+    const set = new Set();
+    filterMesData.forEach((item:any) => {
+      set.add(item.source);
+      set.add(item.target);
+    });
+
+    const sourcesAndTargets = Array.from(set);
+    store.state.filteruserres = sourcesAndTargets;
+    // console.log("点集是："+store.state.filteruserres);
+    
     getData();
     // 跳数
 

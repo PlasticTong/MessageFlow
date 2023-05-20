@@ -7,7 +7,7 @@
         </el-table>
       </div> -->
         <div class='view1'>
-            <el-slider v-model="selectvalue" range show-stops :max="maxx" :min="minn" />
+            <!-- <el-slider v-model="store.state.filtermes" range show-stops :max="timeend" :min="timestart" /> -->
             <svg id="chart" width="800" height="600"></svg>
         </div>
     </div>
@@ -18,6 +18,7 @@ import Edata from '../../public/tablemes.json'
 import Vdata from '../../public/table.json'
 import Mdata from '../../public/Markov.json'
 import store from "../store/mesinfo"
+import { ElMessage, ElMessageBox } from "element-plus";
 
 export default {
     name: 'index',
@@ -43,11 +44,17 @@ export default {
 
     methods: {
         generateVis2() {
+            let that = this;
             let filterMesData = [];
             filterMesData = Object.values(store.state.filtermesres)
-            console.log(filterMesData);
+            console.log("消息："+filterMesData[0].time);
 
-            let that = this;
+            let filterUserData = [];
+            filterUserData = Object.values(store.state.filteruserres)
+            console.log("节点："+filterUserData);
+
+
+            
             // console.log('D3开始渲染');
             const svg = d3.select('#chart');
             svg.select("#maingroup").remove();
@@ -70,10 +77,10 @@ export default {
 
             // 设置坐标轴
             const xScale = d3.scaleLinear()
-                .domain([that.selectvalue[0], that.selectvalue[1]])
+                .domain([store.state.filtermes.timestart, store.state.filtermes.timeend])
                 .range([0, innerwidth]);
             const yScale = d3.scaleBand()
-                .domain(Vdata.list.map(d => d.name))
+                .domain(filterUserData)
                 .range([0, innerheight]);
             const yAxis = d3.axisLeft(yScale);
             axis.append('g')
@@ -104,7 +111,7 @@ export default {
                 .attr("orient", "auto");
 
             //绘制边和箭头
-            filterMesData.filter(d => (d.time >= that.selectvalue[0] && d.time <= that.selectvalue[1] - 1)).forEach(d => {
+            filterMesData.forEach(d => {
                 linegroup.append('path')
                     .attr('d', line([{
                         name: d.source,
@@ -114,13 +121,14 @@ export default {
                         time: d.time + 1
                     }]))
                     .attr('id', `E${d.id}`)
-                    .attr('class', `M${d.markov}`)
+                    // .attr('class', `M${d.markov}`)
                     .attr('fill', 'none')
                     .attr('stroke-width', 5)
                     // .attr("marker-end", "url(#arrow)")
                     .style("stroke", that.messageColor)
                     .style("stroke-dasharray", 6)
                     .on("click", function () {
+                        ElMessage.success("选取成功"+d.id);
                         if (d.markov != undefined) {
                             // 恢复上次选择的颜色
                             if (that.oldCurrentRow != undefined) {
@@ -222,37 +230,22 @@ export default {
         //   console.log(Mdata);
         //   console.log(Mdata.list);
 
-        let that = this;
-        Mdata.markov.forEach(d => {
-            let newlist = [];
-            newlist.push(d.id);
-            d.flow.forEach((dd, index) => {
-                let now = Edata.list.find(function (e) {
-                    return e.id == dd;
-                });
-                //   console.log(now);
-                if (index === 0) {
-                    newlist.push(now.source);
-                }
-                newlist.push(now.target);
-                // 给Edata增加属性
-                now.markov = d.id;
-            });
-            that.Mlist.push(newlist);
-        });
+        // let that = this;
+        // // 
+        // console.log(111111111111111111111111111);
 
-        Edata.list.forEach(d => {
-            if (that.minn === undefined) {
-                that.minn = d.time
-            }
-            if (that.maxx === undefined) {
-                that.maxx = d.time + 1
-            }
-            that.minn = Math.min(that.minn, d.time);
-            that.maxx = Math.max(that.maxx, d.time + 1);
-        });
-        //   console.log(that.maxx, that.minn);
-        that.selectvalue = [that.minn, that.maxx];
+        // Edata.list.forEach(d => {
+        //     if (that.minn === undefined) {
+        //         that.minn = d.time
+        //     }
+        //     if (that.maxx === undefined) {
+        //         that.maxx = d.time + 1
+        //     }
+        //     that.minn = Math.min(that.minn, d.time);
+        //     that.maxx = Math.max(that.maxx, d.time + 1);
+        // });
+        // //   console.log(that.maxx, that.minn);
+        // that.selectvalue = [that.minn, that.maxx];
     }
 };
 </script>
