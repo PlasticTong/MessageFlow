@@ -26,9 +26,13 @@ export const store = createStore({
 			//筛选消息结果
 			filtermesres:{
 			},
+			//再通过阈值筛选消息结果
+			filtermesresByhold:[],
 			//筛选节点结果
 			filteruserres:{
-			}
+			},
+			//用户筛选消息结果
+			filterresFromUser:[]
 
 		}
 	},

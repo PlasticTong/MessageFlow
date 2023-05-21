@@ -9,6 +9,13 @@
         <div class='view1'>
             <!-- <el-slider v-model="store.state.filtermes" range show-stops :max="timeend" :min="timestart" /> -->
             <svg id="chart" width="800" height="600"></svg>
+            <el-form-item label="时间阈值">
+                <el-input v-model=threshold placeholder="阈值"></el-input>
+                <el-button @click="handleFliter">筛选</el-button>
+            </el-form-item>
+            <el-button type="warning" @click="handleReset">连线</el-button>
+            <el-button type="danger" @click="handleReset">重置</el-button>
+            <el-button type="primary" @click="handleExport">导出</el-button>
         </div>
     </div>
 </template>
@@ -19,6 +26,8 @@ import Vdata from '../../public/table.json'
 import Mdata from '../../public/Markov.json'
 import store from "../store/mesinfo"
 import { ElMessage, ElMessageBox } from "element-plus";
+import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
+import FileSaver from 'file-saver'
 
 export default {
     name: 'index',
@@ -33,7 +42,8 @@ export default {
             marColor: "black",
             selectColor: "green",
             oldCurrentRow: undefined,
-            messageColor: "#DCDCDC"
+            messageColor: "#DCDCDC",
+            threshold: 1 //阈值
         };
     },
     computed: {
@@ -43,18 +53,93 @@ export default {
     },
 
     methods: {
+        handleReset() {
+            store.state.filterresFromUser = [],
+                this.generateVis2()
+        },
+        handleFliter() {
+            // this.generateVis2()
+            store.state.filtermesresByhold = []
+            console.log("阈值：" + this.threshold);
+            // console.log(this.maxx,this.minn);
+            for (let i = 0; i < store.state.filtermesres.length; i++) {
+                // console.log(store.state.filtermesres[i].time);
+                if ((store.state.filtermesres[i].time - this.minn.time) % this.threshold == 0) {
+                    store.state.filtermesresByhold.push(store.state.filtermesres[i])
+                }
+            }
+            // console.log(store.state.filtermesresByhold);
+            this.generateVis2()
+        },
+        handleExport() {
+            var date = new Date();
+            var year = date.getFullYear(); //月份从0~11，所以加一
+            let month = date.getMonth();
+            console.log("month", month);
+            var dateArr = [
+                date.getMonth() + 1,
+                date.getDate(),
+                date.getHours(),
+                date.getMinutes(),
+                date.getSeconds(),
+            ];
+            //如果格式是MM则需要此步骤，如果是M格式则此循环注释掉
+            for (var i = 0; i < dateArr.length; i++) {
+                if (dateArr[i] >= 1 && dateArr[i] <= 9) {
+                    dateArr[i] = "0" + dateArr[i];
+                }
+            }
+            var strDate =
+                year +
+                "/" +
+                dateArr[0] +
+                "/" +
+                dateArr[1] +
+                " " +
+                dateArr[2] +
+                ":" +
+                dateArr[3] +
+                ":" +
+                dateArr[4];
+            //此处可以拿外部的变量接收，也可直接返回  strDate:2022-05-01 13:25:30
+            //this.date = strDate;
+            console.log("strDate", strDate);
+            const blob = new Blob([JSON.stringify(store.state.filterresFromUser, null, 2)], {
+                type: 'application/json'
+            })
+            FileSaver.saveAs(blob, strDate)
+        },
         generateVis2() {
             let that = this;
+            //计算最大值最小值
             let filterMesData = [];
             filterMesData = Object.values(store.state.filtermesres)
-            console.log("消息："+filterMesData[0].time);
+            var maxTime = 0;
+            var minTime = 0;
+            if (filterMesData != []) {
+                maxTime = filterMesData.reduce(function (prev, curr) {
+                    return prev.time > curr.time ? prev : curr;
+                }, {});
+                minTime = filterMesData.reduce(function (prev, curr) {
+                    return prev.time < curr.time ? prev : curr;
+                }, {});
+            }
+            this.maxx = maxTime
+            this.minn = minTime
+
+            let filterMesDataByHold = [];
+            filterMesDataByHold = Object.values(store.state.filtermesresByhold)
+            console.log(filterMesDataByHold);
+            console.log(that.threshold);
+
+
 
             let filterUserData = [];
+            // console.log(Object.values(store.state.filteruserres));
             filterUserData = Object.values(store.state.filteruserres)
-            console.log("节点："+filterUserData);
 
 
-            
+
             // console.log('D3开始渲染');
             const svg = d3.select('#chart');
             svg.select("#maingroup").remove();
@@ -77,7 +162,7 @@ export default {
 
             // 设置坐标轴
             const xScale = d3.scaleLinear()
-                .domain([store.state.filtermes.timestart, store.state.filtermes.timeend])
+                .domain([minTime.time, maxTime.time + 1])
                 .range([0, innerwidth]);
             const yScale = d3.scaleBand()
                 .domain(filterUserData)
@@ -111,14 +196,14 @@ export default {
                 .attr("orient", "auto");
 
             //绘制边和箭头
-            filterMesData.forEach(d => {
+            filterMesDataByHold.forEach(d => {
                 linegroup.append('path')
                     .attr('d', line([{
                         name: d.source,
                         time: d.time
                     }, {
                         name: d.target,
-                        time: d.time + 1
+                        time: d.time + Number(this.threshold)
                     }]))
                     .attr('id', `E${d.id}`)
                     // .attr('class', `M${d.markov}`)
@@ -128,26 +213,43 @@ export default {
                     .style("stroke", that.messageColor)
                     .style("stroke-dasharray", 6)
                     .on("click", function () {
-                        ElMessage.success("选取成功"+d.id);
-                        if (d.markov != undefined) {
-                            // 恢复上次选择的颜色
-                            if (that.oldCurrentRow != undefined) {
-                                d3.selectAll(`.M${that.oldCurrentRow}`)
-                                    .style("stroke", that.marColor);
-                            }
-                            // 弹窗当前选择
-                            that.$message.success("选择了" + d.markov);
-                            // 记录当前选择 以便下次选择时恢复颜色
-                            that.oldCurrentRow = d.markov;
-                            // 高亮当前选择
-                            d3.selectAll(`.M${d.markov}`)
-                                .style("stroke", that.selectColor)
+
+                        if (store.state.filterresFromUser.find(user => user == d.id) == null) {
+                            ElMessage.success("选取成功" + d.id);
+                            store.state.filterresFromUser.push(d.id)
+                            console.log("成功" + store.state.filterresFromUser);
+                            d3.select(`#E${d.id}`)
+                                .style("stroke", that.marColor)
                                 .style("stroke-dasharray", 0);
-                            // 在表格中高亮当前选择
-                            that.$refs.table.setCurrentRow(that.$refs.table.data.find(function (e) {
-                                return e[0] == d.markov;
-                            }))
+                        } else {
+                            ElMessage.error("取消选取" + d.id);
+                            let index = store.state.filterresFromUser.indexOf(d.id);
+                            store.state.filterresFromUser.splice(index, 1)
+                            console.log("取消" + store.state.filterresFromUser);
+                            d3.select(`#E${d.id}`)
+                                .style("stroke", that.messageColor)
+                                .style("stroke-dasharray", 6);
                         }
+
+                        // if (d.markov != undefined) {
+                        //     // 恢复上次选择的颜色
+                        //     if (that.oldCurrentRow != undefined) {
+                        //         d3.selectAll(`.M${that.oldCurrentRow}`)
+                        //             .style("stroke", that.marColor);
+                        //     }
+                        //     // 弹窗当前选择
+                        //     that.$message.success("选择了" + d.markov);
+                        //     // 记录当前选择 以便下次选择时恢复颜色
+                        //     that.oldCurrentRow = d.markov;
+                        //     // 高亮当前选择
+                        //     d3.selectAll(`.M${d.markov}`)
+                        //         .style("stroke", that.selectColor)
+                        //         .style("stroke-dasharray", 0);
+                        //     // 在表格中高亮当前选择
+                        //     that.$refs.table.setCurrentRow(that.$refs.table.data.find(function (e) {
+                        //         return e[0] == d.markov;
+                        //     }))
+                        // }
 
                     })
                     .append('title')
@@ -164,21 +266,22 @@ export default {
                     .style("fill", "black");
 
                 dotgroup.append("circle")
-                    .attr("class", `T${d.time + 1}`)
+                    .attr("class", `T${d.time + Number(this.threshold)}`)
                     .attr("cy", yScale(d.target) + 0.5 * yScale.bandwidth())
-                    .attr("cx", xScale(d.time + 1))
+                    .attr("cx", xScale(d.time + Number(this.threshold)))
                     .attr("r", 8)
                     .style("fill", "black");
             });
 
-            // 高亮所有马尔科夫列
-            Mdata.markov.forEach(mar => {
-                mar.flow.forEach(flow => {
-                    d3.select(`#E${flow}`)
-                        .style("stroke", that.marColor)
-                        .style("stroke-dasharray", 0);
-                })
-            });
+            // // 高亮所有马尔科夫列
+            // Mdata.markov.forEach(mar => {
+            //     mar.flow.forEach(flow => {
+            //         console.log(flow);
+            //         d3.select(`#E${flow}`)
+            //             .style("stroke", that.marColor)
+            //             .style("stroke-dasharray", 0);
+            //     })
+            // });
 
         },
         handleCurrentChange(currentRow, oldCurrentRow) {

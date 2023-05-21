@@ -4,7 +4,7 @@
     <h2 class="mb10">筛选条件</h2>
     <el-button type="warning" @click="openDialog">打开弹窗</el-button>
     <el-button type="primary" :icon="Search" @click="handleFilter()">筛选</el-button>
-    <el-button type="primary" :icon="Search" @click="handleSearch(serachmes.source, serachmes.target)">搜索</el-button>
+    <!-- <el-button type="primary" :icon="Search" @click="handleSearch(serachmes.source, serachmes.target)">搜索</el-button> -->
     <el-button type="danger" :icon="Delete" @click="handleReset">重置</el-button>
     <div style="padding-top: 20px;"></div>
     <h2 class="mb10">消息数据</h2>
