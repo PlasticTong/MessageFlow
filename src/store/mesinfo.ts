@@ -28,6 +28,8 @@ export const store = createStore({
 			},
 			//再通过阈值筛选消息结果
 			filtermesresByhold:[],
+			//连线
+			filtermesresLine:[],
 			//筛选节点结果
 			filteruserres:{
 			},
