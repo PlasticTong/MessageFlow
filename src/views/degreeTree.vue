@@ -1,7 +1,8 @@
 <template>
+    
     <h2 class="mb10">消息流</h2>
     <div class="tree">
-        <svg class="dagre" width="600" height="600">
+        <svg class="dagre" width="600" height="500">
             <g class="container"></g>
         </svg>
     </div>
@@ -61,8 +62,8 @@ export default {
                     rx: 5,  // 设置圆角
                     ry: 5,  // 设置圆角
                     paddingBottom: 15,
-                    paddingLeft: 20,
-                    paddingRight: 20,
+                    paddingLeft: 10,
+                    paddingRight: 10,
                     paddingTop: 15,
                 });
             }
@@ -109,9 +110,10 @@ export default {
    
 <style>
 .tree {
-    border: 1px solid #ccc;
+    border: 1px solid #9e4a4a00;
     padding: 20px;
     width: 600px;
+    height: 650px;
     margin: auto;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="height: 700px;">
+  <div class="container" style="height: 1000px;">
     <Child :user="user" ref="visiableDialog"></Child>
     <h2 class="mb10">筛选条件</h2>
     <el-button type="warning" @click="openDialog">打开弹窗</el-button>
@@ -40,6 +40,7 @@ import { fetchMesData, testflask } from "../api/index";
 import { store } from "../store/mesinfo"
 import axios from 'axios'
 import Child from "./filterdialog.vue"
+import { ta } from "element-plus/es/locale";
 const visiableDialog = ref()
 
 const user = reactive({
@@ -54,17 +55,17 @@ function openDialog() {
 
 
 
-axios.get("http://localhost:5000//mesfilter/test",
-  {
-    //key: value  key固定写法 params 参数对象
-    params: {
-      //再写用户的参数
-      username: "asdasdasd",
-      password: 1111111
-    }
-  }).then(function (result) {
-    console.log(result.data)
-  })
+// axios.get("http://localhost:5000//mesfilter/test",
+//   {
+//     //key: value  key固定写法 params 参数对象
+//     params: {
+//       //再写用户的参数
+//       username: "asdasdasd",
+//       password: 1111111
+//     }
+//   }).then(function (result) {
+//     console.log(result.data)
+//   })
 
 interface TableItem {
   id: number;
@@ -106,121 +107,213 @@ const handleFilter = () => {
   pagestate.choosemespage = 1;
   store.state.filtermesres = [];
   fetchMesData().then((res) => {
+
+
+
+
+
     if (store.state.filtermes.hop == '') {
+      store.state.filtermesres=[]
       console.log("没有跳数过滤");
       tableData.value = res.data.list.filter((e: { source: string; target: string; time: number; content: string }) =>
         ((store.state.filtermes.ip ? e.source == store.state.filtermes.ip : true) || (store.state.filtermes.ip ? e.target == store.state.filtermes.ip : true)) &&
         (store.state.filtermes.timestart ? e.time >= Number(store.state.filtermes.timestart) : true) && (store.state.filtermes.timeend ? e.time <= Number(store.state.filtermes.timeend) : true) &&
         (store.state.filtermes.content ? e.content == store.state.filtermes.content : true)
       )
+      console.log(tableData.value.length);
+      
       pageTotal.value = tableData.value.length || 0
       store.state.filtermesres = tableData.value
     }
     else {
-      console.log("有跳数过滤");
+
       var resForhop: any[] = [];
-      resForhop = getPrevN2(store.state.filtermes.ip, store.state.filtermes.hop).concat(getAfterN(store.state.filtermes.ip, store.state.filtermes.hop))
-      tableData.value = resForhop.filter((e: { source: string; time: number; content: string }) =>
+      store.state.filtermesres=[]
+      tableData.value = res.data.list.filter((e: { source: string; time: number; content: string ;target:string}) =>
+      // ((store.state.filtermes.ip ? e.source == store.state.filtermes.ip : true) || (store.state.filtermes.ip ? e.target == store.state.filtermes.ip : true)) &&
         (store.state.filtermes.timestart ? e.time >= Number(store.state.filtermes.timestart) : true) && (store.state.filtermes.timeend ? e.time <= Number(store.state.filtermes.timeend) : true) && (store.state.filtermes.content ? e.content == store.state.filtermes.content : true))
+      console.log(tableData.value.length+"ci");
+      console.log("有跳数过滤");
+      resForhop = getPrevN3(store.state.filtermes.ip, Number(store.state.filtermes.hop)-1, tableData.value).concat(getAfterN3(store.state.filtermes.ip, Number(store.state.filtermes.hop)-1, tableData.value))
+      // console.log(resForhop);
+      const set = new Set(resForhop)
+      tableData.value = Array.from(set)
+      // console.log(tableData.value.length);
+      
       pageTotal.value = tableData.value.length || 0
       store.state.filtermesres = tableData.value
     }
 
-    //点集选择
-    let filterMesData = [];
-    filterMesData = Object.values(store.state.filtermesres)
-    const set = new Set();
-    filterMesData.forEach((item:any) => {
-      set.add(item.source);
-      set.add(item.target);
-    });
+    // //点集选择
+    // let filterMesData = [];
+    // filterMesData = Object.values(store.state.filtermesres)
+    // const set = new Set();
+    // filterMesData.forEach((item: any) => {
+    //   set.add(item.source);
+    //   set.add(item.target);
+    // });
 
-    const sourcesAndTargets = Array.from(set);
-    store.state.filteruserres = sourcesAndTargets;
+    // const sourcesAndTargets = Array.from(set);
+    // store.state.filteruserres = sourcesAndTargets;
     // console.log("点集是："+store.state.filteruserres);
-    
+
     getData();
     // 跳数
 
-    // 获取 IP 地址为 targetIp 的记录的前 n 跳数据
-    function getPrevN(targetIp: any, n: any) {
-      const result: any[] = [];
-      findPrevN(targetIp, n);
-      return result;
-      // 递归函数，寻找前 N 跳数据
-      function findPrevN(ip: any, depth: number) {
-        if (depth === 0) {
-          return;
-        }
 
-        const matched = res.data.list.filter((item: { target: any; }) => item.target === ip);
-        matched.forEach((item: { source: any; }) => {
-          result.push(item);
-          findPrevN(item.source, depth - 1);
-        });
+
+    // // 获取 IP 地址为 targetIp 的记录的前 n 跳数据
+    // function getPrevN(targetIp: any, n: any, data: any) {
+    //   const result: any[] = [];
+    //   findPrevN(targetIp, n);
+    //   return result;
+    //   // 递归函数，寻找前 N 跳数据
+    //   function findPrevN(ip: any, depth: number) {
+    //     if (depth === 0) {
+    //       return;
+    //     }
+
+    //     const matched = data.filter((item: { target: any; }) => item.target == ip);
+    //     matched.forEach((item: { source: any; }) => {
+    //       result.push(item);
+    //       findPrevN(item.source, depth - 1);
+    //     });
+    //   }
+    // }
+    
+    
+    function getPrevN3(targetIp: any, n: any, data: any) {
+      const result = new Set();
+      let result_low: any[] = [];
+      let result_high= new Set();
+      data.forEach((e: { target: any; time: number; })=>{
+            if(e.target == targetIp){
+              result.add(e)
+              result_low.push(e)
+            }
+      });
+          
+      for (let i = 0; i < n; i++) {
+        // console.log("第"+i+"次");
+        // console.log(result_low.length);
+        
+        
+        result_high.clear()
+        for (let j = 0; j < result_low.length; j++) {
+          // let source = result_low[j].source
+          data.forEach((e: { target: any; time: number; })=>{
+            if(e.target == result_low[j].source && e.time <= result_low[j].time){
+              result.add(e)
+              result_high.add(e)
+            }
+          })
+          
+          
+        }
+        result_low = Array.from(result_high)
       }
+      // console.log(Array.from(result));
+      
+      return Array.from(result);
     }
 
-    // 获取 IP 地址为 targetIp 的记录的前 n 跳数据
-    function getPrevN2(targetIp: any, n: any) {
-      const result: any[] = [];
-      findN(targetIp, n, null)
-      // findPrev(targetIp);
-      // return result;
-      //跳数
-      function findN(ip: any, depth: number, time: any) {
-        // console.log("当前IP："+ip,"深度："+depth);
-        if (depth == 0) {
-          return;
+    function getAfterN3(targetIp: any, n: any, data: any) {
+      const result = new Set();
+      let result_low: any[] = [];
+      let result_high= new Set();;
+      data.forEach((e: { source: any; time: number; })=>{
+            if(e.source == targetIp){
+              result.add(e)
+              result_low.push(e)
+            }
+      });
+          
+      for (let i = 0; i < n; i++) {
+        console.log("第"+i+"次");
+        console.log(result_low);
+        
+        
+        result_high.clear()
+        for (let j = 0; j < result_low.length; j++) {
+          // let source = result_low[j].source
+          data.forEach((e: { target: any; time: number; source: any})=>{
+            if(e.source == result_low[j].target && e.time >= result_low[j].time){
+              result.add(e)
+              result_high.add(e)
+            }
+          })
+          
+          
         }
-        const matchedN = findPrev(ip, time);
-        for (let index in matchedN) {
-          // console.log(result);              
-          findN(matchedN[index].source, depth - 1, matchedN[index].time)
-        }
+        result_low = Array.from(result_high)
       }
-      // 寻找target数据
-      function findPrev(ip: any, time: any) {
-        const matched = res.data.list.filter((item: { target: any; time: any }) => item.target == ip && (time ? item.time <= time : true));
-        matched.forEach((item: { source: any; }) => {
-          result.push(item);
-
-        });
-        return matched;
-      }
-      return result
-
+      // console.log(Array.from(result));
+      
+      return Array.from(result);
     }
+    
 
-    // 获取 IP 地址为 sourceip 的记录的前 n 跳数据
-    function getAfterN(targetIp: any, n: any) {
-      const result: any[] = [];
-      findN(targetIp, n, null)
-      //跳数
-      function findN(ip: any, depth: number, time: any) {
-        // console.log("当前IP："+ip,"深度："+depth);
-        if (depth == 0) {
-          return;
-        }
-        const matchedN = findPrev(ip, time);
-        for (let index in matchedN) {
-          // console.log(result);              
-          findN(matchedN[index].target, depth - 1, matchedN[index].time)
-        }
-      }
-      // 寻找source数据
-      function findPrev(ip: any, time: any) {
-        const matched = res.data.list.filter((item: { source: any; time: any }) => item.source == ip && (time ? item.time >= time : true));
-        matched.forEach((item: { target: any; }) => {
-          result.push(item);
-        });
-        return matched;
-      }
-      // console.log(result);
+    // // 获取 IP 地址为 targetIp 的记录的前 n 跳数据
+    // function getPrevN2(targetIp: any, n: any, data: any) {
+    //   const result: any[] = [];
+    //   findN(targetIp, n, null)
+    //   // findPrev(targetIp);
+    //   // return result;
+    //   //跳数
+    //   function findN(ip: any, depth: number, time: any) {
+    //     // console.log("当前IP："+ip,"深度："+depth);
+    //     if (depth == 0) {
+    //       return;
+    //     }
+    //     const matchedN = findPrev(ip, time);
+    //     for (let index in matchedN) {
+    //       // console.log(result);              
+    //       findN(matchedN[index].source, depth - 1, matchedN[index].time)
+    //     }
+    //   }
+    //   // 寻找target数据
+    //   function findPrev(ip: any, time: any) {
+    //     const matched = data.filter((item: { target: any; time: any }) => item.target == ip && (time ? item.time <= time : true));
+    //     matched.forEach((item: { source: any; }) => {
+    //       result.push(item);
 
-      return result;
+    //     });
+    //     return matched;
+    //   }
+    //   return result
 
-    }
+    // }
+
+
+    // // 获取 IP 地址为 sourceip 的记录的前 n 跳数据
+    // function getAfterN(targetIp: any, n: any, data: any) {
+    //   const result: any[] = [];
+    //   findN(targetIp, n, null)
+    //   //跳数
+    //   function findN(ip: any, depth: number, time: any) {
+    //     // console.log("当前IP："+ip,"深度："+depth);
+    //     if (depth == 0) {
+    //       return;
+    //     }
+    //     const matchedN = findPrev(ip, time);
+    //     for (let index in matchedN) {
+    //       // console.log(result);              
+    //       findN(matchedN[index].target, depth - 1, matchedN[index].time)
+    //     }
+    //   }
+    //   // 寻找source数据
+    //   function findPrev(ip: any, time: any) {
+    //     const matched = data.filter((item: { source: any; time: any }) => item.source == ip && (time ? item.time >= time : true));
+    //     matched.forEach((item: { target: any; }) => {
+    //       result.push(item);
+    //     });
+    //     return matched;
+    //   }
+    //   // console.log(result);
+
+    //   return result;
+
+    // }
 
   })
 

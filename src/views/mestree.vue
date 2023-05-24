@@ -28,6 +28,9 @@ import store from "../store/mesinfo"
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
 import FileSaver from 'file-saver'
+import * as q from 'd3-quicktool';
+import { objectPick } from '@vueuse/shared';
+// require('d3-quicktool')
 
 export default {
     name: 'index',
@@ -43,7 +46,8 @@ export default {
             selectColor: "green",
             oldCurrentRow: undefined,
             messageColor: "#DCDCDC",
-            threshold: 1 //阈值
+            threshold: 1, //阈值s
+
         };
     },
     computed: {
@@ -55,20 +59,21 @@ export default {
     methods: {
         handleConnectivity() {
             store.state.filterresFromUser = []
-            console.log(store.state.filtermesresByhold);
+            // console.log(store.state.filtermesresByhold);
             for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
                 if (store.state.filtermesresByhold.find(e =>
                     (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - Number(this.threshold))
                     || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + Number(this.threshold))
                 ) != null) {
                     store.state.filterresFromUser.push(store.state.filtermesresByhold[i].id);
-                    console.log(store.state.filtermesresByhold[i].id);
+                    // console.log(store.state.filtermesresByhold[i].id);
                     d3.select(`#E${store.state.filtermesresByhold[i].id}`)
                         .classed("chooseline", true)
                         .classed("unchooseline", false)
                 }
             }
-            console.log(store.state.filterresFromUser);
+            ElMessage.success("连线成功！");
+            // console.log(store.state.filterresFromUser);
 
             // this.generateVis2()
         },
@@ -76,6 +81,7 @@ export default {
             store.state.filterresFromUser = [],
                 store.state.filtermesresLine = []
             store.state.filtermesresByhold = []
+            ElMessage.success("重置成功！");
             this.generateVis2()
         },
         handleFliter() {
@@ -100,7 +106,15 @@ export default {
             });
 
             const sourcesAndTargets = Array.from(set);
+
+            // const sourcesAndTargetsRes = []
+            // for(let j=1;j<=sourcesAndTargets.length;j++){
+            //     let data ={"ids":j,"name":sourcesAndTargets[j-1]}
+            //     sourcesAndTargetsRes.push(data)
+            // }
+            // console.log(sourcesAndTargetsRes);
             store.state.filteruserres = sourcesAndTargets;
+            ElMessage.success("筛选成功！");
             this.generateVis2()
         },
         handleExport() {
@@ -161,23 +175,26 @@ export default {
 
             let filterMesDataByHold = [];
             filterMesDataByHold = Object.values(store.state.filtermesresByhold)
-            // console.log(filterMesDataByHold);
-            // console.log(that.threshold);
+
 
 
 
             let filterUserData = [];
-            // console.log(Object.values(store.state.filteruserres));
             filterUserData = Object.values(store.state.filteruserres)
+            // let filterUserDataNUM = [];
+            // for(let i=0;i<filterUserData.length;i++){
+            //     console.log(filterUserData[i].num);
+            //     filterUserDataNUM.push(filterUserData[i].ids)
+            // }
 
 
 
             // console.log('D3开始渲染');
-            const svg = d3.select('#chart');
+            const svg = d3.select('#chart').attr('width', 3000);
             svg.select("#maingroup").remove();
             const width = +svg.attr('width');
             const height = +svg.attr('height');
-            const margin = { top: 50, bottom: 10, left: 80, right: 50 };
+            const margin = { top: 50, bottom: 10, left: 80, right: 700 };
             const innerwidth = width - margin.left - margin.right;
             const innerheight = height - margin.top - margin.bottom;
             // 初始化元素
@@ -185,13 +202,24 @@ export default {
                 .attr('id', 'maingroup')
                 .attr('transform', `translate(${margin.left},${margin.top})`);
 
+
             let background = g.append("rect").attr("class", "bg")
             let view = g.append("g").attr("class", "view")
             let linegroup = g.append("g").attr("class", "linegroup");
             let dotgroup = g.append("g").attr("class", "dotgroup");
             let grid = g.append("g").attr("class", "grid")
             let axis = g.append("g").attr("class", "axis")
-            console.log(linegroup);
+
+            //     //在页面中添加svg 支持拖拽和缩放
+            //    linegroup.attr("width", 3000).attr("height", 600)
+            //         .call(d3.zoom().scaleExtent([1, 3]).on("zoom",
+            //             function redraw(event) {
+            //                 linegroup.attr("transform", d3.event.transform);
+            //                 console.log(1111213);
+            //             }
+            //         ))
+            //         // .attr("transform", "translate(" + 350 + "," + 20 + ")")
+            //     // console.log(linegroup);
 
             // 设置坐标轴
             const xScale = d3.scaleLinear()
@@ -200,20 +228,49 @@ export default {
             const yScale = d3.scaleBand()
                 .domain(filterUserData)
                 .range([0, innerheight]);
+            const yband = yScale.bandwidth()
             const yAxis = d3.axisLeft(yScale);
-            axis.append('g')
+            const gY = axis.append('g')
                 .call(yAxis);
             const xAxis = d3.axisTop(xScale);
-            axis.append('g')
+            const gX = axis.append('g')
                 .call(xAxis);
+
+            const zoom = d3.zoom()
+                .scaleExtent([1, 40])
+                .translateExtent([[-1000, -1000], [width + 900, height + 100]])
+                // .filter(filter)
+                .on("zoom", zoomed);
+
+
+            svg.call(zoom)
+
+            function zoomed() {
+                // console.log(yScale.bandwidth());
+                g.attr("transform", d3.event.transform);
+                // xScale.domain([d3.event.transform.invertX(0), d3.event.transform.invertX(100)]);
+                // yScale.domain([d3.event.transform.invertY(0), d3.event.transform.invertY(100)]);
+                // gX.call(xAxis.scale(d3.event.transform.rescaleX(xScale)));
+                // gY.call(yAxis.scale(d3.event.transform.rescaleY(yScale)));
+            }
+
+
             // 定义边
             let line = d3.line()
                 .y(function (d) {
-                    return yScale(d.name) + 0.5 * yScale.bandwidth();
+                    // let res;
+                    // for(let i=0;i<filterUserData.length;i++){
+                    //     if(filterUserData[i].name==d.name){
+                    //         res = filterUserData[i].ids
+                    //         // console.log(res);
+                    //     }
+                    // }
+                    return yScale(d.name) + 0.5 * yband;
                 })
                 .x(function (d) {
                     return xScale(d.time);
                 });
+
 
             // 定义箭头
             var defs = linegroup.append("defs");
@@ -228,11 +285,14 @@ export default {
                 .attr("refY", "6")
                 .attr("orient", "auto");
 
+
+
+                // filterMesDataByHold.forEach(d=>{
+                //     d.source = filterUserData.find(e=>e.name == d.source).ids;
+                //     d.target = filterUserData.find(e=>e.name == d.target).ids;
+                // })
             //绘制边和箭头
             filterMesDataByHold.forEach(d => {
-                //不连线
-                // if (store.state.filtermesresLine.find(e => e.id == d.id)!=null) {
-                // console.log(d.id);
                 linegroup.append('path')
                     .attr('d', line([{
                         name: d.source,
@@ -302,108 +362,18 @@ export default {
                 // 绘制点
                 dotgroup.append("circle")
                     .attr("class", `T${d.time}`)
-                    .attr("cy", yScale(d.source) + 0.5 * yScale.bandwidth())
+                    .attr("cy", yScale(d.source) + 0.5 * yband)
                     .attr("cx", xScale(d.time))
                     .attr("r", 8)
                     .style("fill", "black");
 
                 dotgroup.append("circle")
                     .attr("class", `T${d.time + Number(this.threshold)}`)
-                    .attr("cy", yScale(d.target) + 0.5 * yScale.bandwidth())
+                    .attr("cy", yScale(d.target) + 0.5 * yband)
                     .attr("cx", xScale(d.time + Number(this.threshold)))
                     .attr("r", 8)
                     .style("fill", "black");
-                // }
-                // //连线
-                // else {
-                //     linegroup.append('path')
-                //         .attr('d', line([{
-                //             name: d.source,
-                //             time: d.time
-                //         }, {
-                //             name: d.target,
-                //             time: d.time + Number(this.threshold)
-                //         }]))
-                //         .attr('id', `E${d.id}`)
-                //         // .attr('class', `M${d.markov}`)
-                //         .attr('fill', 'none')
-                //         .attr('stroke-width', 5)
-                //         .attr("marker-end", "url(#arrow)")
-                //         .style("stroke", that.marColor)
-                //         .style("stroke-dasharray", 0)
-                //         .on("click", function () {
-
-                //             if (store.state.filterresFromUser.find(user => user == d.id) == null) {
-                //                 ElMessage.success("选取成功" + d.id);
-                //                 store.state.filterresFromUser.push(d.id)
-                //                 console.log("成功" + store.state.filterresFromUser);
-                //                 d3.select(`#E${d.id}`)
-                //                     .style("stroke", that.marColor)
-                //                     .style("stroke-dasharray", 0);
-                //             } else {
-                //                 ElMessage.error("取消选取" + d.id);
-                //                 let index = store.state.filterresFromUser.indexOf(d.id);
-                //                 store.state.filterresFromUser.splice(index, 1)
-                //                 console.log("取消" + store.state.filterresFromUser);
-                //                 d3.select(`#E${d.id}`)
-                //                     .style("stroke", that.messageColor)
-                //                     .style("stroke-dasharray", 6);
-                //             }
-
-                //             // if (d.markov != undefined) {
-                //             //     // 恢复上次选择的颜色
-                //             //     if (that.oldCurrentRow != undefined) {
-                //             //         d3.selectAll(`.M${that.oldCurrentRow}`)
-                //             //             .style("stroke", that.marColor);
-                //             //     }
-                //             //     // 弹窗当前选择
-                //             //     that.$message.success("选择了" + d.markov);
-                //             //     // 记录当前选择 以便下次选择时恢复颜色
-                //             //     that.oldCurrentRow = d.markov;
-                //             //     // 高亮当前选择
-                //             //     d3.selectAll(`.M${d.markov}`)
-                //             //         .style("stroke", that.selectColor)
-                //             //         .style("stroke-dasharray", 0);
-                //             //     // 在表格中高亮当前选择
-                //             //     that.$refs.table.setCurrentRow(that.$refs.table.data.find(function (e) {
-                //             //         return e[0] == d.markov;
-                //             //     }))
-                //             // }
-
-                //         })
-                //         .append('title')
-                //         .text(dd => {
-                //             return `source: ${d.source}\ntarget: ${d.target}\ntime: ${d.time}\ncontent: ${d.content}`;
-                //         });;
-
-                //     // 绘制点
-                //     dotgroup.append("circle")
-                //         .attr("class", `T${d.time}`)
-                //         .attr("cy", yScale(d.source) + 0.5 * yScale.bandwidth())
-                //         .attr("cx", xScale(d.time))
-                //         .attr("r", 8)
-                //         .style("fill", "black");
-
-                //     dotgroup.append("circle")
-                //         .attr("class", `T${d.time + Number(this.threshold)}`)
-                //         .attr("cy", yScale(d.target) + 0.5 * yScale.bandwidth())
-                //         .attr("cx", xScale(d.time + Number(this.threshold)))
-                //         .attr("r", 8)
-                //         .style("fill", "black");
-                // }
-
             });
-
-            // // 高亮所有马尔科夫列
-            // Mdata.markov.forEach(mar => {
-            //     mar.flow.forEach(flow => {
-            //         console.log(flow);
-            //         d3.select(`#E${flow}`)
-            //             .style("stroke", that.marColor)
-            //             .style("stroke-dasharray", 0);
-            //     })
-            // });
-
         },
         handleCurrentChange(currentRow, oldCurrentRow) {
             let that = this;

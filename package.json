@@ -12,6 +12,7 @@
 		"@braid/vue-formulate": "^2.5.3",
 		"@element-plus/icons-vue": "^2.0.9",
 		"axios": "^0.27.2",
+		"d3-quicktool": "^0.4.2",
 		"dagre-d3": "^0.6.4",
 		"element-plus": "^2.2.14",
 		"file-saver": "^2.0.5",

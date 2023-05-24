@@ -52,7 +52,7 @@ function confirm() {
     // }
     dialogVisble.value = false
     store.state.filtermes = filtermes;
-    console.log(store.state.filtermes);
+    // console.log(store.state.filtermes);
 
     // ElMessageBox.confirm('保存筛选吗?').then(() => {
     //     console.log('你点击了确定按钮')

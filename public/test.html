@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>js控制SVG缩放</title>
+</head>
+<body>
+    <svg id="svg" style="background-color: #FAFAFA;">
+        <g id="svgPanel">
+            <g id="grid"></g>
+            <defs>
+                <path id="path1" d="M300,200 a1,1 0 0,0 100,0" />
+            </defs>
+            <text x="10" y="100" style="fill:green;">
+                <textPath xlink:href="#path1">啦啦啦啦啦啦啦啦啦啦</textPath>
+            </text>
+        </g>
+    </svg>
+    <button onclick="zoom(1.1)">放大</button>
+    <button onclick="zoom(0.9)">缩小</button>
+
+    <script type="text/javascript">
+        var svg = document.getElementById('svg');
+        var svgPanel = document.getElementById('svgPanel');
+        var gridSvg = document.getElementById('grid');
+        var width = 800;  // 设置svg整体的宽和高
+        var height = 400;
+        var gridLength = 20;  // 定义网格的大小
+        svg.setAttribute('width', width);
+        svg.setAttribute('height', height);
+
+        // 绘制网格
+        drawGrid(gridSvg, width, height, gridLength);
+        /*
+            * 绘制网络
+            * @param {Object} svgBackground 绘制网格对象
+            * @param {Int} winWidth 区域宽度
+            * @param {Int} winHeight 区域高度
+            * @param {Int} gridLength 网格大小
+        */
+        function drawGrid(svgBackground, winWidth, winHeight, gridLength) {
+            var childs = gridSvg.childNodes;
+            // 删除之前的网格节点,便于绘制
+            for (var i = childs.length - 1; i>= 0; i--){
+                svgBackground.removeChild(childs.item(i));
+            }
+            for (var j = 0,len = Math.ceil(winWidth / gridLength); j < len; j++){
+                var attrs = {
+                    x1 : j * gridLength,
+                    y1 : 0,
+                    x2 : j * gridLength,
+                    y2 : winHeight,
+                    stroke : '#add'
+                };
+                var line = resetSvg('line', attrs);
+                svgBackground.appendChild(line);
+            }
+            for (var k = 0, len2 = Math.ceil(winHeight / gridLength); k <= len2; k++){
+                var attrs2 = {
+                    x1 : 0,
+                    y1 : k * gridLength,
+                    x2 : winWidth,
+                    y2 : k * gridLength,
+                    stroke : '#add'
+                };
+                var line2 = resetSvg('line', attrs2);
+                svgBackground.appendChild(line2)
+            }
+        }
+        /*
+            * js创建svg元素
+            * @param {String} tag svg的标签名
+            * @param {Object} svg元素的属性
+        */
+        function resetSvg(tag, attrs) {
+            var element = document.createElementNS('http://www.w3.org/2000/svg', tag);
+            for (var g in attrs){
+                element.setAttribute(g, attrs[g])
+            }
+            return element;
+        }
+        /*
+            * svg缩放
+            * {Float} num 收缩的倍数
+        */
+        var scale = 1;
+        function zoom(num) {
+            scale *= num;
+            svgPanel.setAttribute('transform', 'scale(' + scale + ')');
+            drawGrid(gridSvg, width*(1/scale), height*(1/scale), gridLength);
+        }
+        // 绑定鼠标滑轮
+        if (document.addEventListener){
+            document.addEventListener('DOMMouseScroll', scrollZoom, false);
+        }
+        window.onmousewheel = document.onmousewhell = scrollZoom;
+        /*
+        * 滑轮滚动处理事件，向上滚动放大
+        * {Object} e 事件对象
+        */
+        function scrollZoom(e) {
+            e = e || window.event;
+            // e.detail用来兼容FireFox
+            e.wheelDelta>0 || e.detail>0?zoom(1.1):zoom(0.9);
+        }
+    </script>
+</body>
+</html>
