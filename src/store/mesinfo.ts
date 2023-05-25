@@ -34,7 +34,14 @@ export const store = createStore({
 			filteruserres:{
 			},
 			//用户筛选消息结果
-			filterresFromUser:[]
+			filterresFromUser:[],
+			//用户筛选马尔可夫结果
+			nodeMarFromUser:[],
+			//用户筛选马尔可夫结果
+			NodeMarFromUser:[],
+			//用户筛选马尔可夫结果
+			MarFromUser:[
+			]
 
 		}
 	},

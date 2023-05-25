@@ -1,60 +1,49 @@
 <template>
     <div>
-        <h2>马尔科夫链</h2>
-        <el-form-item label="阶数选取">
-            <div class="input-box">
-                <el-input v-model="threshold" placeholder="阶数"></el-input>
-                <el-button @click="handleFliter">选取</el-button>
-            </div>
-        </el-form-item>
-
-        <!--第一行图表-->
         <div class="chart-row">
-            <div class="chart-column">
-                <svg id="markovchart1" width="450" height="450" v-show="threshold >= 1"></svg>
-            </div>
-            <div class="chart-column">
-                <svg id="markovchart2" width="450" height="450" v-show="threshold >= 2"></svg>
-            </div>
+            <svg id="timechart1" width="16%" height="220"></svg>
+            <svg id="timechart2" width="16%" height="220"></svg>
+            <svg id="timechart3" width="16%" height="220"></svg>
+            <svg id="timechart4" width="16%" height="220"></svg>
+            <svg id="timechart5" width="16%" height="220"></svg>
+            <svg id="timechart6" width="16%" height="220"></svg>
         </div>
-
-        <!--第二行图表-->
-        <div class="chart-row">
-            <div class="chart-column">
-                <svg id="markovchart3" width="450" height="450" v-show="threshold >= 3"></svg>
-            </div>
-            <div class="chart-column">
-                <svg id="markovchart4" width="450" height="450" v-show="threshold >= 4"></svg>
-            </div>
-        </div>
-
+        <el-slider v-model="value" range :max="100" :marks="marks">
+        </el-slider>
+        <el-button @click="handleChoose">选择</el-button>
     </div>
 </template>
+  
 <script>
 import * as d3 from 'd3'
 import { store } from "../store/mesinfo"
 export default {
     data() {
         return {
-            threshold: 1,
-            rootnum: 0,
-
-            charts: [],
+            mesBytime: [],
+            num: 0,
+            value: [0, 0],
+            marks: {
+            }
         }
     },
-    mounted() {
-    },
+
     methods: {
-        handleFliter() {
-            console.log(this.threshold);
-            for (let i = 1; i <= this.threshold; i++) {
-                d3.select(`#markovchart${i}`)
-                this.drawMarkov(i)
+        handleChoose() {
+            console.log(this.value);
+            let a = +this.value[0]
+            let b = +this.value[1]
+            this.marks = {
+                ...this.marks,
+                [a]: `${this.value[0]}`,
+                [b]: `${this.value[1]}`
             }
+            this.value[0] = this.value[1]
+            this.num += 1
+            this.drawTimeChart(this.num)
         },
-        drawMarkov(d) {
-            let svg = d3.select(`#markovchart${d}`).attr('width', 450).attr('height', 450)
-            svg.selectAll('*').remove();
+        drawTimeChart(d) {
+            let svg = d3.select(`#timechart${d}`)
             let width = +svg.attr('width')
             let height = +svg.attr('height')
 
@@ -213,66 +202,14 @@ export default {
                 .join('text')
                 .text(d => d.name)
 
+            console.log(d);
 
-        },
-        circleColor(d) {
-            if (d.sex === 'M') {
-                return 'blue'
-            } else {
-                return 'pink'
-            }
-        },
-        linkColor(d) {
-            if (d.type === 'A') {
-                return 'green'
-            } else {
-                return 'red'
-            }
         }
-    }
+    },
+    updated() {
+        // console.log(this.value);
+        //   console.log(this.currentRow);
+    },
 }
 </script>
-<style scoped>
-svg {
-    border: 1px solid #ccc;
-}
-</style>
-<style>
-.chart-row {
-    display: flex;
-}
-
-.chart-column {
-    width: 50%;
-    display: flex;
-}
-
-.chart-column svg {
-    width: 100%;
-}
-
-.links line {
-    stroke: #999;
-    stroke-opacity: 0.6;
-}
-
-.nodes circle {
-    stroke: #fff;
-    stroke-width: 0;
-}
-
-#markovchart {
-    transform: scale(4);
-}
-
-.input-box {
-    display: flex;
-    align-items: center;
-}
-
-.input-box el-input {
-    margin-right: 12px;
-    width: 200px;
-}
-</style>
    

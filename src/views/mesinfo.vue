@@ -449,7 +449,7 @@ const handleReset = (sourcename: string, targetname: string) => {
 
 .table {
   width: 100%;
-  font-size: 14px;
+  font-size: 3px;
 }
 
 .red {
@@ -463,8 +463,8 @@ const handleReset = (sourcename: string, targetname: string) => {
 .table-td-thumb {
   display: block;
   margin: auto;
-  width: 40px;
-  height: 40px;
+  width: 20px;
+  height: 20px;
 }
 
 ::v-deep .el-table__body tr.current-row>td {

@@ -86,13 +86,25 @@ const handlePageChange = (val: number) => {
   width: 120px;
 }
 
+
+
+
+.container {
+  height: 50px;
+}
+
+
+
+
+
+
 .handle-input {
   width: 300px;
 }
 
 .table {
   width: 100%;
-  font-size: 14px;
+  font-size: 3px;
 }
 
 .red {

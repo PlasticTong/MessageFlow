@@ -1,11 +1,19 @@
 <template>
   <div>
+    <el-row >
+      <el-card shadow="hover">
+          <timebrush></timebrush>
+        </el-card>
+    </el-row>
     <el-row :gutter="20">
-      <el-col :span="12">
+      <el-col :span="4">
         <mestable></mestable>
       </el-col>
-      <el-col :span="12">
+      <el-col :span="4">
         <usertable></usertable>
+      </el-col>
+      <el-col :span="16">
+        <timebrush></timebrush>
       </el-col>
     </el-row>
     <el-row>
@@ -41,6 +49,7 @@ import usertable from "../views/userinfo.vue";
 import dagre from "../views/degreeTree.vue"
 import martree from "../views/markovTree.vue"
 import mtree from "../views/mestree.vue"
+import timebrush from "../views/timebrush.vue"
 
 import Schart from "vue-schart";
 import { ref, reactive } from "vue";

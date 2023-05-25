@@ -107,13 +107,38 @@ export default {
 
             const sourcesAndTargets = Array.from(set);
 
+            const arr2WithIndex = sourcesAndTargets.map((value) => {
+                let num = 0;
+                filterMesData.forEach(e=>{
+                    if(e.source == value){
+                        num = num -1
+                    }
+                    if(e.target == value){
+                        num = num +1
+                    }
+                })
+                return { value, num: num };
+            });
+
+            // // 将 arr2 映射为对象数组
+            // arr1.sort((a, b) => a - b)
+
+            // 根据数组 arr1 中的值大小顺序进行排序
+            arr2WithIndex.sort((a, b) => a.num - b.num);
+
+            // 将排序后的对象数组还原回原始的值数组
+            const sortedArr2 = arr2WithIndex.map((item) => item.value);
+
+            console.log(sortedArr2);
+
+
             // const sourcesAndTargetsRes = []
             // for(let j=1;j<=sourcesAndTargets.length;j++){
             //     let data ={"ids":j,"name":sourcesAndTargets[j-1]}
             //     sourcesAndTargetsRes.push(data)
             // }
             // console.log(sourcesAndTargetsRes);
-            store.state.filteruserres = sourcesAndTargets;
+            store.state.filteruserres = sortedArr2;
             ElMessage.success("筛选成功！");
             this.generateVis2()
         },
@@ -194,7 +219,7 @@ export default {
             svg.select("#maingroup").remove();
             const width = +svg.attr('width');
             const height = +svg.attr('height');
-            const margin = { top: 50, bottom: 10, left: 80, right: 700 };
+            const margin = { top: 10, bottom: 10, left: 10, right: 700 };
             const innerwidth = width - margin.left - margin.right;
             const innerheight = height - margin.top - margin.bottom;
             // 初始化元素
@@ -228,13 +253,45 @@ export default {
             const yScale = d3.scaleBand()
                 .domain(filterUserData)
                 .range([0, innerheight]);
+
+
+
             const yband = yScale.bandwidth()
             const yAxis = d3.axisLeft(yScale);
             const gY = axis.append('g')
-                .call(yAxis);
+                .classed('yAxis', true)
+                .call(yAxis)
+
+
             const xAxis = d3.axisTop(xScale);
             const gX = axis.append('g')
+                .classed('xAxis', true)
                 .call(xAxis);
+
+            function calAppendY() {
+                let appendMove = 0;
+                gX.selectAll(".tick").each(function (d) {
+                    let text_width = this.getBoundingClientRect().height
+                    if (appendMove < text_width)
+                        appendMove = text_width
+                })
+                return appendMove
+            }
+            function calAppendX() {
+                let appendMove = 0;
+                gY.selectAll(".tick").each(function (d) {
+                    let text_width = this.getBoundingClientRect().width
+                    if (appendMove < text_width)
+                        appendMove = text_width
+                })
+                return appendMove
+            }
+
+            gY.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
+            gX.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
+            svg.select('.linegroup').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
+            svg.select('.dotgroup').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
+
 
             const zoom = d3.zoom()
                 .scaleExtent([1, 40])
@@ -246,13 +303,46 @@ export default {
             svg.call(zoom)
 
             function zoomed() {
-                // console.log(yScale.bandwidth());
-                g.attr("transform", d3.event.transform);
-                // xScale.domain([d3.event.transform.invertX(0), d3.event.transform.invertX(100)]);
-                // yScale.domain([d3.event.transform.invertY(0), d3.event.transform.invertY(100)]);
-                // gX.call(xAxis.scale(d3.event.transform.rescaleX(xScale)));
-                // gY.call(yAxis.scale(d3.event.transform.rescaleY(yScale)));
+                const radio = 0.5
+                svg.select('.linegroup').attr("transform", d3.event.transform);
+                svg.select('.dotgroup').attr("transform", d3.event.transform);
+                // svg.select('.linegroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${d3.event.transform.k})`);
+                // svg.select('.dotgroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${d3.event.transform.k})`);
+
+                svg.select('.linegroup').selectAll('path').attr("stroke-width", 5 * 1.0 / d3.event.transform.k)
+                svg.select('.dotgroup').selectAll('circle').attr("r", `${8 * 1.0 / d3.event.transform.k}`)
+                svg.select('.yAxis').selectAll('.tick').selectAll('text').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
+                svg.select('.yAxis').selectAll('.tick').selectAll('line').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
+                svg.select('.xAxis').selectAll('.tick').selectAll('text').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
+                svg.select('.xAxis').selectAll('.tick').selectAll('line').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
+
+                svg.select('.xAxis').attr("transform", `translate(${d3.event.transform.x},${calAppendY()}) scale(${d3.event.transform.k})`)
+                svg.select('.yAxis').attr("transform", `translate(${calAppendX()},${d3.event.transform.y}) scale(${d3.event.transform.k})`)
+
             }
+
+            // function zoomed() {
+            //     const radio = 0.5
+            //     const k_x = d3.event.transform.x    
+            //     const k_y = radio * d3.event.transform.k
+
+
+            //     svg.select('.linegroup').attr("transform", d3.event.transform);
+            //     svg.select('.dotgroup').attr("transform", d3.event.transform);
+            //     svg.select('.linegroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${k_x},${k_y})`);
+            //     svg.select('.dotgroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${k_x},${k_y})`);
+
+            //     svg.select('.linegroup').selectAll('path').attr("stroke-width",5 * 1.0 / d3.event.transform.k)
+            //     svg.select('.dotgroup').selectAll('circle').attr("r",`${8 * 1.0 / d3.event.transform.k}`)
+            //     svg.select('.yAxis').selectAll('.tick').selectAll('text').attr("transform",`scale(${1.0 / d3.event.transform.k})`)
+            //     svg.select('.yAxis').selectAll('.tick').selectAll('line').attr("transform",`scale(${1.0 / d3.event.transform.k})`)
+            //     svg.select('.xAxis').selectAll('.tick').selectAll('text').attr("transform",`scale(${1.0 / d3.event.transform.k})`)
+            //     svg.select('.xAxis').selectAll('.tick').selectAll('line').attr("transform",`scale(${1.0 / d3.event.transform.k})`)
+
+            //     svg.select('.xAxis').attr("transform",`translate(${d3.event.transform.x},${calAppendY()}) scale(${d3.event.transform.k})`)
+            //     svg.select('.yAxis').attr("transform",`translate(${calAppendX()},${d3.event.transform.y}) scale(${d3.event.transform.k})`)
+
+            // }
 
 
             // 定义边
@@ -281,16 +371,19 @@ export default {
                 .attr("markerWidth", "12")
                 .attr("markerHeight", "12")
                 .attr("viewBox", "0 0 12 12")
-                .attr("refX", "6")
-                .attr("refY", "6")
-                .attr("orient", "auto");
+                .attr("refX", 5)
+                .attr("refY", 0)
+                .attr("orient", "auto")
+            // .append('path')
+            // .attr('fill', 'red')
+            // .attr('d', 'M 0,-5 L 10,0 L 0,5');
 
 
 
-                // filterMesDataByHold.forEach(d=>{
-                //     d.source = filterUserData.find(e=>e.name == d.source).ids;
-                //     d.target = filterUserData.find(e=>e.name == d.target).ids;
-                // })
+            // filterMesDataByHold.forEach(d=>{
+            //     d.source = filterUserData.find(e=>e.name == d.source).ids;
+            //     d.target = filterUserData.find(e=>e.name == d.target).ids;
+            // })
             //绘制边和箭头
             filterMesDataByHold.forEach(d => {
                 linegroup.append('path')
@@ -419,27 +512,6 @@ export default {
         //   console.log(this.currentRow);
     },
     created() {
-        //   console.log(Edata);
-        //   console.log(Vdata);
-        //   console.log(Mdata);
-        //   console.log(Mdata.list);
-
-        // let that = this;
-        // // 
-        // console.log(111111111111111111111111111);
-
-        // Edata.list.forEach(d => {
-        //     if (that.minn === undefined) {
-        //         that.minn = d.time
-        //     }
-        //     if (that.maxx === undefined) {
-        //         that.maxx = d.time + 1
-        //     }
-        //     that.minn = Math.min(that.minn, d.time);
-        //     that.maxx = Math.max(that.maxx, d.time + 1);
-        // });
-        // //   console.log(that.maxx, that.minn);
-        // that.selectvalue = [that.minn, that.maxx];
     }
 };
 </script>
