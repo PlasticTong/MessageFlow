@@ -199,9 +199,9 @@ export default {
 
             let linkForce = d3.forceLink(uniqueArr)
                 .id((d) => { return d.name })
-                // .strength((d)=>{
-                //     return d.weight / Math.min(count(link.source), count(link.target));
-                // })
+                .strength((d)=>{
+                    return d.weight / Math.min(count(link.source), count(link.target));
+                })
 
             simulation.force('links', linkForce)
 
