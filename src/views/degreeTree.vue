@@ -1,7 +1,7 @@
 <template>
     <h2 class="mb10">消息流</h2>
     <!-- <div class="tree"> -->
-    <svg id='d3'>
+    <svg id='dTree-plot'>
     </svg>
     <!-- </div> -->
 </template>
@@ -21,7 +21,7 @@ export default {
         };
     },
     mounted() {
-        this.drawTree();
+        this.drawLayer();
     },
     computed: {
         NodeMarFromUser() {
@@ -34,7 +34,7 @@ export default {
         NodeMarFromUser: {
             deep: true,
             handler() {
-                this.drawTree();
+                this.drawLayer();
             }
         }
     },
@@ -390,7 +390,165 @@ export default {
                 .data(nodesData)
                 .join('text')
                 .text(d => d.name)
-        }
+        },
+        drawLayer(){
+            
+            const svg = d3.select('#dTree-plot');
+            svg.selectAll('*').remove()
+
+            //箭头
+            let defs = svg.append('defs')
+
+            defs.append('marker')
+                .attr('id', 'arrowhead')
+                .attr('markerWidth', 4)
+                .attr('markerHeight', 4)
+                .attr('viewBox', '0 -5 12 12') // Arrow head points in x direction
+                .attr('refX', 20) // Horizontal offset
+                .attr('refY', 0) // Vertical offset
+                .attr('orient', 'auto')
+                // .attr('markerUnits', "10")
+                .append('path')
+                .attr('fill', 'red')
+                .attr('d', 'M 0,-5 L 10,0 L 0,5')
+
+            //图1
+            const data1 = store.state.MarFromUser;
+            let nodes1 = new Set()
+            let links1 = []
+            for(let link of data1){
+                if(link['id'] !== undefined && link['parentId'] !== undefined){
+                    links1.push({'source':link['id'],'target':link['parentId']})
+                    nodes1.add(link['id'])
+                    nodes1.add(link['parentId'])
+                }
+            }
+            nodes1 = Array.from(nodes1).map(v=>{
+                return {'name':v}
+            })
+            this.drawGraph(nodes1,links1,0)
+
+            //图2
+
+            this.drawGraph(
+                [
+                    {'name':'1'},
+                    {'name':'2'},
+                    {'name':'3'},
+                    {'name':'4'},
+                ],
+                [
+                    {'source':'1','target':'2'},
+                    {'source':'3','target':'2'},
+                    {'source':'2','target':'4'},
+                ]
+            ,350)
+
+
+
+        },
+        drawGraph(nodes,links,bias){//绘制2.5D视图
+            const svg = d3.select('#dTree-plot')
+           
+            const width = 450;
+            const height = 450;
+            const plot = svg.append('g')
+
+
+            //配置模拟器
+            let simulation = d3.forceSimulation()
+                .nodes(nodes)
+            
+            console.log(`bias:${bias}`,simulation.nodes())
+            console.log(`bias:${bias}`,links)
+
+            simulation
+                .force('charge_force', d3.forceManyBody().strength(-600))
+                .force('center_force', d3.forceCenter(width / 2, height / 2))
+                .on('tick',tickAction)
+
+
+            function tickAction() {
+                d3.selectAll(`.node${bias}`)
+                    .attr('cx', (d) => { return d.x})
+                    .attr('cy', (d) => { return d.y})
+
+                d3.selectAll(`.link${bias}`)
+                    .attr('x1', (d) => { return d.source.x})
+                    .attr('y1', (d) => { return d.source.y})
+                    .attr('x2', (d) => { return d.target.x})
+                    .attr('y2', (d) => { return d.target.y})
+
+                d3.selectAll(`.text${bias}`)
+                    .attr('x', function (d) {
+                        return d.x - 0.5 * this.getBoundingClientRect().width
+                    })
+                    .attr('y', function (d) {
+                        return d.y + 0.3 * this.getBoundingClientRect().height
+                    })
+
+                // linkText
+                //     .attr("x", function (d) {
+                //         return (d.source.x + d.target.x) / 2;
+                //     })
+                //     .attr("y", function (d) {
+                //         return (d.source.y + d.target.y) / 2;
+                //     })
+            }
+
+            let linkForce = d3.forceLink(links)
+                .id((d) => { return d.name })
+
+            simulation.force('links', linkForce)
+
+
+            //绘图
+
+            let border = plot.append('rect')
+                .attr('x',0)
+                .attr('y',0)
+                .attr('height',height)
+                .attr('width',width)
+                .attr('fill','none')
+                .style('stroke', "gray")
+                .style('stroke-width',2)
+
+
+            let linkPlot = plot.append('g')
+                .selectAll('line')
+                .data(links)
+                .join('line')
+                .attr('stroke-width', 3)
+                .style('stroke', "#0fb2cc")
+                .attr('marker-end', 'url(#arrowhead)')
+                .classed(`link${bias}`,true)
+
+            let nodePlot = plot.append('g')
+                .selectAll('circle')
+                .data(nodes)
+                .join('circle')
+                .attr('r', 10)
+                .attr('fill', "#61b2e4")
+                .classed(`node${bias}`,true)
+
+            let nodeText = plot.append('g')
+                .selectAll('text')
+                .data(nodes)
+                .join('text')
+                .text(d=>d.name)
+                .classed(`text${bias}`,true)
+
+            //启动
+            simulation.stop();
+            simulation.tick(3000);
+            tickAction()
+
+            //旋转
+            plot.style('transform',`translate(${width}px,${bias}px) rotateX(45deg) rotateZ(45deg)`)
+            // plot.style('transform',`translate(${0}px,${bias}px)`)
+
+
+}
     },
 };
 </script>
@@ -400,7 +558,7 @@ export default {
     border: 1px solid #9e4a4a00;
     padding: 20px;
     width: 600px;
-    height: 650px;
+    height: 80px;
     margin: auto;
 }
 
@@ -418,5 +576,10 @@ export default {
     fill: none;
     stroke: #ccc;
     stroke-width: 2px;
+}
+
+#dTree-plot{
+    width: 800px;
+    height: 1200px;
 }
 </style>

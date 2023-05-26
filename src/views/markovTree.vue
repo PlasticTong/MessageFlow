@@ -101,8 +101,6 @@ export default {
                 .force('charge_force', d3.forceManyBody().strength(-600))
                 .force('center_force', d3.forceCenter(width / 2, height / 2))
 
-
-
             const len = 0
 
             simulation.on('tick', tickAction)
@@ -140,6 +138,8 @@ export default {
                 .id((d) => { return d.name })
 
             simulation.force('links', linkForce)
+
+
 
             // const posXScale = d3
             //     .scaleLinear()
@@ -212,6 +212,11 @@ export default {
                 .data(nodesData)
                 .join('text')
                 .text(d => d.name)
+
+            //启动
+            simulation.stop();
+            simulation.tick(300);
+            tickAction()
 
 
         },
