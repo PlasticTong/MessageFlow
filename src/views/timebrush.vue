@@ -1,7 +1,9 @@
 <template>
     <div>
         <div class="chart-row">
+            <div class="chart-column">
             <svg id="timechart1" width="500" height="220"></svg>
+        </div>
             <svg id="timechart2" width="500" height="220"></svg>
             <svg id="timechart3" width="500" height="220"></svg>
             <svg id="timechart4" width="500" height="220"></svg>
@@ -75,7 +77,7 @@ export default {
                 if (!mesByTime1.slice(0, index).some((prevItem) => {
                     return (prevItem.target === item.target && prevItem.source === item.source);
                 })) {
-                    item.weight = 1
+                    item.weight = 10
                     uniqueArr.push(item)
                 }
                 else {
@@ -200,7 +202,8 @@ export default {
             let linkForce = d3.forceLink(uniqueArr)
                 .id((d) => { return d.name })
                 .strength((d)=>{
-                    return d.weight / Math.min(count(link.source), count(link.target));
+                    console.log(d.weight);
+                    return 1 /d.weight ;
                 })
 
             simulation.force('links', linkForce)
@@ -284,6 +287,14 @@ export default {
 svg {
     display: block;
     margin: auto;
+}
+.chart-column {
+    width: 50%;
+    display: flex;
+}
+
+.chart-column svg {
+    width: 100%;
 }
 </style>
    

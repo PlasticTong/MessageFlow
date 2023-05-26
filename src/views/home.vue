@@ -1,8 +1,5 @@
 <template>
-	<v-header />
-	<v-sidebar />
-	<div class="content-box" :class="{ 'content-collapse': sidebar.collapse }">
-		<v-tags></v-tags>
+	<!-- <div class="content-box" :class="{ 'content-collapse': sidebar.collapse }"> -->
 		<div class="content">
 			<router-view v-slot="{ Component }">
 				<transition name="move" mode="out-in">
@@ -12,7 +9,7 @@
 				</transition>
 			</router-view>
 		</div>
-	</div>
+	<!-- </div> -->
 </template>
 <script setup lang="ts">
 import { useSidebarStore } from '../store/sidebar';
