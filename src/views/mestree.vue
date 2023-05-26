@@ -290,9 +290,13 @@ export default {
 
             gY.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
             gX.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
+            
             svg.select('.linegroup').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
             svg.select('.dotgroup').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
 
+            //配置字体大小
+            svg.select('.xAxis').selectAll('.tick').selectAll('text').style('font-size',17)
+            svg.select('.yAxis').selectAll('.tick').selectAll('text').style('font-size',17)
 
             const zoom = d3.zoom()
                 .scaleExtent([1, 40])
@@ -310,40 +314,23 @@ export default {
                 // svg.select('.linegroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${d3.event.transform.k})`);
                 // svg.select('.dotgroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${d3.event.transform.k})`);
 
+                //连线的粗细随缩放保持不变
                 svg.select('.linegroup').selectAll('path').attr("stroke-width", 5 * 1.0 / d3.event.transform.k)
+                //点的大小随缩放保持不变
                 svg.select('.dotgroup').selectAll('circle').attr("r", `${8 * 1.0 / d3.event.transform.k}`)
+                //轴的字体大小，刻度线大小，轴的粗细保持不变
                 svg.select('.yAxis').selectAll('.tick').selectAll('text').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
                 svg.select('.yAxis').selectAll('.tick').selectAll('line').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
+                svg.select('.yAxis').select('path').style('stroke-width',2.0 / d3.event.transform.k + 'px')
                 svg.select('.xAxis').selectAll('.tick').selectAll('text').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
                 svg.select('.xAxis').selectAll('.tick').selectAll('line').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
+                svg.select('.xAxis').select('path').style('stroke-width',2.0 / d3.event.transform.k + 'px')
 
+                //位移，保持相对位置
                 svg.select('.xAxis').attr("transform", `translate(${d3.event.transform.x},${calAppendY()}) scale(${d3.event.transform.k})`)
                 svg.select('.yAxis').attr("transform", `translate(${calAppendX()},${d3.event.transform.y}) scale(${d3.event.transform.k})`)
 
             }
-
-            // function zoomed() {
-            //     const radio = 0.5
-            //     const k_x = d3.event.transform.x    
-            //     const k_y = radio * d3.event.transform.k
-
-
-            //     svg.select('.linegroup').attr("transform", d3.event.transform);
-            //     svg.select('.dotgroup').attr("transform", d3.event.transform);
-            //     svg.select('.linegroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${k_x},${k_y})`);
-            //     svg.select('.dotgroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${k_x},${k_y})`);
-
-            //     svg.select('.linegroup').selectAll('path').attr("stroke-width",5 * 1.0 / d3.event.transform.k)
-            //     svg.select('.dotgroup').selectAll('circle').attr("r",`${8 * 1.0 / d3.event.transform.k}`)
-            //     svg.select('.yAxis').selectAll('.tick').selectAll('text').attr("transform",`scale(${1.0 / d3.event.transform.k})`)
-            //     svg.select('.yAxis').selectAll('.tick').selectAll('line').attr("transform",`scale(${1.0 / d3.event.transform.k})`)
-            //     svg.select('.xAxis').selectAll('.tick').selectAll('text').attr("transform",`scale(${1.0 / d3.event.transform.k})`)
-            //     svg.select('.xAxis').selectAll('.tick').selectAll('line').attr("transform",`scale(${1.0 / d3.event.transform.k})`)
-
-            //     svg.select('.xAxis').attr("transform",`translate(${d3.event.transform.x},${calAppendY()}) scale(${d3.event.transform.k})`)
-            //     svg.select('.yAxis').attr("transform",`translate(${calAppendX()},${d3.event.transform.y}) scale(${d3.event.transform.k})`)
-
-            // }
 
 
             // 定义边
