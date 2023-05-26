@@ -178,6 +178,7 @@ export default {
             const blob = new Blob([JSON.stringify(store.state.filterresFromUser, null, 2)], {
                 type: 'application/json'
             })
+            console.log(blob);
             FileSaver.saveAs(blob, strDate)
         },
         generateVis2() {

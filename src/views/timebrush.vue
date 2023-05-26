@@ -1,14 +1,14 @@
 <template>
     <div>
         <div class="chart-row">
-            <svg id="timechart1" width="16%" height="220"></svg>
-            <svg id="timechart2" width="16%" height="220"></svg>
-            <svg id="timechart3" width="16%" height="220"></svg>
-            <svg id="timechart4" width="16%" height="220"></svg>
-            <svg id="timechart5" width="16%" height="220"></svg>
-            <svg id="timechart6" width="16%" height="220"></svg>
+            <svg id="timechart1" width="500" height="220"></svg>
+            <svg id="timechart2" width="500" height="220"></svg>
+            <svg id="timechart3" width="500" height="220"></svg>
+            <svg id="timechart4" width="500" height="220"></svg>
+            <svg id="timechart5" width="500" height="220"></svg>
+            <svg id="timechart6" width="500" height="220"></svg>
         </div>
-        <el-slider v-model="value" range :max="100" :marks="marks">
+        <el-slider v-model="value" range :max="max" :marks="marks">
         </el-slider>
         <el-button @click="handleChoose">选择</el-button>
     </div>
@@ -17,11 +17,19 @@
 <script>
 import * as d3 from 'd3'
 import { store } from "../store/mesinfo"
+import { ElMessage, ElMessageBox } from "element-plus";
+import { set } from 'lodash';
+import { noopDirectiveTransform } from '@vue/compiler-core';
 export default {
     data() {
+        const lastItem = store.state.mesinfo.list[store.state.mesinfo.list.length - 1];
+
+
         return {
-            mesBytime: [],
+            max: lastItem.time,
             num: 0,
+            timeSt: 0,
+            timeEd: 0,
             value: [0, 0],
             marks: {
             }
@@ -30,20 +38,51 @@ export default {
 
     methods: {
         handleChoose() {
-            console.log(this.value);
-            let a = +this.value[0]
-            let b = +this.value[1]
-            this.marks = {
-                ...this.marks,
-                [a]: `${this.value[0]}`,
-                [b]: `${this.value[1]}`
-            }
-            this.value[0] = this.value[1]
             this.num += 1
-            this.drawTimeChart(this.num)
+            if (this.num > 6) {
+                ElMessage.error("图片过多")
+            }
+            else {
+                console.log(this.value);
+                let a = +this.value[0]
+                let b = +this.value[1]
+                this.marks = {
+                    ...this.marks,
+                    [a]: `${this.value[0]}`,
+                    [b]: `${this.value[1]}`
+                }
+                this.timeEd = this.value[1]
+                this.timeSt = this.value[0]
+                store.state.timeSlect.push(this.value)
+                this.value[0] = this.value[1]
+                console.log(store.state.timeSlect);
+                
+
+                this.drawTimeChart(this.num)
+            }
+
         },
         drawTimeChart(d) {
-            let svg = d3.select(`#timechart${d}`)
+
+            //寻找数据
+            const mesByTime = store.state.mesinfo.list.filter(e => e.time <= this.timeEd && e.time > this.timeSt)
+            const uniqueArr = mesByTime.filter((item, index) => {
+                return !mesByTime.slice(0, index).some((prevItem) => {
+                    return (prevItem.target === item.target && prevItem.source === item.source);
+                });
+            });
+
+            const nodeset = new Set()
+            uniqueArr.forEach(function (e) {
+                nodeset.add(e.source)
+                nodeset.add(e.target)
+            })
+            const nodesDataForDraw = []
+            Array.from(nodeset).forEach((e, index) => {
+                nodesDataForDraw.push({ id: index, name: e })
+            })
+
+            let svg = d3.select(`#timechart${d}`).attr("width", 400).attr('height', 300)
             let width = +svg.attr('width')
             let height = +svg.attr('height')
 
@@ -64,30 +103,31 @@ export default {
                 .attr('fill', 'red')
                 .attr('d', 'M 0,-5 L 10,0 L 0,5')
 
-            let nodesData = [
-                { 'name': '192.168.1.2-192.168.1.4', 'sex': 'F' },
-                { 'name': '192.168.1.2-192.168.1.3', 'sex': 'M' },
-                { 'name': '192.168.1.1-192.168.1.2', 'sex': 'M' },
-                { 'name': '192.168.1.2-192.168.1.5', 'sex': 'F' },
-                { 'name': '192.168.1.2-192.168.1.6', 'sex': 'F' },
-                { 'name': '192.168.1.2-192.168.1.7', 'sex': 'M' },
-                { 'name': '192.168.1.2-192.168.1.8', 'sex': 'F' },
-            ]
+            // let nodesData = [
+            //     { 'name': '192.168.1.2-192.168.1.4', 'sex': 'F' },
+            //     { 'name': '192.168.1.2-192.168.1.3', 'sex': 'M' },
+            //     { 'name': '192.168.1.1-192.168.1.2', 'sex': 'M' },
+            //     { 'name': '192.168.1.2-192.168.1.5', 'sex': 'F' },
+            //     { 'name': '192.168.1.2-192.168.1.6', 'sex': 'F' },
+            //     { 'name': '192.168.1.2-192.168.1.7', 'sex': 'M' },
+            //     { 'name': '192.168.1.2-192.168.1.8', 'sex': 'F' },
+            // ]
 
-            let linksData = [
-                { 'id': 1, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.3', 'type': 1 },
-                { 'id': 2, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.4', 'type': 2 },
-                { 'id': 3, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.5', 'type': 3 },
-                { 'id': 4, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.7', 'type': 4 },
-                { 'id': 5, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.8', 'type': 5 },
-                { 'id': 6, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.6', 'type': 6 },
-            ]
+            // let linksData =
+            //     [
+            //         { 'id': 1, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.3', 'type': 1 },
+            //         { 'id': 2, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.4', 'type': 2 },
+            //         { 'id': 3, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.5', 'type': 3 },
+            //         { 'id': 4, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.7', 'type': 4 },
+            //         { 'id': 5, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.8', 'type': 5 },
+            //         { 'id': 6, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.6', 'type': 6 },
+            //     ]
 
             let simulation = d3.forceSimulation()
-                .nodes(nodesData)
+                .nodes(nodesDataForDraw)
 
             simulation
-                .force('charge_force', d3.forceManyBody().strength(-600))
+                .force('charge_force', d3.forceManyBody().strength(-100))
                 .force('center_force', d3.forceCenter(width / 2, height / 2))
 
 
@@ -115,17 +155,17 @@ export default {
                         return d.y + len + 0.3 * this.getBoundingClientRect().height
                     })
 
-                linkText
-                    .attr("x", function (d) {
-                        return (d.source.x + d.target.x) / 2 + len;
-                    })
-                    .attr("y", function (d) {
-                        return (d.source.y + d.target.y) / 2 + len;
-                    })
+                // linkText
+                //     .attr("x", function (d) {
+                //         return (d.source.x + d.target.x) / 2 + len;
+                //     })
+                //     .attr("y", function (d) {
+                //         return (d.source.y + d.target.y) / 2 + len;
+                //     })
 
             }
 
-            let linkForce = d3.forceLink(linksData)
+            let linkForce = d3.forceLink(uniqueArr)
                 .id((d) => { return d.name })
 
             simulation.force('links', linkForce)
@@ -142,67 +182,49 @@ export default {
             let link = svg.append('g')
                 .attr('class', 'links')
                 .selectAll('line')
-                .data(linksData)
-
+                .data(uniqueArr)
                 .enter()
                 .append('line')
                 .attr('id', function (d) { return `Mar${d.id}` })
                 .attr('stroke-width', 3)
                 .style('stroke', "#0fb2cc")
                 .attr('marker-end', 'url(#arrowhead)')
-                .on("click", d => {
-
-
-                    const ipRegex = /(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)/;
-                    // if(store.state.MarFromUser.find(e=>e.))
-                    // console.log(this.rootnum);
-                    if (store.state.MarFromUser.length == 0) {
-                        store.state.MarFromUser.push({ id: d.source.name.match(ipRegex)[1] })
-                    }
-                    const res1 = { id: d.source.name.match(ipRegex)[2], parentId: d.source.name.match(ipRegex)[1] }
-                    const res2 = { id: d.target.name.match(ipRegex)[2], parentId: d.source.name.match(ipRegex)[2] }
-
-                    if (store.state.MarFromUser.find(e => e.id == res1.id && e.parentId == res1.parentId) == null) {
-                        store.state.MarFromUser.push(res1)
-                    }
-
-                    if (store.state.MarFromUser.find(e => e.id == res2.id && e.parentId == res1.parentId) == null) {
-                        store.state.MarFromUser.push(res2)
-                    }
-
-
-                    console.log(store.state.MarFromUser);
-
-                    d3.select(`#Mar${d.id}`)
-                        .style("stroke", "red")
-                        .style("stroke-dasharray", 0);
-                })
             // 引用箭头定义
 
-            let linkText = svg.append('g')
-                .attr('class', 'linkLabels')
-                .selectAll('text')
-                .data(linksData)
-                .join('text')
-                .text(d => d.type)
 
 
+            
             let node = svg.append('g')
                 .attr('class', 'nodes')
                 .selectAll('circle')
-                .data(nodesData)
+                .data(nodesDataForDraw)
                 .enter()
                 .append('circle')
                 .attr('r', 10)
                 .attr('fill', "#61b2e4")
-
-            let label = svg.append('g')
+                
+                let label = svg.append('g')
+                .attr('class', 'labels')
                 .selectAll('text')
-                .data(nodesData)
+                .data(nodesDataForDraw)
                 .join('text')
                 .text(d => d.name)
 
-            console.log(d);
+            
+
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 40])
+                .translateExtent([[-1000, -1000], [width + 900, height + 1000]])
+                // .filter(filter)
+                .on("zoom", zoomed);
+
+            svg.call(zoom)
+
+            function zoomed() {
+                svg.select('.nodes').attr("transform", d3.event.transform);
+                svg.select('.links').attr("transform", d3.event.transform);
+                svg.select('.labels').attr("transform", d3.event.transform);
+            }
 
         }
     },
@@ -212,4 +234,10 @@ export default {
     },
 }
 </script>
+<style>
+svg {
+    display: block;
+    margin: auto;
+}
+</style>
    
