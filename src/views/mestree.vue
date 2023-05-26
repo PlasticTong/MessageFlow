@@ -111,10 +111,10 @@ export default {
                 let num = 0;
                 filterMesData.forEach(e=>{
                     if(e.source == value){
-                        num = num -1
+                        num = num +1
                     }
                     if(e.target == value){
-                        num = num +1
+                        num = num -1
                     }
                 })
                 return { value, num: num };
