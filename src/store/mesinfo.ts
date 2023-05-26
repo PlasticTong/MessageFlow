@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import {createStore} from 'vuex';
-import mestable from "../../public/tablemes3.json";
+import mestable from "../../public/tablemes2.json";
 import usertable from "../../public/table.json";
 import markov from "../../public/Markov.json";
 
@@ -9,6 +9,14 @@ export const store = createStore({
 		return {
 			//所有时间
 			timeSlect:[],
+			//选取的时间
+			time:{
+				start:0,
+				end:0
+			},
+			//选取后的时间信息
+			mesBytime:[],
+			mesinfo2: mestable,
 			mesinfo: mestable,
 			userinfo: usertable,
 			markov:markov,

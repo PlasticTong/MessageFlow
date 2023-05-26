@@ -17,7 +17,7 @@ export const fetchData = () => {
 
 export const fetchMesData = () => {
     return request({
-        url: './tablemes3.json',
+        url: './tablemes2.json',
         method: 'get'
     });
 };

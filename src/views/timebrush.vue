@@ -20,6 +20,7 @@ import { store } from "../store/mesinfo"
 import { ElMessage, ElMessageBox } from "element-plus";
 import { set } from 'lodash';
 import { noopDirectiveTransform } from '@vue/compiler-core';
+import axios from 'axios'
 export default {
     data() {
         const lastItem = store.state.mesinfo.list[store.state.mesinfo.list.length - 1];
@@ -53,10 +54,10 @@ export default {
                 }
                 this.timeEd = this.value[1]
                 this.timeSt = this.value[0]
-                store.state.timeSlect.push(this.value)
+                store.state.timeSlect.push({ start: this.value[0], end: this.value[1] })
                 this.value[0] = this.value[1]
                 console.log(store.state.timeSlect);
-                
+
 
                 this.drawTimeChart(this.num)
             }
@@ -64,13 +65,31 @@ export default {
         },
         drawTimeChart(d) {
 
+
             //寻找数据
-            const mesByTime = store.state.mesinfo.list.filter(e => e.time <= this.timeEd && e.time > this.timeSt)
-            const uniqueArr = mesByTime.filter((item, index) => {
-                return !mesByTime.slice(0, index).some((prevItem) => {
+            // console.log(store.state.mesinfo.list);
+            const mesByTime1 = store.state.mesinfo2.list.filter((e) => { return e.time <= this.timeEd && e.time > this.timeSt })
+            store.state.mesBytime = mesByTime1
+            const uniqueArr = []
+            mesByTime1.forEach((item, index) => {
+                if (!mesByTime1.slice(0, index).some((prevItem) => {
                     return (prevItem.target === item.target && prevItem.source === item.source);
-                });
+                })) {
+                    item.weight = 1
+                    uniqueArr.push(item)
+                }
+                else {
+                    // console.log(uniqueArr.find(e=>e.source==item.source && e.source === item.source));
+                    uniqueArr.find(e => e.source == item.source && e.target === item.target).weight++
+                }
             });
+            uniqueArr.forEach(e => console.log(e))
+
+            // const uniqueArr = mesByTime1.filter((item, index) => {
+            //     return !mesByTime1.slice(0, index).some((prevItem) => {
+            //         return (prevItem.target === item.target && prevItem.source === item.source);
+            //     });
+            // });
 
             const nodeset = new Set()
             uniqueArr.forEach(function (e) {
@@ -81,6 +100,19 @@ export default {
             Array.from(nodeset).forEach((e, index) => {
                 nodesDataForDraw.push({ id: index, name: e })
             })
+
+            // axios.post("http://localhost:5000//mesfilter/mesSelectBytime",
+            //     {
+            //         nodesDataForDraw, uniqueArr
+
+            //     }).then(function (result) {
+            //         console.log(result.data)
+            //     })
+
+
+
+
+            //画图
 
             let svg = d3.select(`#timechart${d}`).attr("width", 400).attr('height', 300)
             let width = +svg.attr('width')
@@ -167,8 +199,22 @@ export default {
 
             let linkForce = d3.forceLink(uniqueArr)
                 .id((d) => { return d.name })
+                // .strength((d)=>{
+                //     return d.weight / Math.min(count(link.source), count(link.target));
+                // })
 
             simulation.force('links', linkForce)
+
+            // const weightExtent = d3.extent(uniqueArr, d => d.weight);
+            // const weightScale = d3.scaleLinear()
+            //     .domain(weightExtent)
+            //     .range([0, height]);
+
+            //     const y = d3.forceY().y(d => weightScale(d.weight));
+            //     simulation.force('y', y);
+
+
+
 
             // const posXScale = d3
             //     .scaleLinear()
@@ -193,7 +239,7 @@ export default {
 
 
 
-            
+
             let node = svg.append('g')
                 .attr('class', 'nodes')
                 .selectAll('circle')
@@ -202,19 +248,19 @@ export default {
                 .append('circle')
                 .attr('r', 10)
                 .attr('fill', "#61b2e4")
-                
-                let label = svg.append('g')
+
+            let label = svg.append('g')
                 .attr('class', 'labels')
                 .selectAll('text')
                 .data(nodesDataForDraw)
                 .join('text')
                 .text(d => d.name)
 
-            
+
 
             const zoom = d3.zoom()
                 .scaleExtent([0.1, 40])
-                .translateExtent([[-1000, -1000], [width + 900, height + 1000]])
+                .translateExtent([[-1000, -1000], [width + 100000, height + 10000000]])
                 // .filter(filter)
                 .on("zoom", zoomed);
 
