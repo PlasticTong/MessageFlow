@@ -16,6 +16,11 @@ export const store = createStore({
 			},
 			//选取后的时间信息
 			mesBytime:[],
+			nodeBytime:[],
+
+
+
+			
 			mesinfo2: mestable,
 			mesinfo: mestable,
 			userinfo: usertable,
@@ -32,6 +37,7 @@ export const store = createStore({
 				content: "",
 				timestart: "",
 				timeend: "",
+				thereshold:""
 			},
 			//筛选消息结果
 			filtermesres:{

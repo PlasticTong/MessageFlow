@@ -1,18 +1,23 @@
 <template>
     <div>
         <div class="chart-row">
-            <div class="chart-column">
-            <svg id="timechart1" width="500" height="220"></svg>
+            <svg id="timechart1" width="500" height="300">
+            </svg>
+            <svg id="timechart2" width="500" height="300"></svg>
+            <svg id="timechart3" width="500" height="300"></svg>
+            <svg id="timechart4" width="500" height="300"></svg>
+            <svg id="timechart5" width="500" height="300"></svg>
+            <svg id="timechart6" width="500" height="300"></svg>
         </div>
-            <svg id="timechart2" width="500" height="220"></svg>
-            <svg id="timechart3" width="500" height="220"></svg>
-            <svg id="timechart4" width="500" height="220"></svg>
-            <svg id="timechart5" width="500" height="220"></svg>
-            <svg id="timechart6" width="500" height="220"></svg>
+        <div style="display: flex; flex-direction: column;">
+            <el-slider v-model="value" range :max="max" :marks="marks"></el-slider>
+            <div style="margin-top: 10px;">
+                <el-button @click="handleChoose">选择</el-button>
+                <el-button @click="handleReset">重置</el-button>
+            </div>
+
         </div>
-        <el-slider v-model="value" range :max="max" :marks="marks">
-        </el-slider>
-        <el-button @click="handleChoose">选择</el-button>
+
     </div>
 </template>
   
@@ -40,6 +45,18 @@ export default {
     },
 
     methods: {
+        handleReset() {
+            // store.state.timeSlect = []
+            // this.num = 0
+            // this.timeSt = 0,
+            //     this.timeEd = 0,
+            //     this.value = [0, 0],
+            //     this.marks = {
+            //     }
+            // this.drawTimeChart(0)
+            window.location.reload()
+
+        },
         handleChoose() {
             this.num += 1
             if (this.num > 6) {
@@ -58,20 +75,27 @@ export default {
                 this.timeSt = this.value[0]
                 store.state.timeSlect.push({ start: this.value[0], end: this.value[1] })
                 this.value[0] = this.value[1]
-                console.log(store.state.timeSlect);
+                // console.log(store.state.timeSlect);
 
 
                 this.drawTimeChart(this.num)
+                ElMessage.success("绘制成功！");
             }
 
         },
         drawTimeChart(d) {
+            if (d == 0) {
+                for (let i = 1; i <= 4; i++) {
+                    d3.select(`#timechart${i}`).selectAll('*').remove()
+                }
+                return 1
+            }
 
 
             //寻找数据
             // console.log(store.state.mesinfo.list);
             const mesByTime1 = store.state.mesinfo2.list.filter((e) => { return e.time <= this.timeEd && e.time > this.timeSt })
-            store.state.mesBytime = mesByTime1
+            // store.state.mesBytime = mesByTime1
             const uniqueArr = []
             mesByTime1.forEach((item, index) => {
                 if (!mesByTime1.slice(0, index).some((prevItem) => {
@@ -85,7 +109,6 @@ export default {
                     uniqueArr.find(e => e.source == item.source && e.target === item.target).weight++
                 }
             });
-            uniqueArr.forEach(e => console.log(e))
 
             // const uniqueArr = mesByTime1.filter((item, index) => {
             //     return !mesByTime1.slice(0, index).some((prevItem) => {
@@ -116,9 +139,10 @@ export default {
 
             //画图
 
-            let svg = d3.select(`#timechart${d}`).attr("width", 400).attr('height', 300)
+            let svg = d3.select(`#timechart${d}`)
             let width = +svg.attr('width')
             let height = +svg.attr('height')
+            console.log(width,height);
 
             // 添加defs元素
             let defs = svg.append('defs')
@@ -162,7 +186,7 @@ export default {
 
             simulation
                 .force('charge_force', d3.forceManyBody().strength(-100))
-                .force('center_force', d3.forceCenter(width / 2, height / 2))
+                // .force('center_force', d3.forceCenter(440 / 2, 562 / 2))
 
 
 
@@ -201,9 +225,8 @@ export default {
 
             let linkForce = d3.forceLink(uniqueArr)
                 .id((d) => { return d.name })
-                .strength((d)=>{
-                    console.log(d.weight);
-                    return 1 /d.weight ;
+                .strength((d) => {
+                    return 1 / d.weight;
                 })
 
             simulation.force('links', linkForce)
@@ -234,10 +257,11 @@ export default {
                 .data(uniqueArr)
                 .enter()
                 .append('line')
-                .attr('id', function (d) { return `Mar${d.id}` })
+                .attr('id', function (d) { return `Mar2${d.id}` })
                 .attr('stroke-width', 3)
                 .style('stroke', "#0fb2cc")
                 .attr('marker-end', 'url(#arrowhead)')
+                // attr("transform", "scale(0.5)")
             // 引用箭头定义
 
 
@@ -263,7 +287,7 @@ export default {
 
             const zoom = d3.zoom()
                 .scaleExtent([0.1, 40])
-                .translateExtent([[-1000, -1000], [width + 100000, height + 10000000]])
+                .translateExtent([[-10000, -10000], [width + 100000, height + 10000000]])
                 // .filter(filter)
                 .on("zoom", zoomed);
 
@@ -274,7 +298,25 @@ export default {
                 svg.select('.links').attr("transform", d3.event.transform);
                 svg.select('.labels').attr("transform", d3.event.transform);
             }
+            svg.select('.nodes').attr("transform","scale(0.5)")
+            svg.select('.links').attr("transform","scale(0.5)")
+            svg.select('.labels').attr("transform","scale(0.5)")
+            //启动
+            simulation.stop();
+            simulation.tick(3000);
+            tickAction()
 
+
+
+            let widthALL
+            let heightALL
+            svg.select('.labels').attr("i",function(){
+                widthALL = this.getBoundingClientRect().width/2
+                heightALL = this.getBoundingClientRect().height/2
+            })
+
+            // svg.attr('width', widthALL)
+            // svg.attr('height', heightALL)
         }
     },
     updated() {
@@ -284,17 +326,26 @@ export default {
 }
 </script>
 <style>
-svg {
-    display: block;
-    margin: auto;
+.container{
+    height:80%;
+    width:80%;
 }
+
 .chart-column {
-    width: 50%;
     display: flex;
 }
 
 .chart-column svg {
     width: 100%;
 }
+
+.chart-row svg{
+    border: 1px solid black;
+}
+/* svg{
+    height:100%;
+    width:100%;
+} */
+
 </style>
    

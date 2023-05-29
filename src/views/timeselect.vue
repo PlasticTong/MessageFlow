@@ -16,6 +16,7 @@
 
 <script>
 import store from '../store/mesinfo';
+import { ElMessage, ElMessageBox } from "element-plus";
 export default {
     data() {
         return {
@@ -27,6 +28,7 @@ export default {
         Obj() {
             return store.state.timeSlect
         }
+
     },
     methods: {
         handleChoose(row) {
@@ -34,13 +36,19 @@ export default {
             console.log(this.selectedRow.end);  // 打印选中的数据对象
             store.state.time.start = this.selectedRow.start
             store.state.time.end = this.selectedRow.end
+            ElMessage.success("当前时间选取范围：" + store.state.time.start + "----" + store.state.time.end)
+
+           
         }
 
     },
     watch: {
         Obj(newVal, oldVal) {
             //可以对数据执行相应的操作
-            console.log(store.state.timeSlect)
+            console.log(store.state.timeSlect.length)
+            if (store.state.timeSlect.length == 0) {
+                this.time = store.state.timeSlect
+            }
 
         }
     },

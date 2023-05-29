@@ -1,6 +1,7 @@
 <template>
     <h2 class="mb10">消息流</h2>
     <!-- <div class="tree"> -->
+    <el-button @click="handleDraw">多层布局绘制</el-button>
     <svg id='dTree-plot'>
     </svg>
     <!-- </div> -->
@@ -10,12 +11,20 @@
 import dagreD3 from 'dagre-d3';
 import * as d3 from 'd3';
 import { store } from "../store/mesinfo"
+import { fetchMesData, testflask, mutiDraw } from "../api/index";
 
 export default {
     name: 'dagre',
     data() {
         return {
             width: 100,
+            nodedown: [],
+            linksdown: [],
+
+            node2Draw: [],
+            link2Draw: [],
+
+            numselect: 0
 
 
         };
@@ -26,15 +35,63 @@ export default {
     computed: {
         NodeMarFromUser() {
             return store.state.MarFromUser
+        },
+        timeSelect() {
+            return store.state.time
         }
-
     },
 
     watch: {
         NodeMarFromUser: {
             deep: true,
             handler() {
-                this.drawLayer();
+                // this.drawLayer();
+                console.log(this.numselect);
+                this.drawLayer(this.numselect);
+                this.numselect++
+            }
+        },
+        timeSelect: {
+            deep: true,
+            handler() {
+                fetchMesData().then(res => {
+
+
+                    const mesByTime1 = res.data.list.filter((e) => { return e.time <= store.state.time.end && e.time > store.state.time.start })
+                    console.log(mesByTime1);
+                    const uniqueArr = mesByTime1.filter((item, index) => {
+                        return !mesByTime1.slice(0, index).some((prevItem) => {
+                            return (prevItem.target === item.target && prevItem.source === item.source);
+                        });
+                    });
+                    this.linksdown = JSON.parse(JSON.stringify(uniqueArr));
+                    this.link2Draw = uniqueArr
+
+                    const nodeset = new Set()
+                    uniqueArr.forEach(function (e) {
+                        nodeset.add(e.source)
+                        nodeset.add(e.target)
+                    })
+                    const nodesDataForDraw = []
+                    Array.from(nodeset).forEach((e, index) => {
+                        nodesDataForDraw.push({ id: index, name: e })
+                    })
+
+                    const linkss = []
+                    uniqueArr.forEach(e=>{
+                        const source = nodesDataForDraw.find(ele=>ele.name == e.source ).id
+                        const target = nodesDataForDraw.find(ele=>ele.name == e.target ).id
+                        console.log(source,target);
+                        linkss.push([source,target])
+                    })
+                    this.linksdown = JSON.parse(JSON.stringify(linkss));
+
+                    this.node2Draw = nodesDataForDraw
+                })
+                console.log("这是初始化");
+                console.log(this.node2Draw);
+                console.log(this.link2Draw);
+
             }
         }
     },
@@ -42,7 +99,6 @@ export default {
     methods: {
         drawTree() {
 
-            console.log(store.state.MarFromUser);
             if (store.state.MarFromUser.length > 0) {
 
                 const rawArray = store.state.MarFromUser.map(item => ({
@@ -55,7 +111,6 @@ export default {
 
                 const set = new Set(resultArray)
                 const resultArray2 = Array.from(set)
-                console.log(resultArray2);
 
                 let width = 1000
                 let height = 1000
@@ -72,7 +127,6 @@ export default {
                     //   {id: "Pontus", parentId: "Gaia"},
                     //   {id: "Uranus", parentId: "Gaia"}]
                 )
-                console.log("chaos" + chaos.data);
 
                 // const hierarchy = d3.hierarchy(data)
                 // 如果需要对同级数据排序
@@ -147,7 +201,6 @@ export default {
         },
         // 绘制简单的流程图
         draw() {
-            console.log(store.state.NodeMarFromUser);
             // const dataEdge = store.state.markov
             // // 创建 Graph 对象
             // const g = new dagreD3.graphlib.Graph().setGraph({
@@ -227,7 +280,7 @@ export default {
             // // 在绘图容器上运行渲染器绘制流程图
             // render(container, g);
         },
-        drawLinkNode(){
+        drawLinkNode() {
             let svg = d3.select(`#markovchart${d}`).attr('width', 450).attr('height', 450)
             svg.selectAll('*').remove();
             let width = +svg.attr('width')
@@ -340,7 +393,7 @@ export default {
                 .attr('stroke-width', 3)
                 .style('stroke', "#0fb2cc")
                 .attr('marker-end', 'url(#arrowhead)')
-                .on("click", d=>{
+                .on("click", d => {
 
 
                     const ipRegex = /(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)/;
@@ -352,20 +405,19 @@ export default {
                     const res1 = { id: d.source.name.match(ipRegex)[2], parentId: d.source.name.match(ipRegex)[1] }
                     const res2 = { id: d.target.name.match(ipRegex)[2], parentId: d.source.name.match(ipRegex)[2] }
 
-                    if(store.state.MarFromUser.find(e=>e.id == res1.id && e.parentId == res1.parentId)==null){
+                    if (store.state.MarFromUser.find(e => e.id == res1.id && e.parentId == res1.parentId) == null) {
                         store.state.MarFromUser.push(res1)
                     }
 
-                    if(store.state.MarFromUser.find(e=>e.id == res2.id && e.parentId == res1.parentId)==null){
+                    if (store.state.MarFromUser.find(e => e.id == res2.id && e.parentId == res1.parentId) == null) {
                         store.state.MarFromUser.push(res2)
                     }
-                    
-                    console.log(store.state.MarFromUser);
+
 
                     d3.select(`#Mar${d.id}`)
                         .style("stroke", "red")
                         .style("stroke-dasharray", 0);
-        })
+                })
             // 引用箭头定义
 
             let linkText = svg.append('g')
@@ -391,10 +443,10 @@ export default {
                 .join('text')
                 .text(d => d.name)
         },
-        drawLayer(){
-            
+        drawLayer(d) {
+
             const svg = d3.select('#dTree-plot');
-            svg.selectAll('*').remove()
+            svg.selectAll('#plot1').remove()
 
             //箭头
             let defs = svg.append('defs')
@@ -416,68 +468,70 @@ export default {
             const data1 = store.state.MarFromUser;
             let nodes1 = new Set()
             let links1 = []
-            for(let link of data1){
-                if(link['id'] !== undefined && link['parentId'] !== undefined){
-                    links1.push({'source':link['id'],'target':link['parentId']})
+            for (let link of data1) {
+                if (link['id'] !== undefined && link['parentId'] !== undefined) {
+                    links1.push({ 'source': link['id'], 'target': link['parentId'] })
                     nodes1.add(link['id'])
                     nodes1.add(link['parentId'])
                 }
             }
-            nodes1 = Array.from(nodes1).map(v=>{
-                return {'name':v}
+            nodes1 = Array.from(nodes1).map(v => {
+                return { 'name': v }
             })
-            this.drawGraph(nodes1,links1,0)
+            this.drawGraph(1, nodes1, links1, 0)
 
-            //图2
-
-            this.drawGraph(
-                [
-                    {'name':'1'},
-                    {'name':'2'},
-                    {'name':'3'},
-                    {'name':'4'},
-                ],
-                [
-                    {'source':'1','target':'2'},
-                    {'source':'3','target':'2'},
-                    {'source':'2','target':'4'},
-                ]
-            ,350)
+            if (d == 0) {
+                console.log("这是画图");
+                console.log(this.node2Draw, this.link2Draw);
+                //图2
+                this.drawGraph(2,
+                    this.node2Draw, this.link2Draw
+                    // [
+                    //     { 'name': '1' },
+                    //     { 'name': '2' },
+                    //     { 'name': '3' },
+                    //     { 'name': '4' },
+                    // ],
+                    // [
+                    //     { 'source': '1', 'target': '2' },
+                    //     { 'source': '3', 'target': '2' },
+                    //     { 'source': '2', 'target': '4' },
+                    // ]
+                    , 350)
+            }
 
 
 
         },
-        drawGraph(nodes,links,bias){//绘制2.5D视图
+        drawGraph(d, nodes, links, bias) {//绘制2.5D视图
             const svg = d3.select('#dTree-plot')
-           
+
             const width = 450;
             const height = 450;
             const plot = svg.append('g')
+                .attr("id", `plot${d}`)
 
 
             //配置模拟器
             let simulation = d3.forceSimulation()
                 .nodes(nodes)
-            
-            console.log(`bias:${bias}`,simulation.nodes())
-            console.log(`bias:${bias}`,links)
 
             simulation
                 .force('charge_force', d3.forceManyBody().strength(-600))
                 .force('center_force', d3.forceCenter(width / 2, height / 2))
-                .on('tick',tickAction)
+                .on('tick', tickAction)
 
 
             function tickAction() {
                 d3.selectAll(`.node${bias}`)
-                    .attr('cx', (d) => { return d.x})
-                    .attr('cy', (d) => { return d.y})
+                    .attr('cx', (d) => { return d.x })
+                    .attr('cy', (d) => { return d.y })
 
                 d3.selectAll(`.link${bias}`)
-                    .attr('x1', (d) => { return d.source.x})
-                    .attr('y1', (d) => { return d.source.y})
-                    .attr('x2', (d) => { return d.target.x})
-                    .attr('y2', (d) => { return d.target.y})
+                    .attr('x1', (d) => { return d.source.x })
+                    .attr('y1', (d) => { return d.source.y })
+                    .attr('x2', (d) => { return d.target.x })
+                    .attr('y2', (d) => { return d.target.y })
 
                 d3.selectAll(`.text${bias}`)
                     .attr('x', function (d) {
@@ -505,13 +559,13 @@ export default {
             //绘图
 
             let border = plot.append('rect')
-                .attr('x',0)
-                .attr('y',0)
-                .attr('height',height)
-                .attr('width',width)
-                .attr('fill','none')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('height', height)
+                .attr('width', width)
+                .attr('fill', 'none')
                 .style('stroke', "gray")
-                .style('stroke-width',2)
+                .style('stroke-width', 2)
 
 
             let linkPlot = plot.append('g')
@@ -521,7 +575,7 @@ export default {
                 .attr('stroke-width', 3)
                 .style('stroke', "#0fb2cc")
                 .attr('marker-end', 'url(#arrowhead)')
-                .classed(`link${bias}`,true)
+                .classed(`link${bias}`, true)
 
             let nodePlot = plot.append('g')
                 .selectAll('circle')
@@ -529,14 +583,14 @@ export default {
                 .join('circle')
                 .attr('r', 10)
                 .attr('fill', "#61b2e4")
-                .classed(`node${bias}`,true)
+                .classed(`node${bias}`, true)
 
             let nodeText = plot.append('g')
                 .selectAll('text')
                 .data(nodes)
                 .join('text')
-                .text(d=>d.name)
-                .classed(`text${bias}`,true)
+                .text(d => d.name)
+                .classed(`text${bias}`, true)
 
             //启动
             simulation.stop();
@@ -544,11 +598,29 @@ export default {
             tickAction()
 
             //旋转
-            plot.style('transform',`translate(${width}px,${bias}px) rotateX(45deg) rotateZ(45deg)`)
+            plot.style('transform', `translate(${width}px,${bias}px) rotateX(45deg) rotateZ(45deg)`)
             // plot.style('transform',`translate(${0}px,${bias}px)`)
 
 
-}
+        },
+        handleDraw() {
+            //多层绘制
+            console.log(this.node2Draw);
+            const nodeMuti = []
+            this.node2Draw.forEach(e => {
+                // console.log(e.name);
+                nodeMuti.push(e.id+' 0 0 0 0')
+            })
+            const linkMuti = []
+            this.linksdown.forEach(e => {
+                console.log(e);
+                linkMuti.push('1 '+e[0]+' '+e[1]+' 1')
+            })
+
+            mutiDraw({ node: nodeMuti, link: linkMuti }).then(res => {
+                console.log(res);
+            })
+        }
     },
 };
 </script>
@@ -578,7 +650,7 @@ export default {
     stroke-width: 2px;
 }
 
-#dTree-plot{
+#dTree-plot {
     width: 800px;
     height: 1200px;
 }

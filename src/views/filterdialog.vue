@@ -10,12 +10,15 @@
             <el-form-item label="内容">
                 <el-input v-model="filtermes.content" placeholder="内容"></el-input>
             </el-form-item>
-            <el-form-item label="起始时间">
+            <!-- <el-form-item label="阈值">
+                <el-input v-model="filtermes.threshold" placeholder="阈值"></el-input>
+            </el-form-item> -->
+            <!-- <el-form-item label="起始时间">
                 <el-input v-model="filtermes.timestart" placeholder="起始时间"></el-input>
             </el-form-item>
             <el-form-item label="结束时间">
                 <el-input v-model="filtermes.timeend" placeholder="结束时间"></el-input>
-            </el-form-item>
+            </el-form-item> -->
         </el-form>
         <template #footer>
             <span class="dialog-footer">
@@ -39,6 +42,7 @@ const filtermes = reactive({
     content: "",
     timestart: "",
     timeend: "",
+    threshold:""
 });
 // 定义控制弹窗显隐的变量
 const dialogVisble = ref(false)
@@ -65,6 +69,7 @@ function handleReset() {
     filtermes.content = '';
     filtermes.timestart = '';
     filtermes.timeend = '';
+
     ElMessage.success("重置成功");
 }
 function close() {

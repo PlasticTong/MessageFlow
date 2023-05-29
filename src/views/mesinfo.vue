@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="height: 1000px;">
+  <div class="container" style="height: 70%;">
     <Child :user="user" ref="visiableDialog"></Child>
     <h2 class="mb10">筛选条件</h2>
     <el-button type="warning" @click="openDialog">打开弹窗</el-button>
@@ -117,7 +117,7 @@ const handleFilter = () => {
       console.log("没有跳数过滤");
       tableData.value = res.data.list.filter((e: { source: string; target: string; time: number; content: string }) =>
         ((store.state.filtermes.ip ? e.source == store.state.filtermes.ip : true) || (store.state.filtermes.ip ? e.target == store.state.filtermes.ip : true)) &&
-        (store.state.filtermes.timestart ? e.time >= Number(store.state.filtermes.timestart) : true) && (store.state.filtermes.timeend ? e.time <= Number(store.state.filtermes.timeend) : true) &&
+        (store.state.time.start ? e.time >= Number(store.state.time.start) : true) && (store.state.time.end ? e.time <= Number(store.state.time.end) : true) &&
         (store.state.filtermes.content ? e.content == store.state.filtermes.content : true)
       )
       console.log(tableData.value.length);

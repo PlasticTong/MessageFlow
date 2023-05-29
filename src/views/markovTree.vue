@@ -33,6 +33,7 @@
 <script>
 import * as d3 from 'd3'
 import { store } from "../store/mesinfo"
+import { linksUserCho } from "../api/index.ts"
 export default {
     data() {
         return {
@@ -46,7 +47,21 @@ export default {
     },
     methods: {
         handleFliter() {
-            console.log(this.threshold);
+            linksUserCho({ data: store.state.filterresFromUser, param: { order: this.threshold, delta: 12 } }).then(res => {
+                console.log(res);
+            })
+            // const text = "192.168.1.1-191.168.1.13-192.168.12.3";
+
+            // // 匹配IPv4地址的正则表达式
+            // const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
+
+            // // 使用match方法获取所有符合条件的IP地址
+            // const ipList = text.match(ipPattern);
+
+            // // 输出结果
+            // console.log(ipList);
+
+            // console.log(this.threshold);
             for (let i = 1; i <= this.threshold; i++) {
                 d3.select(`#markovchart${i}`)
                 this.drawMarkov(i)

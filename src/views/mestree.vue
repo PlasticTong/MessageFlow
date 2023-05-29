@@ -8,19 +8,32 @@
       </div> -->
         <div class='view1'>
             <!-- <el-slider v-model="store.state.filtermes" range show-stops :max="timeend" :min="timestart" /> -->
+
+            <el-button @click="drawer = true" type="primary" style="margin-left: 16px;">
+                点我打开
+            </el-button>
+            <el-drawer v-model="drawer" :direction="direction">
+                <mestable></mestable>
+                <el-form-item label="时间阈值">
+                    <div class="input-box">
+                        <el-input v-model="threshold" placeholder="阈值"></el-input>
+                        <el-button @click="handleFliter">筛选</el-button>
+                        <el-button type="danger" @click="handleReset">重置</el-button>
+                        <!-- <el-button type="primary" @click="handleExport">导出</el-button> -->
+                    </div>
+                </el-form-item>
+                <usertable></usertable>
+            </el-drawer>
             <svg id="chart" width="800" height="600"></svg>
-            <el-form-item label="时间阈值">
-                <el-input v-model=threshold placeholder="阈值"></el-input>
-                <el-button @click="handleFliter">筛选</el-button>
-            </el-form-item>
-            <el-button type="warning" @click="handleConnectivity">连线</el-button>
-            <el-button type="danger" @click="handleReset">重置</el-button>
-            <el-button type="primary" @click="handleExport">导出</el-button>
         </div>
     </div>
 </template>
 <script>
+import mestable from "./mesinfo.vue";
+import usertable from "./userinfo.vue";
+
 import * as d3 from 'd3';
+import { ElDrawer } from 'element-plus'
 import Edata from '../../public/tablemes.json'
 import Vdata from '../../public/table.json'
 import Mdata from '../../public/Markov.json'
@@ -30,9 +43,14 @@ import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
 import FileSaver from 'file-saver'
 import * as q from 'd3-quicktool';
 import { objectPick } from '@vueuse/shared';
+import {linksUserCho} from "../api/index.ts"
 // require('d3-quicktool')
 
 export default {
+    components: {
+        mestable,
+        usertable
+    },
     name: 'index',
     data() {
         return {
@@ -47,6 +65,8 @@ export default {
             oldCurrentRow: undefined,
             messageColor: "#DCDCDC",
             threshold: 1, //阈值s
+            drawer: false,
+            direction: 'rtl',
 
         };
     },
@@ -57,21 +77,27 @@ export default {
     },
 
     methods: {
+        // handleClose(done) {
+        //     this.visible = false; done()
+        // },
         handleConnectivity() {
+            // console.log("qwewqeqweqweqweqweqeqwe");
             store.state.filterresFromUser = []
             // console.log(store.state.filtermesresByhold);
+            for(let j =1;j<=this.threshold;j++){
             for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
                 if (store.state.filtermesresByhold.find(e =>
-                    (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - Number(this.threshold))
-                    || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + Number(this.threshold))
+                    (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - j)
+                    || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + j)
                 ) != null) {
-                    store.state.filterresFromUser.push(store.state.filtermesresByhold[i].id);
+                    store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
                     // console.log(store.state.filtermesresByhold[i].id);
                     d3.select(`#E${store.state.filtermesresByhold[i].id}`)
                         .classed("chooseline", true)
                         .classed("unchooseline", false)
                 }
             }
+        }
             ElMessage.success("连线成功！");
             // console.log(store.state.filterresFromUser);
 
@@ -86,15 +112,15 @@ export default {
         },
         handleFliter() {
             // this.generateVis2()
-            store.state.filtermesresByhold = []
-            console.log("阈值：" + this.threshold);
-            // console.log(this.maxx,this.minn);
-            for (let i = 0; i < store.state.filtermesres.length; i++) {
-                // console.log(store.state.filtermesres[i].time);
-                if ((store.state.filtermesres[i].time - this.minn.time) % this.threshold == 0) {
-                    store.state.filtermesresByhold.push(store.state.filtermesres[i])
-                }
-            }
+            store.state.filtermesresByhold = store.state.filtermesres
+            // console.log("阈值：" + this.threshold);
+            // // console.log(this.maxx,this.minn);
+            // for (let i = 0; i < store.state.filtermesres.length; i++) {
+            //     // console.log(store.state.filtermesres[i].time);
+            //     if ((store.state.filtermesres[i].time - this.minn.time) % this.threshold == 0) {
+            //         store.state.filtermesresByhold.push(store.state.filtermesres[i])
+            //     }
+            // }
             // console.log(store.state.filtermesresByhold);
             //点集选择
             let filterMesData = [];
@@ -104,17 +130,19 @@ export default {
                 set.add(item.source);
                 set.add(item.target);
             });
+            console.log(filterMesData);
 
             const sourcesAndTargets = Array.from(set);
+            console.log(sourcesAndTargets);
 
             const arr2WithIndex = sourcesAndTargets.map((value) => {
                 let num = 0;
-                filterMesData.forEach(e=>{
-                    if(e.source == value){
-                        num = num +1
+                filterMesData.forEach(e => {
+                    if (e.source == value) {
+                        num = num + 1
                     }
-                    if(e.target == value){
-                        num = num -1
+                    if (e.target == value) {
+                        num = num - 1
                     }
                 })
                 return { value, num: num };
@@ -129,8 +157,6 @@ export default {
             // 将排序后的对象数组还原回原始的值数组
             const sortedArr2 = arr2WithIndex.map((item) => item.value);
 
-            console.log(sortedArr2);
-
 
             // const sourcesAndTargetsRes = []
             // for(let j=1;j<=sourcesAndTargets.length;j++){
@@ -140,7 +166,9 @@ export default {
             // console.log(sourcesAndTargetsRes);
             store.state.filteruserres = sortedArr2;
             ElMessage.success("筛选成功！");
+
             this.generateVis2()
+            this.handleConnectivity()
         },
         handleExport() {
             var date = new Date();
@@ -174,14 +202,30 @@ export default {
                 dateArr[4];
             //此处可以拿外部的变量接收，也可直接返回  strDate:2022-05-01 13:25:30
             //this.date = strDate;
-            console.log("strDate", strDate);
+
+
+
+
+
             const blob = new Blob([JSON.stringify(store.state.filterresFromUser, null, 2)], {
                 type: 'application/json'
             })
-            console.log(blob);
-            FileSaver.saveAs(blob, strDate)
+            // console.log(blob);
+            // // FileSaver.saveAs(blob, strDate)
+            // console.log("nihao");
+            // linksUserCho(store.state.filterresFromUser).then(res=>{
+            //     console.log(res);
+            // })
+
+
+
+
+
+
+
         },
         generateVis2() {
+            // console.log("12312312312312");
             let that = this;
             //计算最大值最小值
             let filterMesData = [];
@@ -290,13 +334,13 @@ export default {
 
             gY.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
             gX.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
-            
+
             svg.select('.linegroup').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
             svg.select('.dotgroup').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
 
             //配置字体大小
-            svg.select('.xAxis').selectAll('.tick').selectAll('text').style('font-size',17)
-            svg.select('.yAxis').selectAll('.tick').selectAll('text').style('font-size',17)
+            svg.select('.xAxis').selectAll('.tick').selectAll('text').style('font-size', 17)
+            svg.select('.yAxis').selectAll('.tick').selectAll('text').style('font-size', 17)
 
             const zoom = d3.zoom()
                 .scaleExtent([1, 40])
@@ -321,10 +365,10 @@ export default {
                 //轴的字体大小，刻度线大小，轴的粗细保持不变
                 svg.select('.yAxis').selectAll('.tick').selectAll('text').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
                 svg.select('.yAxis').selectAll('.tick').selectAll('line').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
-                svg.select('.yAxis').select('path').style('stroke-width',2.0 / d3.event.transform.k + 'px')
+                svg.select('.yAxis').select('path').style('stroke-width', 2.0 / d3.event.transform.k + 'px')
                 svg.select('.xAxis').selectAll('.tick').selectAll('text').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
                 svg.select('.xAxis').selectAll('.tick').selectAll('line').attr("transform", `scale(${1.0 / d3.event.transform.k})`)
-                svg.select('.xAxis').select('path').style('stroke-width',2.0 / d3.event.transform.k + 'px')
+                svg.select('.xAxis').select('path').style('stroke-width', 2.0 / d3.event.transform.k + 'px')
 
                 //位移，保持相对位置
                 svg.select('.xAxis').attr("transform", `translate(${d3.event.transform.x},${calAppendY()}) scale(${d3.event.transform.k})`)
@@ -380,7 +424,7 @@ export default {
                         time: d.time
                     }, {
                         name: d.target,
-                        time: d.time + Number(this.threshold)
+                        time: d.time + 1
                     }]))
                     .attr('id', `E${d.id}`)
                     .classed("chooseline", false)
@@ -449,9 +493,9 @@ export default {
                     .style("fill", "black");
 
                 dotgroup.append("circle")
-                    .attr("class", `T${d.time + Number(this.threshold)}`)
+                    .attr("class", `T${d.time + 1}`)
                     .attr("cy", yScale(d.target) + 0.5 * yband)
-                    .attr("cx", xScale(d.time + Number(this.threshold)))
+                    .attr("cx", xScale(d.time + 1))
                     .attr("r", 8)
                     .style("fill", "black");
             });
@@ -494,8 +538,8 @@ export default {
         this.generateVis2();
     },
     updated() {
-        d3.select('#maingroup').remove();
-        this.generateVis2();
+        // d3.select('#maingroup').remove();
+        // this.generateVis2();
         //   console.log(this.selectvalue);
         //   console.log(this.currentRow);
     },

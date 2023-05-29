@@ -12,7 +12,7 @@
         </el-card>
       </el-col>
     </el-row>
-    <el-row :gutter="20">
+    <!-- <el-row :gutter="20">
       <el-col :span="4">
         <mestable></mestable>
       </el-col>
@@ -22,7 +22,7 @@
       <el-col :span="16">
         <timebrush></timebrush>
       </el-col>
-    </el-row>
+    </el-row> -->
     <el-row>
       <!-- <el-col :span="12"> -->
         <el-card shadow="hover">
