@@ -34,11 +34,11 @@ export const mutiDraw = (data1: JSON) => {
     });
 };
 
-export const mutiCross = (data1: JSON) => {
+export const mutiCross = (data1: JSON,data2: JSON,) => {
     return requestForFlask({
         url: '/mesfilter/mesCross',
         method: 'post',
-        data: data1
+        data: [data1,data2]
         // params:{
         //     data:data
         // }
@@ -54,7 +54,7 @@ export const fetchData = () => {
 
 export const fetchMesData = () => {
     return request({
-        url: './tablemes2.json',
+        url: './tablemes3.json',
         method: 'get'
     });
 };

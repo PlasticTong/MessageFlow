@@ -27,6 +27,7 @@ import { store } from "../store/mesinfo"
 import { ElMessage, ElMessageBox } from "element-plus";
 import { set } from 'lodash';
 import { noopDirectiveTransform } from '@vue/compiler-core';
+import { fetchMesData, testflask, mutiDraw,mutiCross } from "../api/index";
 import axios from 'axios'
 export default {
     data() {

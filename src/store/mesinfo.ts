@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import {createStore} from 'vuex';
-import mestable from "../../public/tablemes2.json";
+import mestable from "../../public/tablemes3.json";
 import usertable from "../../public/table.json";
 import markov from "../../public/Markov.json";
 

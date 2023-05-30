@@ -43,7 +43,8 @@ import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
 import FileSaver from 'file-saver'
 import * as q from 'd3-quicktool';
 import { objectPick } from '@vueuse/shared';
-import {linksUserCho} from "../api/index.ts"
+import { linksUserCho } from "../api/index.ts"
+import { fetchMesData, testflask, mutiDraw, mutiCross } from "../api/index";
 // require('d3-quicktool')
 
 export default {
@@ -84,20 +85,20 @@ export default {
             // console.log("qwewqeqweqweqweqweqeqwe");
             store.state.filterresFromUser = []
             // console.log(store.state.filtermesresByhold);
-            for(let j =1;j<=this.threshold;j++){
-            for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
-                if (store.state.filtermesresByhold.find(e =>
-                    (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - j)
-                    || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + j)
-                ) != null) {
-                    store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
-                    // console.log(store.state.filtermesresByhold[i].id);
-                    d3.select(`#E${store.state.filtermesresByhold[i].id}`)
-                        .classed("chooseline", true)
-                        .classed("unchooseline", false)
+            for (let j = 1; j <= this.threshold; j++) {
+                for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
+                    if (store.state.filtermesresByhold.find(e =>
+                        (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - j)
+                        || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + j)
+                    ) != null) {
+                        store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
+                        // console.log(store.state.filtermesresByhold[i].id);
+                        d3.select(`#E${store.state.filtermesresByhold[i].id}`)
+                            .classed("chooseline", true)
+                            .classed("unchooseline", false)
+                    }
                 }
             }
-        }
             ElMessage.success("连线成功！");
             // console.log(store.state.filterresFromUser);
 
@@ -110,7 +111,7 @@ export default {
             ElMessage.success("重置成功！");
             this.generateVis2()
         },
-        handleFliter() {
+        async handleFliter() {
             // this.generateVis2()
             store.state.filtermesresByhold = store.state.filtermesres
             // console.log("阈值：" + this.threshold);
@@ -126,36 +127,44 @@ export default {
             let filterMesData = [];
             filterMesData = Object.values(store.state.filtermesresByhold)
             const set = new Set();
+            var crossmes = {}
             filterMesData.forEach((item) => {
+                if (!crossmes[item.time]) {
+                    crossmes[item.time] = []
+                }
+                let data = [item.source, item.target]
+                crossmes[item.time].push(data)
                 set.add(item.source);
                 set.add(item.target);
             });
-            console.log(filterMesData);
-
             const sourcesAndTargets = Array.from(set);
             console.log(sourcesAndTargets);
+            console.log(crossmes);
+            await mutiCross(crossmes,sourcesAndTargets).then(res => {
+                console.log(res.data);
+                store.state.filteruserres = res.data;
+            })
 
-            const arr2WithIndex = sourcesAndTargets.map((value) => {
-                let num = 0;
-                filterMesData.forEach(e => {
-                    if (e.source == value) {
-                        num = num + 1
-                    }
-                    if (e.target == value) {
-                        num = num - 1
-                    }
-                })
-                return { value, num: num };
-            });
+            
 
-            // // 将 arr2 映射为对象数组
-            // arr1.sort((a, b) => a - b)
+            // const arr2WithIndex = sourcesAndTargets.map((value) => {
+            //     let num = 0;
+            //     filterMesData.forEach(e => {
+            //         if (e.source == value) {
+            //             num = num + 1
+            //         }
+            //         if (e.target == value) {
+            //             num = num - 1
+            //         }
+            //     })
+            //     return { value, num: num };
+            // });
 
-            // 根据数组 arr1 中的值大小顺序进行排序
-            arr2WithIndex.sort((a, b) => a.num - b.num);
+            // // 根据数组 arr1 中的值大小顺序进行排序
+            // arr2WithIndex.sort((a, b) => a.num - b.num);
 
-            // 将排序后的对象数组还原回原始的值数组
-            const sortedArr2 = arr2WithIndex.map((item) => item.value);
+            // // 将排序后的对象数组还原回原始的值数组
+            // const sortedArr2 = arr2WithIndex.map((item) => item.value);
 
 
             // const sourcesAndTargetsRes = []
@@ -163,12 +172,14 @@ export default {
             //     let data ={"ids":j,"name":sourcesAndTargets[j-1]}
             //     sourcesAndTargetsRes.push(data)
             // }
-            // console.log(sourcesAndTargetsRes);
-            store.state.filteruserres = sortedArr2;
-            ElMessage.success("筛选成功！");
+            // console.log(sortedArr2);
+            // store.state.filteruserres = sortedArr2;
 
-            this.generateVis2()
-            this.handleConnectivity()
+
+
+            ElMessage.success("筛选成功！");
+            await this.generateVis2()
+            await this.handleConnectivity()
         },
         handleExport() {
             var date = new Date();
