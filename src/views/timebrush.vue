@@ -141,8 +141,9 @@ export default {
             //画图
 
             let svg = d3.select(`#timechart${d}`)
-            let width = +svg.attr('width')
-            let height = +svg.attr('height')
+            let width = svg.node().getBoundingClientRect().width
+            let height = svg.node().getBoundingClientRect().height
+            const plot = svg.append('g')
             console.log(width,height);
 
             // 添加defs元素
@@ -252,7 +253,7 @@ export default {
             //     .domain([minY, maxY])
             //     .range([padding, height - padding]);
 
-            let link = svg.append('g')
+            let link = plot.append('g')
                 .attr('class', 'links')
                 .selectAll('line')
                 .data(uniqueArr)
@@ -262,13 +263,10 @@ export default {
                 .attr('stroke-width', 3)
                 .style('stroke', "#0fb2cc")
                 .attr('marker-end', 'url(#arrowhead)')
-                // attr("transform", "scale(0.5)")
             // 引用箭头定义
 
 
-
-
-            let node = svg.append('g')
+            let node = plot.append('g')
                 .attr('class', 'nodes')
                 .selectAll('circle')
                 .data(nodesDataForDraw)
@@ -277,7 +275,7 @@ export default {
                 .attr('r', 10)
                 .attr('fill', "#61b2e4")
 
-            let label = svg.append('g')
+            let label = plot.append('g')
                 .attr('class', 'labels')
                 .selectAll('text')
                 .data(nodesDataForDraw)
@@ -294,24 +292,53 @@ export default {
 
             svg.call(zoom)
 
+            
+
             function zoomed() {
-                svg.select('.nodes').attr("transform", d3.event.transform);
-                svg.select('.links').attr("transform", d3.event.transform);
-                svg.select('.labels').attr("transform", d3.event.transform);
+                plot.select('.nodes').attr("transform", d3.event.transform);
+                plot.select('.links').attr("transform", d3.event.transform);
+                plot.select('.labels').attr("transform", d3.event.transform);
             }
-            svg.select('.nodes').attr("transform","scale(0.5)")
-            svg.select('.links').attr("transform","scale(0.5)")
-            svg.select('.labels').attr("transform","scale(0.5)")
+
             //启动
             simulation.stop();
             simulation.tick(3000);
             tickAction()
 
+            //预先缩放到中心位置
+            const plotWidth = plot.node().getBoundingClientRect().width;
+            const plotHeight = plot.node().getBoundingClientRect().height;
 
+            console.log(plot.node().getBoundingClientRect())
+            console.log(plot.node().getBBox())
+
+
+
+            let originTransformX = -plot.node().getBBox().x
+            let originTransformY = -plot.node().getBBox().y
+            let originTransformK = Math.min(1.0*width/plotWidth,1.0*height/plotHeight) * 0.85
+
+            let smallPlotWidth = plotWidth * originTransformK;
+            let smallPlotHeight = plotHeight * originTransformK;
+
+            // originTransformX = originTransformX + (0.5 * width - 0.5 * smallPlotWidth)
+            // originTransformY = originTransformY + (0.5 * height - 0.5 * smallPlotHeight)
+
+            let offsetTransformX = (0.5 * width - 0.5 * smallPlotWidth)
+            let offsetTransformY = (0.5 * height - 0.5 * smallPlotHeight)
+
+
+            plot
+            .style('transform-origin','left top')
+            .attr("transform",`translate(${offsetTransformX},${offsetTransformY}) scale(${originTransformK}) translate(${originTransformX},${originTransformY})`)
+
+            // plot.select('.nodes').attr("transform","scale(0.1)")
+            // plot.select('.links').attr("transform","scale(0.1)")
+            // plot.select('.labels').attr("transform","scale(0.1)")
 
             let widthALL
             let heightALL
-            svg.select('.labels').attr("i",function(){
+            plot.select('.labels').attr("i",function(){
                 widthALL = this.getBoundingClientRect().width/2
                 heightALL = this.getBoundingClientRect().height/2
             })
