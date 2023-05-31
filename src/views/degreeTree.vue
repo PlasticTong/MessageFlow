@@ -78,11 +78,11 @@ export default {
                     })
 
                     const linkss = []
-                    uniqueArr.forEach(e=>{
-                        const source = nodesDataForDraw.find(ele=>ele.name == e.source ).id
-                        const target = nodesDataForDraw.find(ele=>ele.name == e.target ).id
-                        console.log(source,target);
-                        linkss.push([source,target])
+                    uniqueArr.forEach(e => {
+                        const source = nodesDataForDraw.find(ele => ele.name == e.source).id
+                        const target = nodesDataForDraw.find(ele => ele.name == e.target).id
+                        console.log(source, target);
+                        linkss.push([source, target])
                     })
                     this.linksdown = JSON.parse(JSON.stringify(linkss));
 
@@ -609,30 +609,115 @@ export default {
             const nodeMuti = []
             this.node2Draw.forEach(e => {
                 // console.log(e.name);
-                nodeMuti.push(e.id+' 0 0 0 0')
+                nodeMuti.push(e.id + ' 0 0 0 0')
             })
             const linkMuti = []
             this.linksdown.forEach(e => {
                 console.log(e);
-                linkMuti.push('1 '+e[0]+' '+e[1]+' 1')
+                linkMuti.push('1 ' + e[0] + ' ' + e[1] + ' 1')
             })
 
+            let node_data = []
             mutiDraw({ node: nodeMuti, link: linkMuti }).then(res => {
-                console.log(res);
+                console.log("点集是：", this.node2Draw);
+                console.log("连线是：", this.linksdown);
+                console.log("坐标是：", res.data);
+                node_data = res.data
             })
+
+            const svg = d3.select('#dTree-plot');
+            d3.selectAll('#plot2').remove()
+
+            const padding = 10;
+            const link_data = this.linksdown;
+            let minX = Math.min(...node_data.map(d=>d.x));
+            let maxX = Math.max(...node_data.map(d=>d.x));
+            let minY = Math.min(...node_data.map(d=>d.y));
+            let maxY = Math.max(...node_data.map(d=>d.y));
+            console.log(node_data,link_data);
+
+
+            const posXScale = d3
+                .scaleLinear()
+                .domain([minX, maxX])
+                .range([padding, width -  padding]);
+            const posYScale = d3
+                .scaleLinear()
+                .domain([minY, maxY])
+                .range([padding, height - padding]);
+            //箭头
+            let defs = svg.append('defs')
+
+            defs.append('marker')
+                .attr('id', 'arrowhead')
+                .attr('markerWidth', 4)
+                .attr('markerHeight', 4)
+                .attr('viewBox', '0 -5 12 12') // Arrow head points in x direction
+                .attr('refX', 20) // Horizontal offset
+                .attr('refY', 0) // Vertical offset
+                .attr('orient', 'auto')
+                // .attr('markerUnits', "10")
+                .append('path')
+                .attr('fill', 'red')
+                .attr('d', 'M 0,-5 L 10,0 L 0,5')
+
+            const width = 450;
+            const height = 450;
+            const plot = svg.append('g')
+                .attr("id", `plot${d}`)
+
+            let border = plot.append('rect')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('height', height)
+                .attr('width', width)
+                .attr('fill', 'none')
+                .style('stroke', "gray")
+                .style('stroke-width', 2)
+
+            let linkPlot = plot.append('g')
+                .selectAll('line')
+                .data(links)
+                .join('line')
+                .attr('stroke-width', 3)
+                .style('stroke', "#0fb2cc")
+                .attr('marker-end', 'url(#arrowhead)')
+                .classed(`link${bias}`, true)
+
+            let nodePlot = plot.append('g')
+                .selectAll('circle')
+                .data(nodes)
+                .join('circle')
+                .attr('r', 10)
+                .attr('fill', "#61b2e4")
+                .classed(`node${bias}`, true)
+
+            let nodeText = plot.append('g')
+                .selectAll('text')
+                .data(nodes)
+                .join('text')
+                .text(d => d.name)
+                .classed(`text${bias}`, true)
+
+
+            //旋转
+            plot.style('transform', `translate(${width}px,${bias}px) rotateX(45deg) rotateZ(45deg)`)
+
+
+
         }
     },
 };
 </script>
    
 <style>
-.tree {
+/* .tree {
     border: 1px solid #9e4a4a00;
     padding: 20px;
     width: 600px;
     height: 80px;
     margin: auto;
-}
+} */
 
 .node circle {
     fill: #fff;
