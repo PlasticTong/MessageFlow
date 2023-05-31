@@ -76,19 +76,17 @@ export default {
             // 添加defs元素
             let defs = svg.append('defs')
 
-            // 定义箭头
+
             defs.append('marker')
-                .attr('id', 'arrowhead')
-                .attr('markerWidth', 4)
-                .attr('markerHeight', 4)
-                .attr('viewBox', '0 -5 12 12') // Arrow head points in x direction
-                .attr('refX', 20) // Horizontal offset
-                .attr('refY', 0) // Vertical offset
+                .attr('id', 'markovArrowhead')
+                .attr('markerWidth', 3)
+                .attr('markerHeight',3)
+                .attr('refX', 3 + 2.5) // Horizontal offset
+                .attr('refY', 1.5) // Vertical offset
                 .attr('orient', 'auto')
-                // .attr('markerUnits', "10")
                 .append('path')
-                .attr('fill', 'red')
-                .attr('d', 'M 0,-5 L 10,0 L 0,5')
+                .attr('fill', '#434343')
+                .attr('d', 'M 0,0 L 3,1.5 L 0,3')
 
             let nodesData = [
                 { 'name': '192.168.1.2-192.168.1.4', 'sex': 'F' },
@@ -169,13 +167,13 @@ export default {
                 .attr('class', 'links')
                 .selectAll('line')
                 .data(linksData)
-
                 .enter()
                 .append('line')
                 .attr('id', function (d) { return `Mar${d.id}` })
-                .attr('stroke-width', 3)
-                .style('stroke', "#0fb2cc")
-                .attr('marker-end', 'url(#arrowhead)')
+                .attr('stroke-width', 4)
+                .style('stroke', "#666666")
+                .style('cursor','pointer')
+                .attr('marker-end', 'url(#markovArrowhead)')
                 .on("click", d => {
 
 
@@ -200,7 +198,7 @@ export default {
                     console.log(store.state.MarFromUser);
 
                     d3.select(`#Mar${d.id}`)
-                        .style("stroke", "red")
+                        .style("stroke", "#0fb2cc")
                         .style("stroke-dasharray", 0);
                 })
             // 引用箭头定义
@@ -220,7 +218,9 @@ export default {
                 .enter()
                 .append('circle')
                 .attr('r', 10)
-                .attr('fill', "#61b2e4")
+                .attr('fill', "#b256f0")
+                .attr('stroke',"white")
+                .attr('stroke-width',2)
 
             let label = svg.append('g')
                 .selectAll('text')
