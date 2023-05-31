@@ -303,7 +303,14 @@ export default {
             //     // console.log(linegroup);
 
 
-
+            // 设置坐标轴
+            const xScale = d3.scaleLinear()
+                .domain([minTime.time, maxTime.time + 1])
+                .range([0, innerwidth]);
+            const yScale = d3.scaleBand()
+                .domain(filterUserData)
+                .range([0, innerheight]);
+            const yband = yScale.bandwidth()
 
             // 定义边
             let line = d3.line()
@@ -431,30 +438,26 @@ export default {
 
 
             // //加一个坐标轴的遮罩层
-            let xAxisModel = svg.append('rect')
+            let xAxisModel = svg.select('#maingroup')
+                                .select('.axis')
+                                .append('rect')
                                 .attr('x',0)
-                                .attr('y',0)
+                                .attr('y',-50)
                                 .attr('width','100%')
-                                .attr('height',50)
+                                .attr('height',80)
                                 .attr('fill','white')
-            let yAxisModel = svg.append('rect')
-                                .attr('x',0)
+            let yAxisModel = svg.select('#maingroup')
+                                .select('.axis')
+                                .append('rect')
+                                .attr('x',-50)
                                 .attr('y',0)
-                                .attr('width',50)
+                                .attr('width',160)
                                 .attr('height','100%')
                                 .attr('fill','white')
 
-            // 设置坐标轴
-            const xScale = d3.scaleLinear()
-                .domain([minTime.time, maxTime.time + 1])
-                .range([0, innerwidth]);
-            const yScale = d3.scaleBand()
-                .domain(filterUserData)
-                .range([0, innerheight]);
 
 
 
-            const yband = yScale.bandwidth()
             const yAxis = d3.axisLeft(yScale);
             const gY = axis.append('g')
                 .classed('yAxis', true)

@@ -103,9 +103,9 @@ export default {
             svg.selectAll('#plot1').remove()
 
             //定义长宽，padding
-            const width = 500;
-            const height = 500;
-            const padding = 30;
+            const width = 400;
+            const height = 400;
+            const padding = 70;
 
             //定义marker箭头
             let defs = svg.append('defs')
@@ -150,27 +150,50 @@ export default {
             this.forceDirectedSimulation(node2Draw,link2Draw,width,height)
 
             //求取比例尺
+            // let scaleX = d3.scaleLinear()
+            //                 .domain([
+            //                     Math.min(Math.min(...node1Draw.map(v=>v.x)),Math.min(...node2Draw.map(v=>v.x))),
+            //                     Math.max(Math.max(...node1Draw.map(v=>v.x)),Math.max(...node2Draw.map(v=>v.x)))
+            //                 ])
+            //                 .range([padding,width - padding])
+            // let scaleY = d3.scaleLinear()
+            //                 .domain([
+            //                     Math.min(Math.min(...node1Draw.map(v=>v.y)),Math.min(...node2Draw.map(v=>v.y))),
+            //                     Math.max(Math.max(...node1Draw.map(v=>v.y)),Math.max(...node2Draw.map(v=>v.y)))
+            //                 ])
+            //                 .range([padding,height - padding])
+
             let scaleX = d3.scaleLinear()
-                            .domain([
-                                Math.min(Math.min(...node1Draw.map(v=>v.x)),Math.min(...node2Draw.map(v=>v.x))),
-                                Math.max(Math.max(...node1Draw.map(v=>v.x)),Math.max(...node2Draw.map(v=>v.x)))
-                            ])
+                            .domain([padding,width - padding])
                             .range([padding,width - padding])
             let scaleY = d3.scaleLinear()
-                            .domain([
-                                Math.min(Math.min(...node1Draw.map(v=>v.y)),Math.min(...node2Draw.map(v=>v.y))),
-                                Math.max(Math.max(...node1Draw.map(v=>v.y)),Math.max(...node2Draw.map(v=>v.y)))
-                            ])
+                            .domain([padding,height - padding])
                             .range([padding,height - padding])
+
+            //求取缩放比例
+            const data1Size = {
+                'width':Math.max(...node1Draw.map(v=>v.x)) - Math.min(...node1Draw.map(v=>v.x)),
+                'height':Math.max(...node1Draw.map(v=>v.y)) - Math.min(...node1Draw.map(v=>v.y)),
+            }
+            const data1Scale = Math.min(width / data1Size.width,height / data1Size.height)
+            const data2Size = {
+                'width':Math.max(...node2Draw.map(v=>v.x)) - Math.min(...node2Draw.map(v=>v.x)),
+                'height':Math.max(...node2Draw.map(v=>v.y)) - Math.min(...node2Draw.map(v=>v.y)),
+            }
+            const data2Scale = Math.min(width / data2Size.width,height / data2Size.height)
+            const finalScale = Math.min(data1Scale,data2Scale) * 0.7
+
+
+            console.log('1:',finalScale)
 
             //绘图
             //图1
-            this.drawGraph(1, node1Draw, link1Draw, 0 ,scaleX,scaleY,width,height)
+            this.drawGraph(1, node1Draw, link1Draw, 50 ,scaleX,scaleY,width,height,finalScale)
             //图2
             if (d == 0) {
                 this.drawGraph(2,
                     this.node2Draw, this.link2Draw
-                    , 350,scaleX,scaleY,width,height)
+                    , 450,scaleX,scaleY,width,height,finalScale)
             }
 
 
@@ -185,18 +208,19 @@ export default {
                 .id((d) => { return d.name })
 
             simulation
-                .force('charge_force', d3.forceManyBody().strength(-600))
+                .force('charge_force', d3.forceManyBody().strength(-100))
                 .force('center_force', d3.forceCenter(width / 2, height / 2))
                 .force('links', linkForce)
 
             //启动
             simulation.stop();
-            simulation.tick(3000);
+            simulation.tick(300);
             
         }
         ,
-        drawGraph(d, nodes, links, bias,scaleX,scaleY,width,height) {//绘制2.5D视图
-            
+        drawGraph(d, nodes, links, bias,scaleX,scaleY,width,height,finalScale) {//绘制2.5D视图
+                        
+
             //错误检测 
             if (nodes.length == 0)
                 return ;
@@ -205,16 +229,53 @@ export default {
             const plot = svg.append('g')
                 .attr("id", `plot${d}`)
 
+            let SVGwidth = svg.node().getBoundingClientRect().width
+            let SVGheight = svg.node().getBoundingClientRect().height
+
 
             //绘图
-            let border = plot.append('rect')
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('height', height)
-                .attr('width', width)
-                .attr('fill', 'none')
+            // let border = svg.append('rect')
+            //     .attr('x', 0)
+            //     .attr('y', 0)
+            //     .attr('height', height)
+            //     .attr('width', width)
+            //     .attr('fill', 'none')
+            //     .style('stroke', "gray")
+            //     .style('stroke-width', 2)
+            //     .style('transform',`translate(${width * 0.7}px,${bias}px) rotateX(60deg) rotateZ(30deg)`)
+            
+            //边框
+            const border = svg.append('g').style('transform',`translate(${0}px,${bias}px)`)
+            border.append('line')
+                .attr('x1','25%')
+                .attr('y1',10)
+                .attr('x2','95%')
+                .attr('y2',10)
                 .style('stroke', "gray")
                 .style('stroke-width', 2)
+            border.append('line')
+                .attr('x1','5%')
+                .attr('y1',350)
+                .attr('x2','75%')
+                .attr('y2',350)
+                .style('stroke', "gray")
+                .style('stroke-width', 2)
+            border.append('line')
+                .attr('x1','95%')
+                .attr('y1',10)
+                .attr('x2','75%')
+                .attr('y2',350)
+                .style('stroke', "gray")
+                .style('stroke-width', 2)
+            border.append('line')
+                .attr('x1','5%')
+                .attr('y1',350)
+                .attr('x2','25%')
+                .attr('y2',10)
+                .style('stroke', "gray")
+                .style('stroke-width', 2)
+
+
 
             let linkPlot = plot.append('g')
                 .selectAll('line')
@@ -241,25 +302,35 @@ export default {
                 .attr('cx', (d) => { return scaleX(d.x) })
                 .attr('cy', (d) => { return scaleY(d.y) })
 
-            // let nodeText = plot.append('g')
-            //     .selectAll('text')
-            //     .data(nodes)
-            //     .join('text')
-            //     .text(d => d.name)
-            //     .classed(`text${bias}`, true)
-            //     .attr('x', function (d) {
-            //         return scaleX(d.x) - 0.5 * this.getBoundingClientRect().width
-            //     })
-            //     .attr('y', function (d) {
-            //         return scaleY(d.y) + 0.3 * this.getBoundingClientRect().height
-            //     })
+            let nodeText = plot.append('g')
+                .selectAll('text')
+                .data(nodes)
+                .join('text')
+                .text(d => d.name)
+                .classed(`text${bias}`, true)
+                .attr('x', function (d) {
+                    return scaleX(d.x) - 0.5 * this.getBoundingClientRect().width
+                })
+                .attr('y', function (d) {
+                    return scaleY(d.y) + 0.3 * this.getBoundingClientRect().height
+                })
 
 
+            //求取移动距离
 
+            let originTransformX = -plot.node().getBBox().x
+            let originTransformY = -plot.node().getBBox().y
 
+            let smallPlotWidth = plot.node().getBoundingClientRect().width * finalScale;
+            let smallPlotHeight = plot.node().getBoundingClientRect().height * finalScale;
+
+            let offsetTransformX = (0.5 * SVGwidth - 0.5 * smallPlotWidth)
+            let offsetTransformY = (0.5 * SVGheight - 0.5 * smallPlotHeight)
+
+            console.log('2:',finalScale)
             //旋转
-            plot.style('transform', `translate(${width * 0.7}px,${bias}px) rotateX(60deg) rotateZ(30deg)`)
-            // plot.style('transform',`translate(${0}px,${bias}px)`)
+            // plot.style('transform', `translate(${offsetTransformX}px,${bias}px) scale(${finalScale}) rotateX(60deg)`)
+            plot.style('transform', `translate(${offsetTransformX}px,${bias}px) scale(${finalScale}) translate(${originTransformX}px,${0}px) rotateX(45deg)`)
 
 
 
