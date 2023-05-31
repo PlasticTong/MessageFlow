@@ -449,6 +449,7 @@ const handleReset = (sourcename: string, targetname: string) => {
 
 .table {
   width: 100%;
+  // height: 50%;
   font-size: 3px;
 }
 
