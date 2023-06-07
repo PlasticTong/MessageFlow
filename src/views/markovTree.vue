@@ -33,7 +33,9 @@
 <script>
 import * as d3 from 'd3'
 import { store } from "../store/mesinfo"
-import { linksUserCho } from "../api/index.ts"
+import { linksUserCho, fetchMar2data, fetchMar3data, fetchMar4data } from "../api/index.ts"
+import Login from './login.vue'
+import { ElMessage, ElMessageBox } from "element-plus";
 export default {
     data() {
         return {
@@ -41,15 +43,16 @@ export default {
             rootnum: 0,
 
             charts: [],
+            currentchoose: []
         }
     },
     mounted() {
     },
     methods: {
         handleFliter() {
-            linksUserCho({ data: store.state.filterresFromUser, param: { order: this.threshold, delta: 12 } }).then(res => {
-                console.log(res);
-            })
+            // linksUserCho({ data: store.state.filterresFromUser, param: { order: this.threshold, delta: 12 } }).then(res => {
+            //     console.log(res);
+            // })
             // const text = "192.168.1.1-191.168.1.13-192.168.12.3";
 
             // // 匹配IPv4地址的正则表达式
@@ -67,20 +70,22 @@ export default {
                 this.drawMarkov(i)
             }
         },
-        drawMarkov(d) {
+        async drawMarkov(d) {
             let svg = d3.select(`#markovchart${d}`).attr('width', 450).attr('height', 450)
             svg.selectAll('*').remove();
-            let width = +svg.attr('width')
-            let height = +svg.attr('height')
+            let width = svg.node().getBoundingClientRect().width
+            let height = svg.node().getBoundingClientRect().height
+
+            const plot = svg.append('g')
 
             // 添加defs元素
-            let defs = svg.append('defs')
+            let defs = plot.append('defs')
 
 
             defs.append('marker')
                 .attr('id', 'markovArrowhead')
                 .attr('markerWidth', 3)
-                .attr('markerHeight',3)
+                .attr('markerHeight', 3)
                 .attr('refX', 3 + 2.5) // Horizontal offset
                 .attr('refY', 1.5) // Vertical offset
                 .attr('orient', 'auto')
@@ -106,6 +111,80 @@ export default {
                 { 'id': 5, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.8', 'type': 5 },
                 { 'id': 6, 'source': '192.168.1.1-192.168.1.2', 'target': '192.168.1.2-192.168.1.6', 'type': 6 },
             ]
+
+
+
+
+
+            let markovBy2 = []
+            let markovBy3 = []
+            let markovBy4 = []
+            //获取数据
+            await fetchMar2data().then(res => {
+                markovBy2 = res.data.link
+            })
+            await fetchMar3data().then(res => {
+                markovBy3 = res.data.link
+            })
+
+            await fetchMar4data().then(res => {
+                markovBy4 = res.data.link
+            })
+
+            if (d == 2) {
+                linksData = []
+                const set = new Set();
+                markovBy2.forEach((value, index) => {
+                    linksData.push({ id: index, source: value.source, target: value.target })
+                    set.add(value.source)
+                    set.add(value.target)
+                })
+                const sourcesAndTargets = Array.from(set);
+                nodesData = []
+                sourcesAndTargets.forEach(item => {
+                    let data = { name: item }
+                    nodesData.push(data)
+                })
+            }
+
+            if (d == 3) {
+                linksData = []
+                const set = new Set();
+                markovBy3.forEach((value, index) => {
+                    linksData.push({ id: index, source: value.source, target: value.target })
+                    set.add(value.source)
+                    set.add(value.target)
+                })
+                const sourcesAndTargets = Array.from(set);
+                nodesData = []
+                sourcesAndTargets.forEach(item => {
+                    let data = { name: item }
+                    nodesData.push(data)
+                })
+            }
+
+            if (d == 4) {
+                linksData = []
+                const set = new Set();
+                markovBy4.forEach((value, index) => {
+                    linksData.push({ id: index, source: value.source, target: value.target })
+                    set.add(value.source)
+                    set.add(value.target)
+                })
+                const sourcesAndTargets = Array.from(set);
+                nodesData = []
+                sourcesAndTargets.forEach(item => {
+                    let data = { name: item }
+                    nodesData.push(data)
+                })
+            }
+
+
+
+
+
+
+
 
             let simulation = d3.forceSimulation()
                 .nodes(nodesData)
@@ -163,47 +242,128 @@ export default {
             //     .domain([minY, maxY])
             //     .range([padding, height - padding]);
 
-            let link = svg.append('g')
+            let link = plot.append('g')
                 .attr('class', 'links')
                 .selectAll('line')
                 .data(linksData)
                 .enter()
                 .append('line')
-                .attr('id', function (d) { return `Mar${d.id}` })
+                .attr('id', function (data) { return `Mar${d}K${data.id}` })
                 .attr('stroke-width', 4)
                 .style('stroke', "#666666")
-                .style('cursor','pointer')
+                .style('cursor', 'pointer')
                 .attr('marker-end', 'url(#markovArrowhead)')
-                .on("click", d => {
+                .on("click", data => {
+                    if (this.currentchoose.find(e => e == `Mar${d}K${data.id}`) == null) {
+                        this.currentchoose.push(`Mar${d}K${data.id}`)
 
 
-                    const ipRegex = /(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)/;
-                    // if(store.state.MarFromUser.find(e=>e.))
-                    // console.log(this.rootnum);
-                    if (store.state.MarFromUser.length == 0) {
-                        store.state.MarFromUser.push({ id: d.source.name.match(ipRegex)[1] })
+                        // 匹配IPv4地址的正则表达式
+                        const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
+                        // 使用match方法获取所有符合条件的IP地址
+                        const ipList = data.source.name.match(ipPattern);
+                        for (let i = 0; i < ipList.length - 1; i++) {
+                            let flag = 0;
+                            for (let j = 0; j < store.state.MarFromUser.length; j++) {
+                                if (store.state.MarFromUser[j].id == ipList[i] && store.state.MarFromUser[j].parentId == ipList[i + 1]) {
+                                    store.state.MarFromUser[j].k += 1
+                                    flag = 1
+                                }
+                            }
+                            if (flag == 0) {
+                                store.state.MarFromUser.push({ id: ipList[i], parentId: ipList[i + 1], k: 1 })
+                            }
+                        }
+
+                        // 使用match方法获取所有符合条件的IP地址
+                        const ipList2 = data.target.name.match(ipPattern);
+                        for (let i = 0; i < ipList2.length - 1; i++) {
+                            let flag = 0;
+                            for (let j = 0; j < store.state.MarFromUser.length; j++) {
+                                if (store.state.MarFromUser[j].id == ipList2[i] && store.state.MarFromUser[j].parentId == ipList2[i + 1]) {
+                                    store.state.MarFromUser[j].k += 1
+                                    flag = 1
+                                }
+                            }
+                            if (flag == 0) {
+                                store.state.MarFromUser.push({ id: ipList2[i], parentId: ipList2[i + 1], k: 1 })
+                            }
+                        }
+
+                        // const ipRegex = /(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)/;
+                        // // if(store.state.MarFromUser.find(e=>e.))
+                        // // console.log(this.rootnum);
+                        // if (store.state.MarFromUser.length == 0) {
+                        //     store.state.MarFromUser.push({ id: d.source.name.match(ipRegex)[1] })
+                        // }
+                        // const res1 = { id: d.source.name.match(ipRegex)[2], parentId: d.source.name.match(ipRegex)[1] }
+                        // const res2 = { id: d.target.name.match(ipRegex)[2], parentId: d.source.name.match(ipRegex)[2] }
+
+                        // if (store.state.MarFromUser.find(e => e.id == res1.id && e.parentId == res1.parentId) == null) {
+                        //     store.state.MarFromUser.push(res1)
+                        // }
+
+                        // if (store.state.MarFromUser.find(e => e.id == res2.id && e.parentId == res1.parentId) == null) {
+                        //     store.state.MarFromUser.push(res2)
+                        // }
+
+                        // console.log(store.state.MarFromUser);
+
+                        d3.select(`#Mar${d}K${data.id}`)
+                            .style("stroke", "#0fb2cc")
+                            .style("stroke-dasharray", 0);
+                        ElMessage.success("选取成功" + `Mar${d}K${data.id}`);
                     }
-                    const res1 = { id: d.source.name.match(ipRegex)[2], parentId: d.source.name.match(ipRegex)[1] }
-                    const res2 = { id: d.target.name.match(ipRegex)[2], parentId: d.source.name.match(ipRegex)[2] }
+                    else {
+                        let index = this.currentchoose.indexOf(`Mar${d}K${data.id}`);
+                        this.currentchoose.splice(index, 1)
+                        
+                        //取消选取
 
-                    if (store.state.MarFromUser.find(e => e.id == res1.id && e.parentId == res1.parentId) == null) {
-                        store.state.MarFromUser.push(res1)
+                         // 匹配IPv4地址的正则表达式
+                         const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
+                        // 使用match方法获取所有符合条件的IP地址
+                        const ipList = data.source.name.match(ipPattern);   
+                        const ipList2 = data.target.name.match(ipPattern);                       
+                        for (let i = 0; i < ipList.length - 1; i++) {
+                            for(let j = 0; j < store.state.MarFromUser.length; j++){
+                                if(store.state.MarFromUser[j].id == ipList[i] && store.state.MarFromUser[j].parentId == ipList[i + 1]){
+                                    store.state.MarFromUser[j].k -= 1
+                                }
+                                if(store.state.MarFromUser[j].id == ipList2[i] && store.state.MarFromUser[j].parentId == ipList2[i + 1]){
+                                    store.state.MarFromUser[j].k -= 1
+                                }
+                                if(store.state.MarFromUser[j].k == 0){
+                                    store.state.MarFromUser.splice(j,1)
+                                    j-=1
+                                }
+                            }
+                        }
+
+                        // let a = [1,2,3,4,5,6,7,8,9]
+                        // for(let i =0;i<a.length;i++){
+                        //     if(a[i]==3 || a[i]==4){
+                        //         a.splice(i,1)
+                        //         i -=1
+                        //     }
+                        //     console.log(i,a[i]);
+                        // }
+                        // console.log(a);
+
+                        console.log(store.state.MarFromUser);
+
+
+
+
+                        d3.select(`#Mar${d}K${data.id}`)
+                            .style("stroke", "#666666")
+                            .style("stroke-dasharray", 0);
+                        ElMessage.error("取消选取" + `Mar${d}K${data.id}`);
                     }
-
-                    if (store.state.MarFromUser.find(e => e.id == res2.id && e.parentId == res1.parentId) == null) {
-                        store.state.MarFromUser.push(res2)
-                    }
-
-
-                    console.log(store.state.MarFromUser);
-
-                    d3.select(`#Mar${d.id}`)
-                        .style("stroke", "#0fb2cc")
-                        .style("stroke-dasharray", 0);
                 })
             // 引用箭头定义
 
-            let linkText = svg.append('g')
+            let linkText = plot.append('g')
                 .attr('class', 'linkLabels')
                 .selectAll('text')
                 .data(linksData)
@@ -211,7 +371,7 @@ export default {
                 .text(d => d.type)
 
 
-            let node = svg.append('g')
+            let node = plot.append('g')
                 .attr('class', 'nodes')
                 .selectAll('circle')
                 .data(nodesData)
@@ -219,10 +379,11 @@ export default {
                 .append('circle')
                 .attr('r', 10)
                 .attr('fill', "#b256f0")
-                .attr('stroke',"white")
-                .attr('stroke-width',2)
+                .attr('stroke', "white")
+                .attr('stroke-width', 2)
 
-            let label = svg.append('g')
+            let label = plot.append('g')
+                .attr('class', 'labels')
                 .selectAll('text')
                 .data(nodesData)
                 .join('text')
@@ -232,6 +393,49 @@ export default {
             simulation.stop();
             simulation.tick(300);
             tickAction()
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 40])
+                .translateExtent([[-10000, -10000], [width + 100000, height + 10000000]])
+                // .filter(filter)
+                .on("zoom", zoomed);
+
+            svg.call(zoom)
+
+
+
+            function zoomed() {
+                plot.select('.nodes').attr("transform", d3.event.transform);
+                plot.select('.links').attr("transform", d3.event.transform);
+                plot.select('.labels').attr("transform", d3.event.transform);
+                plot.select('.linkLabels').attr("transform", d3.event.transform);
+            }
+
+            //预先缩放到中心位置
+            const plotWidth = plot.node().getBoundingClientRect().width;
+            const plotHeight = plot.node().getBoundingClientRect().height;
+
+            // console.log(plot.node().getBoundingClientRect())
+            // console.log(plot.node().getBBox())
+
+
+
+            let originTransformX = -plot.node().getBBox().x
+            let originTransformY = -plot.node().getBBox().y
+            let originTransformK = Math.min(1.0 * width / plotWidth, 1.0 * height / plotHeight) * 0.85
+
+            let smallPlotWidth = plotWidth * originTransformK;
+            let smallPlotHeight = plotHeight * originTransformK;
+
+            // originTransformX = originTransformX + (0.5 * width - 0.5 * smallPlotWidth)
+            // originTransformY = originTransformY + (0.5 * height - 0.5 * smallPlotHeight)
+
+            let offsetTransformX = (0.5 * width - 0.5 * smallPlotWidth)
+            let offsetTransformY = (0.5 * height - 0.5 * smallPlotHeight)
+
+
+            plot
+                .style('transform-origin', 'left top')
+                .attr("transform", `translate(${offsetTransformX},${offsetTransformY}) scale(${originTransformK}) translate(${originTransformX},${originTransformY})`)
 
 
         },

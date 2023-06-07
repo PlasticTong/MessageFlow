@@ -44,7 +44,7 @@ import FileSaver from 'file-saver'
 import * as q from 'd3-quicktool';
 import { objectPick } from '@vueuse/shared';
 import { linksUserCho } from "../api/index.ts"
-import { fetchMesData, testflask, mutiDraw, mutiCross } from "../api/index";
+import { fetchMesData, testflask, mutiDraw, mutiCross ,markovData} from "../api/index";
 // require('d3-quicktool')
 
 export default {
@@ -227,6 +227,20 @@ export default {
             // linksUserCho(store.state.filterresFromUser).then(res=>{
             //     console.log(res);
             // })
+
+            const dataSend = {
+                data:store.state.filterresFromUser,
+                parameter:{
+                    k:3,
+                    delta:7
+                }
+            }
+
+            markovData(dataSend).then(res=>{
+                console.log(res);
+            })
+
+
 
 
 
@@ -499,7 +513,7 @@ export default {
             svg.select('.yAxis').selectAll('.tick').selectAll('text').style('font-size', 17)
 
             const zoom = d3.zoom()
-                .scaleExtent([1, 40])
+                .scaleExtent([0.5, 40])
                 .translateExtent([[-1000, -1000], [width + 900, height + 100]])
                 // .filter(filter)
                 .on("zoom", zoomed);

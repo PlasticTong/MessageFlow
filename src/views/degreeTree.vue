@@ -1,7 +1,7 @@
 <template>
     <h2 class="mb10">消息流</h2>
     <!-- <div class="tree"> -->
-    <el-button @click="handleDraw">多层布局绘制</el-button>
+    <el-button @click="connect">连线</el-button>
     <svg id='dTree-plot'>
     </svg>
     <!-- </div> -->
@@ -22,6 +22,8 @@ export default {
 
             node2Draw: [],
             link2Draw: [],
+            node1Draw: [],
+            link1Draw: [],
 
             numselect: 0
 
@@ -45,7 +47,7 @@ export default {
             deep: true,
             handler() {
                 // this.drawLayer();
-                console.log(this.numselect);
+                // console.log(this.numselect);
                 this.drawLayer(this.numselect);
                 this.numselect++
             }
@@ -57,7 +59,6 @@ export default {
 
 
                     const mesByTime1 = res.data.list.filter((e) => { return e.time <= store.state.time.end && e.time > store.state.time.start })
-                    console.log(mesByTime1);
                     const uniqueArr = mesByTime1.filter((item, index) => {
                         return !mesByTime1.slice(0, index).some((prevItem) => {
                             return (prevItem.target === item.target && prevItem.source === item.source);
@@ -73,23 +74,21 @@ export default {
                     })
                     const nodesDataForDraw = []
                     Array.from(nodeset).forEach((e, index) => {
-                        nodesDataForDraw.push({ id: index, name: e })
+                        let str = e.replace(/\./g, '');
+
+                        nodesDataForDraw.push({ id: index, nameRe: str ,name:e})
                     })
 
                     const linkss = []
                     uniqueArr.forEach(e => {
                         const source = nodesDataForDraw.find(ele => ele.name == e.source).id
                         const target = nodesDataForDraw.find(ele => ele.name == e.target).id
-                        console.log(source, target);
                         linkss.push([source, target])
                     })
                     this.linksdown = JSON.parse(JSON.stringify(linkss));
 
                     this.node2Draw = nodesDataForDraw
                 })
-                console.log("这是初始化");
-                console.log(this.node2Draw);
-                console.log(this.link2Draw);
 
             }
         }
@@ -136,18 +135,22 @@ export default {
                 }
             }
             node1Draw = Array.from(node1Draw).map(v => {
-                return { 'name': v }
+                let str = v.replace(/\./g, ''); // 使用正则表达式替换掉所有的"."字符
+                return { 'name': v, 'nameRe': str }
             })
+
+            this.node1Draw = node1Draw
+            this.link1Draw = link1Draw
 
             //图2准备数据
             let node2Draw = this.node2Draw;
             let link2Draw = this.link2Draw;
 
             //图1开始模拟
-            this.forceDirectedSimulation(node1Draw,link1Draw,width,height)
+            this.forceDirectedSimulation(node1Draw, link1Draw, width, height)
 
             //图2开始模拟
-            this.forceDirectedSimulation(node2Draw,link2Draw,width,height)
+            this.forceDirectedSimulation(node2Draw, link2Draw, width, height)
 
             //求取比例尺
             // let scaleX = d3.scaleLinear()
@@ -164,42 +167,42 @@ export default {
             //                 .range([padding,height - padding])
 
             let scaleX = d3.scaleLinear()
-                            .domain([padding,width - padding])
-                            .range([padding,width - padding])
+                .domain([padding, width - padding])
+                .range([padding, width - padding])
             let scaleY = d3.scaleLinear()
-                            .domain([padding,height - padding])
-                            .range([padding,height - padding])
+                .domain([padding, height - padding])
+                .range([padding, height - padding])
 
             //求取缩放比例
             const data1Size = {
-                'width':Math.max(...node1Draw.map(v=>v.x)) - Math.min(...node1Draw.map(v=>v.x)),
-                'height':Math.max(...node1Draw.map(v=>v.y)) - Math.min(...node1Draw.map(v=>v.y)),
+                'width': Math.max(...node1Draw.map(v => v.x)) - Math.min(...node1Draw.map(v => v.x)),
+                'height': Math.max(...node1Draw.map(v => v.y)) - Math.min(...node1Draw.map(v => v.y)),
             }
-            const data1Scale = Math.min(width / data1Size.width,height / data1Size.height)
+            const data1Scale = Math.min(width / data1Size.width, height / data1Size.height)
             const data2Size = {
-                'width':Math.max(...node2Draw.map(v=>v.x)) - Math.min(...node2Draw.map(v=>v.x)),
-                'height':Math.max(...node2Draw.map(v=>v.y)) - Math.min(...node2Draw.map(v=>v.y)),
+                'width': Math.max(...node2Draw.map(v => v.x)) - Math.min(...node2Draw.map(v => v.x)),
+                'height': Math.max(...node2Draw.map(v => v.y)) - Math.min(...node2Draw.map(v => v.y)),
             }
-            const data2Scale = Math.min(width / data2Size.width,height / data2Size.height)
-            const finalScale = Math.min(data1Scale,data2Scale) * 0.7
+            const data2Scale = Math.min(width / data2Size.width, height / data2Size.height)
+            const finalScale = Math.min(data1Scale, data2Scale) * 0.7
 
 
-            console.log('1:',finalScale)
+            // console.log('1:', finalScale)
 
             //绘图
             //图1
-            this.drawGraph(1, node1Draw, link1Draw, 50 ,scaleX,scaleY,width,height,finalScale)
+            this.drawGraph(1, node1Draw, link1Draw, 50, scaleX, scaleY, width, height, finalScale)
             //图2
             if (d == 0) {
                 this.drawGraph(2,
                     this.node2Draw, this.link2Draw
-                    , 450,scaleX,scaleY,width,height,finalScale)
+                    , 450, scaleX, scaleY, width, height, finalScale)
             }
 
 
 
         },
-        forceDirectedSimulation(nodes,links,width,height){//进行力导引模拟
+        forceDirectedSimulation(nodes, links, width, height) {//进行力导引模拟
             //配置模拟器
             let simulation = d3.forceSimulation()
                 .nodes(nodes)
@@ -215,15 +218,15 @@ export default {
             //启动
             simulation.stop();
             simulation.tick(300);
-            
+
         }
         ,
-        drawGraph(d, nodes, links, bias,scaleX,scaleY,width,height,finalScale) {//绘制2.5D视图
-                        
+        drawGraph(d, nodes, links, bias, scaleX, scaleY, width, height, finalScale) {//绘制2.5D视图
+
 
             //错误检测 
             if (nodes.length == 0)
-                return ;
+                return;
 
             const svg = d3.select('#dTree-plot')
             const plot = svg.append('g')
@@ -243,39 +246,56 @@ export default {
             //     .style('stroke', "gray")
             //     .style('stroke-width', 2)
             //     .style('transform',`translate(${width * 0.7}px,${bias}px) rotateX(60deg) rotateZ(30deg)`)
-            
+
             //边框
-            const border = svg.append('g').style('transform',`translate(${0}px,${bias}px)`)
+            const border = svg.append('g').style('transform', `translate(${0}px,${bias}px)`)
             border.append('line')
-                .attr('x1','25%')
-                .attr('y1',10)
-                .attr('x2','95%')
-                .attr('y2',10)
+                .attr('x1', '25%')
+                .attr('y1', 10)
+                .attr('x2', '95%')
+                .attr('y2', 10)
                 .style('stroke', "gray")
                 .style('stroke-width', 2)
             border.append('line')
-                .attr('x1','5%')
-                .attr('y1',350)
-                .attr('x2','75%')
-                .attr('y2',350)
+                .attr('x1', '5%')
+                .attr('y1', 350)
+                .attr('x2', '75%')
+                .attr('y2', 350)
                 .style('stroke', "gray")
                 .style('stroke-width', 2)
             border.append('line')
-                .attr('x1','95%')
-                .attr('y1',10)
-                .attr('x2','75%')
-                .attr('y2',350)
+                .attr('x1', '95%')
+                .attr('y1', 10)
+                .attr('x2', '75%')
+                .attr('y2', 350)
                 .style('stroke', "gray")
                 .style('stroke-width', 2)
             border.append('line')
-                .attr('x1','5%')
-                .attr('y1',350)
-                .attr('x2','25%')
-                .attr('y2',10)
+                .attr('x1', '5%')
+                .attr('y1', 350)
+                .attr('x2', '25%')
+                .attr('y2', 10)
                 .style('stroke', "gray")
                 .style('stroke-width', 2)
 
 
+
+            // let line = d3.line()
+            //     .x(function (d) { return scaleX(d.x); })
+            //     .y(function (d) { return scaleY(d.y); })
+            //     .curve(d3.curveBasis);
+
+            // let linkPlot = plot.append('g')
+            //     .selectAll('path')
+            //     .data(links)
+            //     .join('path')
+            //     .classed(`link${bias}`, true)
+            //     .attr("d", function (d) {
+            //         return line([d.source, { x: (d.source.x + d.target.x) / 2, y: (d.source.y + d.target.y) / 2 }, d.target]);
+            //     })
+            //     .attr('stroke-width', 3)
+            //     .style('stroke', "#666666")
+            //     .attr('marker-end', 'url(#degreeArrowhead)');
 
             let linkPlot = plot.append('g')
                 .selectAll('line')
@@ -295,25 +315,26 @@ export default {
                 .data(nodes)
                 .join('circle')
                 .attr('r', 10)
+                .attr('id', (data) => { return `node${d}s${data.name}` })
                 .attr('fill', "#b256f0")
-                .attr('stroke',"white")
-                .attr('stroke-width',2)
-                .classed(`node${bias}`, true)
+                .attr('stroke', "white")
+                .attr('stroke-width', 2)
+                // .classed(`node${bias}`, true)
                 .attr('cx', (d) => { return scaleX(d.x) })
                 .attr('cy', (d) => { return scaleY(d.y) })
 
-            let nodeText = plot.append('g')
-                .selectAll('text')
-                .data(nodes)
-                .join('text')
-                .text(d => d.name)
-                .classed(`text${bias}`, true)
-                .attr('x', function (d) {
-                    return scaleX(d.x) - 0.5 * this.getBoundingClientRect().width
-                })
-                .attr('y', function (d) {
-                    return scaleY(d.y) + 0.3 * this.getBoundingClientRect().height
-                })
+            // let nodeText = plot.append('g')
+            //     .selectAll('text')
+            //     .data(nodes)
+            //     .join('text')
+            //     .text(d => d.name)
+            //     .classed(`text${bias}`, true)
+            //     .attr('x', function (d) {
+            //         return scaleX(d.x) - 0.5 * this.getBoundingClientRect().width
+            //     })
+            //     .attr('y', function (d) {
+            //         return scaleY(d.y) + 0.3 * this.getBoundingClientRect().height
+            //     })
 
 
             //求取移动距离
@@ -327,11 +348,44 @@ export default {
             let offsetTransformX = (0.5 * SVGwidth - 0.5 * smallPlotWidth)
             let offsetTransformY = (0.5 * SVGheight - 0.5 * smallPlotHeight)
 
-            console.log('2:',finalScale)
+            // console.log('2:', finalScale)
             //旋转
             // plot.style('transform', `translate(${offsetTransformX}px,${bias}px) scale(${finalScale}) rotateX(60deg)`)
             plot.style('transform', `translate(${offsetTransformX}px,${bias}px) scale(${finalScale}) translate(${originTransformX}px,${0}px) rotateX(45deg)`)
 
+
+
+        },
+        connect() {
+            //定义长宽，padding
+            const width = 400;
+            const height = 400;
+            const padding = 70;
+
+            let scaleX = d3.scaleLinear()
+                .domain([padding, width - padding])
+                .range([padding, width - padding])
+            let scaleY = d3.scaleLinear()
+                .domain([padding, height - padding])
+                .range([padding, height - padding])
+
+            const svg = d3.select('#dTree-plot')
+            const plot = svg.append('g')
+                .attr("id", `plot3`)
+
+            const a1 = d3.select(`[id="node1s192.168.1.1"]`)
+            a1.attr("fill","red")
+            console.log(a1.node().getBBox());
+            // d3.select(`[id="node1s192.168.1.1"]`).attr("fill","red")
+            d3.select(`[id="node2s192.168.1.1"]`).attr("fill","red")
+            let linkPlot = plot.append('g')
+                .append('line')
+                .attr('stroke-width', 3)
+                .style('stroke', "#666666")
+                .attr('x1', this.node1Draw[0].x )
+                .attr('y1',this.node1Draw[0].y )
+                .attr('x2',this.node2Draw[0].x)
+                .attr('y2', this.node2Draw[0].y )
 
 
         },
@@ -344,15 +398,14 @@ export default {
             })
             const linkMuti = []
             this.linksdown.forEach(e => {
-                console.log(e);
                 linkMuti.push('1 ' + e[0] + ' ' + e[1] + ' 1')
             })
 
             let node_data = []
             mutiDraw({ node: nodeMuti, link: linkMuti }).then(res => {
-                console.log("点集是：", this.node2Draw);
-                console.log("连线是：", this.linksdown);
-                console.log("坐标是：", res.data);
+                // console.log("点集是：", this.node2Draw);
+                // console.log("连线是：", this.linksdown);
+                // console.log("坐标是：", res.data);
                 node_data = res.data
             })
 
@@ -361,17 +414,16 @@ export default {
 
             const padding = 10;
             const link_data = this.linksdown;
-            let minX = Math.min(...node_data.map(d=>d.x));
-            let maxX = Math.max(...node_data.map(d=>d.x));
-            let minY = Math.min(...node_data.map(d=>d.y));
-            let maxY = Math.max(...node_data.map(d=>d.y));
-            console.log(node_data,link_data);
+            let minX = Math.min(...node_data.map(d => d.x));
+            let maxX = Math.max(...node_data.map(d => d.x));
+            let minY = Math.min(...node_data.map(d => d.y));
+            let maxY = Math.max(...node_data.map(d => d.y));
 
 
             const posXScale = d3
                 .scaleLinear()
                 .domain([minX, maxX])
-                .range([padding, width -  padding]);
+                .range([padding, width - padding]);
             const posYScale = d3
                 .scaleLinear()
                 .domain([minY, maxY])

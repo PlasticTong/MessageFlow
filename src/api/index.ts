@@ -45,6 +45,17 @@ export const mutiCross = (data1: JSON,data2: JSON,) => {
     });
 };
 
+export const markovData = (data1: JSON) => {
+    return requestForFlask({
+        url: '/mesfilter/markov',
+        method: 'post',
+        data: data1
+        // params:{
+        //     data:data
+        // }
+    });
+};
+
 export const fetchData = () => {
     return request({
         url: './table.json',
@@ -55,6 +66,26 @@ export const fetchData = () => {
 export const fetchMesData = () => {
     return request({
         url: './tablemes2.json',
+        method: 'get'
+    });
+};
+
+export const fetchMar2data = () => {
+    return request({
+        url: './marTree2.json',
+        method: 'get'
+    });
+};
+
+export const fetchMar3data = () => {
+    return request({
+        url: './marTree3.json',
+        method: 'get'
+    });
+};
+export const fetchMar4data = () => {
+    return request({
+        url: './marTree4.json',
         method: 'get'
     });
 };
