@@ -81,54 +81,54 @@ export default {
         // handleClose(done) {
         //     this.visible = false; done()
         // },
-        handleConnectivity() {
-            // console.log("qwewqeqweqweqweqweqeqwe");
-            store.state.filterresFromUser = []
-            // console.log(store.state.filtermesresByhold);
-            for (let j = 1; j <= this.threshold; j++) {
-                for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
-                    if (store.state.filtermesresByhold.find(e =>
-                        (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - j)
-                        || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + j)
-                    ) != null) {
-                        store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
-                        // console.log(store.state.filtermesresByhold[i].id);
-                        d3.select("linegroup2")
-                            .append('path')
-                            .attr('d', line([{
-                                name: d.source,
-                                time: d.time
-                            }, {
-                                name: d.target,
-                                time: d.time + 1
-                            }]))
-                            .attr('id', `E2${d.id}`)
-                            .style("stroke", that.marColor)
-                            .style("stroke-dasharray", 0)
-                            // .attr('class', `M${d.markov}`)
-                            .attr('fill', 'none')
-                            .attr('stroke-width', 5)
-                            .attr("marker-end", "url(#arrow)")
-                            .style('cursor', 'pointer')
-                            .on("click", function () {
-                                ElMessage.error("取消选取" + d.id);
-                                let index = store.state.filterresFromUser.indexOf(d.id);
-                                store.state.filterresFromUser.splice(index, 1)
-                                console.log("取消" + store.state.filterresFromUser);
-                                d3.select(`#E2${d.id}`)
-                                    .remove()
-                            })
-                        d3.select(`#E${store.state.filtermesresByhold[i].id}`)
-                            .classed("chooseline", true)
-                            .classed("unchooseline", false)
-                    }
-                }
-            }
-            ElMessage.success("连线成功！");
-            // console.log(store.state.filterresFromUser);
+        // handleConnectivity() {
+        //     // console.log("qwewqeqweqweqweqweqeqwe");
+        //     store.state.filterresFromUser = []
+        //     // console.log(store.state.filtermesresByhold);
+        //     for (let j = 1; j <= this.threshold; j++) {
+        //         for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
+        //             if (store.state.filtermesresByhold.find(e =>
+        //                 (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - j)
+        //                 || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + j)
+        //             ) != null) {
+        //                 store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
+        //                 // console.log(store.state.filtermesresByhold[i].id);
+        //                 d3.select("linegroup2")
+        //                     .append('path')
+        //                     .attr('d', line([{
+        //                         name: d.source,
+        //                         time: d.time
+        //                     }, {
+        //                         name: d.target,
+        //                         time: d.time + 1
+        //                     }]))
+        //                     .attr('id', `E2${d.id}`)
+        //                     .style("stroke", that.marColor)
+        //                     .style("stroke-dasharray", 0)
+        //                     // .attr('class', `M${d.markov}`)
+        //                     .attr('fill', 'none')
+        //                     .attr('stroke-width', 5)
+        //                     .attr("marker-end", "url(#arrow)")
+        //                     .style('cursor', 'pointer')
+        //                     .on("click", function () {
+        //                         ElMessage.error("取消选取" + d.id);
+        //                         let index = store.state.filterresFromUser.indexOf(d.id);
+        //                         store.state.filterresFromUser.splice(index, 1)
+        //                         console.log("取消" + store.state.filterresFromUser);
+        //                         d3.select(`#E2${d.id}`)
+        //                             .remove()
+        //                     })
+        //                 d3.select(`#E${store.state.filtermesresByhold[i].id}`)
+        //                     .classed("chooseline", true)
+        //                     .classed("unchooseline", false)
+        //             }
+        //         }
+        //     }
+        //     ElMessage.success("连线成功！");
+        //     // console.log(store.state.filterresFromUser);
 
-            // this.generateVis2()
-        },
+        //     // this.generateVis2()
+        // },
         handleReset() {
             store.state.filterresFromUser = [],
                 store.state.filtermesresLine = []
@@ -166,7 +166,7 @@ export default {
             // console.log(sourcesAndTargets);
             // console.log(crossmes);
             await mutiCross(crossmes, sourcesAndTargets).then(res => {
-                console.log(res.data);
+                // console.log(res.data);
                 store.state.filteruserres = res.data;
             })
 
@@ -210,7 +210,7 @@ export default {
             var date = new Date();
             var year = date.getFullYear(); //月份从0~11，所以加一
             let month = date.getMonth();
-            console.log("month", month);
+            // console.log("month", month);
             var dateArr = [
                 date.getMonth() + 1,
                 date.getDate(),
@@ -344,9 +344,16 @@ export default {
             //     // console.log(linegroup);
 
 
+            const timeX = []
+            for(let i = minTime.time;i<maxTime.time + 2;i++){
+                timeX.push(i)
+                // console.log(i);
+            }
+            // console.log(timeX);
             // 设置坐标轴
-            const xScale = d3.scaleLinear()
-                .domain([minTime.time, maxTime.time + 1])
+            const xScale = d3.scaleBand()
+                // .domain([1,2,3,3.5])
+                .domain(timeX)
                 .range([0, innerwidth]);
             const yScale = d3.scaleBand()
                 .domain(filterUserData)
@@ -394,7 +401,7 @@ export default {
             // })
             //绘制边和箭头
             filterMesDataByHold.forEach(d => {
-                console.log(d.source, d.time);
+                // console.log(d.source, d.time);
                 linegroup.append('path')
                     .attr('d', line([{
                         name: d.source,
@@ -418,7 +425,7 @@ export default {
                         if (store.state.filterresFromUser.find(user => user == d.id) == null) {
                             ElMessage.success("选取成功" + d.id);
                             store.state.filterresFromUser.push(d.id)
-                            console.log("成功" + store.state.filterresFromUser);
+                            // console.log("成功" + store.state.filterresFromUser);
                             // d3.select(`#E${d.id}`)
                             //     .style("stroke", that.marColor)
                             //     .style("stroke-dasharray", 0);
@@ -444,7 +451,7 @@ export default {
                                     ElMessage.error("取消选取" + d.id);
                                     let index = store.state.filterresFromUser.indexOf(d.id);
                                     store.state.filterresFromUser.splice(index, 1)
-                                    console.log("取消" + store.state.filterresFromUser);
+                                    // console.log("取消" + store.state.filterresFromUser);
                                     d3.select(`#E2${d.id}`)
                                         .remove()
                                 })
@@ -558,7 +565,7 @@ export default {
                                 ElMessage.error("取消选取" + store.state.filtermesresByhold[i].id);
                                 let index = store.state.filterresFromUser.indexOf(store.state.filtermesresByhold[i].id);
                                 store.state.filterresFromUser.splice(index, 1)
-                                console.log("取消" + store.state.filterresFromUser);
+                                // console.log("取消" + store.state.filterresFromUser);
                                 d3.select(`#E2${store.state.filtermesresByhold[i].id}`)
                                     .remove()
                             })
@@ -723,7 +730,7 @@ export default {
     watch: {
         Obj(newVal, oldVal) {
             //可以对数据执行相应的操作
-            console.log("重新绘制")
+            // console.log("重新绘制")
             this.generateVis2()
 
         }
