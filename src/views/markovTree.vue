@@ -80,8 +80,8 @@ export default {
 
             // 添加defs元素
             let defs = plot.append('defs')
-
-
+            
+            //定义marker
             defs.append('marker')
                 .attr('id', 'markovArrowhead')
                 .attr('markerWidth', 3)
@@ -92,6 +92,21 @@ export default {
                 .append('path')
                 .attr('fill', '#434343')
                 .attr('d', 'M 0,0 L 3,1.5 L 0,3')
+            //定义文字背景滤镜    
+            let markovTextBackground = defs.append('filter')
+                .attr('id','markovTextBackground')
+                .attr('x', -0.05)
+                .attr('y', -0.05)
+                .attr('width', 1.1)
+                .attr('height', 1.1)
+            markovTextBackground.append('feFlood')
+                .attr('flood-color', 'orange')
+                .attr('flood-opacity', 0.9)
+            markovTextBackground.append('feComposite')
+                .attr('in', 'SourceGraphic')
+                .attr('operator', 'over')
+
+
 
             let nodesData = [
                 { 'name': '192.168.1.2-192.168.1.4', 'sex': 'F' },
@@ -179,13 +194,7 @@ export default {
                 })
             }
 
-
-
-
-
-
-
-
+            //利用力导引图模拟坐标
             let simulation = d3.forceSimulation()
                 .nodes(nodesData)
 
@@ -193,45 +202,12 @@ export default {
                 .force('charge_force', d3.forceManyBody().strength(-600))
                 .force('center_force', d3.forceCenter(width / 2, height / 2))
 
-            const len = 0
-
-            simulation.on('tick', tickAction)
-
-            function tickAction() {
-                node
-                    .attr('cx', (d) => { return d.x + len })
-                    .attr('cy', (d) => { return d.y + len })
-
-                link
-                    .attr('x1', (d) => { return d.source.x + len })
-                    .attr('y1', (d) => { return d.source.y + len })
-                    .attr('x2', (d) => { return d.target.x + len })
-                    .attr('y2', (d) => { return d.target.y + len })
-
-                label
-                    .attr('x', function (d) {
-                        return d.x + len - 0.5 * this.getBoundingClientRect().width
-                    })
-                    .attr('y', function (d) {
-                        return d.y + len + 0.3 * this.getBoundingClientRect().height
-                    })
-
-                linkText
-                    .attr("x", function (d) {
-                        return (d.source.x + d.target.x) / 2 + len;
-                    })
-                    .attr("y", function (d) {
-                        return (d.source.y + d.target.y) / 2 + len;
-                    })
-
-            }
-
             let linkForce = d3.forceLink(linksData)
                 .id((d) => { return d.name })
-
             simulation.force('links', linkForce)
 
-
+            simulation.stop();
+            simulation.tick(300);
 
             // const posXScale = d3
             //     .scaleLinear()
@@ -242,6 +218,7 @@ export default {
             //     .domain([minY, maxY])
             //     .range([padding, height - padding]);
 
+            //创建元素
             let link = plot.append('g')
                 .attr('class', 'links')
                 .selectAll('line')
@@ -253,6 +230,10 @@ export default {
                 .style('stroke', "#666666")
                 .style('cursor', 'pointer')
                 .attr('marker-end', 'url(#markovArrowhead)')
+                .attr('x1', (d) => { return d.source.x })
+                .attr('y1', (d) => { return d.source.y })
+                .attr('x2', (d) => { return d.target.x })
+                .attr('y2', (d) => { return d.target.y })
                 .on("click", data => {
                     if (this.currentchoose.find(e => e == `Mar${d}K${data.id}`) == null) {
                         this.currentchoose.push(`Mar${d}K${data.id}`)
@@ -361,7 +342,6 @@ export default {
                         ElMessage.error("取消选取" + `Mar${d}K${data.id}`);
                     }
                 })
-            // 引用箭头定义
 
             let linkText = plot.append('g')
                 .attr('class', 'linkLabels')
@@ -369,7 +349,12 @@ export default {
                 .data(linksData)
                 .join('text')
                 .text(d => d.type)
-
+                .attr("x", function (d) {
+                    return (d.source.x + d.target.x) / 2;
+                })
+                .attr("y", function (d) {
+                    return (d.source.y + d.target.y) / 2;
+                })
 
             let node = plot.append('g')
                 .attr('class', 'nodes')
@@ -381,6 +366,15 @@ export default {
                 .attr('fill', "#b256f0")
                 .attr('stroke', "white")
                 .attr('stroke-width', 2)
+                .attr('cx', (d) => { return d.x })
+                .attr('cy', (d) => { return d.y  })
+                .on('mouseover',(d)=>{
+                    // console.log('over_d:',d)
+                    label.dispatch('show',{'detail':d.name})
+                })
+                .on('mouseout',(d)=>{
+                    label.dispatch('hide',{'detail':d.name})
+                })
 
             let label = plot.append('g')
                 .attr('class', 'labels')
@@ -388,54 +382,59 @@ export default {
                 .data(nodesData)
                 .join('text')
                 .text(d => d.name)
+                .attr('x', function (d) {
+                    return d.x - 0.5 * this.getBoundingClientRect().width
+                })
+                .attr('y', function (d) {
+                    return d.y + 0.3 * this.getBoundingClientRect().height - 20
+                })
+                .attr('filter','url(#markovTextBackground)')
+                .on('show',function(d){
+                    if(d.name == d3.event.detail){
+                        d3.select(this).style('display',null)
+                    }
+                })
+                .on('hide',function(d){
+                    if(d.name == d3.event.detail){
+                        d3.select(this).style('display','none')
+                    }
+                })
 
-            //启动
-            simulation.stop();
-            simulation.tick(300);
-            tickAction()
-            const zoom = d3.zoom()
-                .scaleExtent([0.1, 40])
-                .translateExtent([[-10000, -10000], [width + 100000, height + 10000000]])
-                // .filter(filter)
-                .on("zoom", zoomed);
-
-            svg.call(zoom)
 
 
+                
 
+            //设定zoom
             function zoomed() {
                 plot.select('.nodes').attr("transform", d3.event.transform);
                 plot.select('.links').attr("transform", d3.event.transform);
                 plot.select('.labels').attr("transform", d3.event.transform);
                 plot.select('.linkLabels').attr("transform", d3.event.transform);
             }
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 40])
+                .translateExtent([[-10000, -10000], [width + 100000, height + 10000000]])
+                // .filter(filter)
+                .on("zoom", zoomed);
+            svg.call(zoom)
+
 
             //预先缩放到中心位置
             const plotWidth = plot.node().getBoundingClientRect().width;
             const plotHeight = plot.node().getBoundingClientRect().height;
-
-            // console.log(plot.node().getBoundingClientRect())
-            // console.log(plot.node().getBBox())
-
-
-
             let originTransformX = -plot.node().getBBox().x
             let originTransformY = -plot.node().getBBox().y
             let originTransformK = Math.min(1.0 * width / plotWidth, 1.0 * height / plotHeight) * 0.85
-
             let smallPlotWidth = plotWidth * originTransformK;
             let smallPlotHeight = plotHeight * originTransformK;
-
-            // originTransformX = originTransformX + (0.5 * width - 0.5 * smallPlotWidth)
-            // originTransformY = originTransformY + (0.5 * height - 0.5 * smallPlotHeight)
-
             let offsetTransformX = (0.5 * width - 0.5 * smallPlotWidth)
             let offsetTransformY = (0.5 * height - 0.5 * smallPlotHeight)
-
-
             plot
                 .style('transform-origin', 'left top')
                 .attr("transform", `translate(${offsetTransformX},${offsetTransformY}) scale(${originTransformK}) translate(${originTransformX},${originTransformY})`)
+
+            //取消文本的可见性
+            label.style('display','none') //在最后取消可见性是因为要保持最优缩放连文本尺寸也算在内
 
 
         },
