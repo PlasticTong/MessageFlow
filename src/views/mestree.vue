@@ -44,7 +44,7 @@ import FileSaver from 'file-saver'
 import * as q from 'd3-quicktool';
 import { objectPick } from '@vueuse/shared';
 import { linksUserCho } from "../api/index.ts"
-import { fetchMesData, testflask, mutiDraw, mutiCross ,markovData} from "../api/index";
+import { fetchMesData, testflask, mutiDraw, mutiCross, markovData } from "../api/index";
 // require('d3-quicktool')
 
 export default {
@@ -81,29 +81,54 @@ export default {
         // handleClose(done) {
         //     this.visible = false; done()
         // },
-        handleConnectivity() {
-            // console.log("qwewqeqweqweqweqweqeqwe");
-            store.state.filterresFromUser = []
-            // console.log(store.state.filtermesresByhold);
-            for (let j = 1; j <= this.threshold; j++) {
-                for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
-                    if (store.state.filtermesresByhold.find(e =>
-                        (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - j)
-                        || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + j)
-                    ) != null) {
-                        store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
-                        // console.log(store.state.filtermesresByhold[i].id);
-                        d3.select(`#E${store.state.filtermesresByhold[i].id}`)
-                            .classed("chooseline", true)
-                            .classed("unchooseline", false)
-                    }
-                }
-            }
-            ElMessage.success("连线成功！");
-            // console.log(store.state.filterresFromUser);
+        // handleConnectivity() {
+        //     // console.log("qwewqeqweqweqweqweqeqwe");
+        //     store.state.filterresFromUser = []
+        //     // console.log(store.state.filtermesresByhold);
+        //     for (let j = 1; j <= this.threshold; j++) {
+        //         for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
+        //             if (store.state.filtermesresByhold.find(e =>
+        //                 (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - j)
+        //                 || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + j)
+        //             ) != null) {
+        //                 store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
+        //                 // console.log(store.state.filtermesresByhold[i].id);
+        //                 d3.select("linegroup2")
+        //                     .append('path')
+        //                     .attr('d', line([{
+        //                         name: d.source,
+        //                         time: d.time
+        //                     }, {
+        //                         name: d.target,
+        //                         time: d.time + 1
+        //                     }]))
+        //                     .attr('id', `E2${d.id}`)
+        //                     .style("stroke", that.marColor)
+        //                     .style("stroke-dasharray", 0)
+        //                     // .attr('class', `M${d.markov}`)
+        //                     .attr('fill', 'none')
+        //                     .attr('stroke-width', 5)
+        //                     .attr("marker-end", "url(#arrow)")
+        //                     .style('cursor', 'pointer')
+        //                     .on("click", function () {
+        //                         ElMessage.error("取消选取" + d.id);
+        //                         let index = store.state.filterresFromUser.indexOf(d.id);
+        //                         store.state.filterresFromUser.splice(index, 1)
+        //                         console.log("取消" + store.state.filterresFromUser);
+        //                         d3.select(`#E2${d.id}`)
+        //                             .remove()
+        //                     })
+        //                 d3.select(`#E${store.state.filtermesresByhold[i].id}`)
+        //                     .classed("chooseline", true)
+        //                     .classed("unchooseline", false)
+        //             }
+        //         }
+        //     }
+        //     ElMessage.success("连线成功！");
+        //     // console.log(store.state.filterresFromUser);
 
-            // this.generateVis2()
-        },
+        //     // this.generateVis2()
+        // },
         handleReset() {
             store.state.filterresFromUser = [],
                 store.state.filtermesresLine = []
@@ -138,14 +163,14 @@ export default {
                 set.add(item.target);
             });
             const sourcesAndTargets = Array.from(set);
-            console.log(sourcesAndTargets);
-            console.log(crossmes);
-            await mutiCross(crossmes,sourcesAndTargets).then(res => {
-                console.log(res.data);
+            // console.log(sourcesAndTargets);
+            // console.log(crossmes);
+            await mutiCross(crossmes, sourcesAndTargets).then(res => {
+                // console.log(res.data);
                 store.state.filteruserres = res.data;
             })
 
-            
+
 
             // const arr2WithIndex = sourcesAndTargets.map((value) => {
             //     let num = 0;
@@ -179,13 +204,13 @@ export default {
 
             ElMessage.success("筛选成功！");
             await this.generateVis2()
-            await this.handleConnectivity()
+            // await this.handleConnectivity()
         },
         handleExport() {
             var date = new Date();
             var year = date.getFullYear(); //月份从0~11，所以加一
             let month = date.getMonth();
-            console.log("month", month);
+            // console.log("month", month);
             var dateArr = [
                 date.getMonth() + 1,
                 date.getDate(),
@@ -229,14 +254,14 @@ export default {
             // })
 
             const dataSend = {
-                data:store.state.filterresFromUser,
-                parameter:{
-                    k:3,
-                    delta:7
+                data: store.state.filterresFromUser,
+                parameter: {
+                    k: 3,
+                    delta: 7
                 }
             }
 
-            markovData(dataSend).then(res=>{
+            markovData(dataSend).then(res => {
                 console.log(res);
             })
 
@@ -301,9 +326,11 @@ export default {
             let background = g.append("rect").attr("class", "bg")
             let view = g.append("g").attr("class", "view")
             let linegroup = g.append("g").attr("class", "linegroup");
+            let linegroup2 = g.append("g").attr("class", "linegroup2");
             let dotgroup = g.append("g").attr("class", "dotgroup");
             let grid = g.append("g").attr("class", "grid")
             let axis = g.append("g").attr("class", "axis")
+
 
             //     //在页面中添加svg 支持拖拽和缩放
             //    linegroup.attr("width", 3000).attr("height", 600)
@@ -317,9 +344,16 @@ export default {
             //     // console.log(linegroup);
 
 
+            const timeX = []
+            for(let i = minTime.time;i<maxTime.time + 2;i++){
+                timeX.push(i)
+                // console.log(i);
+            }
+            // console.log(timeX);
             // 设置坐标轴
-            const xScale = d3.scaleLinear()
-                .domain([minTime.time, maxTime.time + 1])
+            const xScale = d3.scaleBand()
+                // .domain([1,2,3,3.5])
+                .domain(timeX)
                 .range([0, innerwidth]);
             const yScale = d3.scaleBand()
                 .domain(filterUserData)
@@ -367,6 +401,7 @@ export default {
             // })
             //绘制边和箭头
             filterMesDataByHold.forEach(d => {
+                // console.log(d.source, d.time);
                 linegroup.append('path')
                     .attr('d', line([{
                         name: d.source,
@@ -376,6 +411,7 @@ export default {
                         time: d.time + 1
                     }]))
                     .attr('id', `E${d.id}`)
+                    .style('cursor', 'pointer')
                     .classed("chooseline", false)
                     .classed("unchooseline", true)
                     // .attr('class', `M${d.markov}`)
@@ -389,19 +425,67 @@ export default {
                         if (store.state.filterresFromUser.find(user => user == d.id) == null) {
                             ElMessage.success("选取成功" + d.id);
                             store.state.filterresFromUser.push(d.id)
-                            console.log("成功" + store.state.filterresFromUser);
-                            d3.select(`#E${d.id}`)
+                            // console.log("成功" + store.state.filterresFromUser);
+                            // d3.select(`#E${d.id}`)
+                            //     .style("stroke", that.marColor)
+                            //     .style("stroke-dasharray", 0);
+
+                            linegroup2
+                                .append('path')
+                                .attr('d', line([{
+                                    name: d.source,
+                                    time: d.time
+                                }, {
+                                    name: d.target,
+                                    time: d.time + 1
+                                }]))
+                                .attr('id', `E2${d.id}`)
                                 .style("stroke", that.marColor)
-                                .style("stroke-dasharray", 0);
-                        } else {
-                            ElMessage.error("取消选取" + d.id);
-                            let index = store.state.filterresFromUser.indexOf(d.id);
-                            store.state.filterresFromUser.splice(index, 1)
-                            console.log("取消" + store.state.filterresFromUser);
-                            d3.select(`#E${d.id}`)
-                                .style("stroke", that.messageColor)
-                                .style("stroke-dasharray", 6);
+                                .style("stroke-dasharray", 0)
+                                // .attr('class', `M${d.markov}`)
+                                .attr('fill', 'none')
+                                .attr('stroke-width', 5)
+                                .attr("marker-end", "url(#arrow)")
+                                .style('cursor', 'pointer')
+                                .on("click", function () {
+                                    ElMessage.error("取消选取" + d.id);
+                                    let index = store.state.filterresFromUser.indexOf(d.id);
+                                    store.state.filterresFromUser.splice(index, 1)
+                                    // console.log("取消" + store.state.filterresFromUser);
+                                    d3.select(`#E2${d.id}`)
+                                        .remove()
+                                })
+
+
+
                         }
+                        // else {
+                        //     ElMessage.error("取消选取" + d.id);
+                        //     let index = store.state.filterresFromUser.indexOf(d.id);
+                        //     store.state.filterresFromUser.splice(index, 1)
+                        //     console.log("取消" + store.state.filterresFromUser);
+                        //     d3.select(`#E2${d.id}`)
+                        //         .style("stroke", that.messageColor)
+                        //         .style("stroke-dasharray", 6);
+
+
+                        //     // linegroup2
+                        //     //     .append('path')
+                        //     //     .attr('d', line([{
+                        //     //         name: d.source,
+                        //     //         time: d.time
+                        //     //     }, {
+                        //     //         name: d.target,
+                        //     //         time: d.time + 1
+                        //     //     }]))
+                        //     //     .attr('id', `E2${d.id}`)
+                        //     //     .style("stroke", "none")
+                        //     //     .style("stroke-dasharray", 0)
+                        //     //     // .attr('class', `M${d.markov}`)
+                        //     //     .attr('fill', 'none')
+                        //     //     .attr('stroke-width', 5)
+                        //     //     .attr("marker-end", "url(#arrow)")
+                        // }
 
                         // if (d.markov != undefined) {
                         //     // 恢复上次选择的颜色
@@ -449,25 +533,85 @@ export default {
                     .style("fill", "black");
             });
 
+            //连线
+            store.state.filterresFromUser = []
+            // console.log(store.state.filtermesresByhold);
+            for (let j = 1; j <= this.threshold; j++) {
+                for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
+                    if (store.state.filtermesresByhold.find(e =>
+                        (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - j)
+                        || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + j)
+                    ) != null) {
+                        store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
+                        // console.log(store.state.filtermesresByhold[i]);
+                        linegroup2
+                            .append('path')
+                            .attr('d', line([{
+                                name: store.state.filtermesresByhold[i].source,
+                                time: store.state.filtermesresByhold[i].time
+                            }, {
+                                name: store.state.filtermesresByhold[i].target,
+                                time: store.state.filtermesresByhold[i].time + 1
+                            }]))
+                            .attr('id', `E2${store.state.filtermesresByhold[i].id}`)
+                            .style("stroke", that.marColor)
+                            .style("stroke-dasharray", 0)
+                            // .attr('class', `M${d.markov}`)
+                            .attr('fill', 'none')
+                            .attr('stroke-width', 5)
+                            .attr("marker-end", "url(#arrow)")
+                            .style('cursor', 'pointer')
+                            .on("click", function () {
+                                ElMessage.error("取消选取" + store.state.filtermesresByhold[i].id);
+                                let index = store.state.filterresFromUser.indexOf(store.state.filtermesresByhold[i].id);
+                                store.state.filterresFromUser.splice(index, 1)
+                                // console.log("取消" + store.state.filterresFromUser);
+                                d3.select(`#E2${store.state.filtermesresByhold[i].id}`)
+                                    .remove()
+                            })
+                        // d3.select(`#E${store.state.filtermesresByhold[i].id}`)
+                        //     .classed("chooseline", true)
+                        //     .classed("unchooseline", false)
+                    }
+                }
+            }
+
+            // let linkmust = linegroup2
+            //     .append('path')
+            //     .attr('d', line([{
+            //         name: "192.168.1.2",
+            //         time: 1
+            //     }, {
+            //         name: "192.168.1.10",
+            //         time: 2
+            //     }]))
+            //     // .attr('id', `E${d.id}`)
+            //     .style("stroke", "red")
+            //     .style("stroke-dasharray", 0)
+            //     // .attr('class', `M${d.markov}`)
+            //     .attr('fill', 'none')
+            //     .attr('stroke-width', 5)
+            //     .attr("marker-end", "url(#arrow)")
+
 
 
             // //加一个坐标轴的遮罩层
             let xAxisModel = svg.select('#maingroup')
-                                .select('.axis')
-                                .append('rect')
-                                .attr('x',0)
-                                .attr('y',-50)
-                                .attr('width','100%')
-                                .attr('height',80)
-                                .attr('fill','white')
+                .select('.axis')
+                .append('rect')
+                .attr('x', 0)
+                .attr('y', -50)
+                .attr('width', '100%')
+                .attr('height', 80)
+                .attr('fill', 'white')
             let yAxisModel = svg.select('#maingroup')
-                                .select('.axis')
-                                .append('rect')
-                                .attr('x',-50)
-                                .attr('y',0)
-                                .attr('width',160)
-                                .attr('height','100%')
-                                .attr('fill','white')
+                .select('.axis')
+                .append('rect')
+                .attr('x', -50)
+                .attr('y', 0)
+                .attr('width', 160)
+                .attr('height', '100%')
+                .attr('fill', 'white')
 
 
 
@@ -506,11 +650,13 @@ export default {
             gX.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
 
             svg.select('.linegroup').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
+            svg.select('.linegroup2').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
             svg.select('.dotgroup').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
 
             //配置字体大小
             svg.select('.xAxis').selectAll('.tick').selectAll('text').style('font-size', 17)
             svg.select('.yAxis').selectAll('.tick').selectAll('text').style('font-size', 17)
+
 
             const zoom = d3.zoom()
                 .scaleExtent([0.5, 40])
@@ -524,12 +670,15 @@ export default {
             function zoomed() {
                 const radio = 0.5
                 svg.select('.linegroup').attr("transform", d3.event.transform);
+                svg.select('.linegroup2').attr("transform", d3.event.transform);
                 svg.select('.dotgroup').attr("transform", d3.event.transform);
                 // svg.select('.linegroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${d3.event.transform.k})`);
                 // svg.select('.dotgroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${d3.event.transform.k})`);
 
                 //连线的粗细随缩放保持不变
                 svg.select('.linegroup').selectAll('path').attr("stroke-width", 5 * 1.0 / d3.event.transform.k)
+                //连线的粗细随缩放保持不变
+                svg.select('.linegroup2').selectAll('path').attr("stroke-width", 5 * 1.0 / d3.event.transform.k)
                 //点的大小随缩放保持不变
                 svg.select('.dotgroup').selectAll('circle').attr("r", `${8 * 1.0 / d3.event.transform.k}`)
                 //轴的字体大小，刻度线大小，轴的粗细保持不变
@@ -545,6 +694,8 @@ export default {
                 svg.select('.yAxis').attr("transform", `translate(${calAppendX()},${d3.event.transform.y}) scale(${d3.event.transform.k})`)
 
             }
+
+
 
 
 
@@ -579,7 +730,7 @@ export default {
     watch: {
         Obj(newVal, oldVal) {
             //可以对数据执行相应的操作
-            console.log("重新绘制")
+            // console.log("重新绘制")
             this.generateVis2()
 
         }

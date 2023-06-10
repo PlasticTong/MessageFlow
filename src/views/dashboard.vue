@@ -47,6 +47,7 @@
         </el-card>
       </el-col>
     </el-row>
+    <markInfo></markInfo>
   </div>
 </template>
 
@@ -58,6 +59,7 @@ import martree from "../views/markovTree.vue"
 import mtree from "../views/mestree.vue"
 import timebrush from "../views/timebrush.vue"
 import timeselect from "./timeselect.vue";
+import markInfo from "./marInfoTable.vue";
 
 import Schart from "vue-schart";
 import { ref, reactive } from "vue";

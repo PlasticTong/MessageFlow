@@ -64,7 +64,7 @@ export default {
                 ElMessage.error("图片过多")
             }
             else {
-                console.log(this.value);
+                // console.log(this.value);
                 let a = +this.value[0]
                 let b = +this.value[1]
                 this.marks = {
@@ -144,7 +144,7 @@ export default {
             let width = svg.node().getBoundingClientRect().width
             let height = svg.node().getBoundingClientRect().height
             const plot = svg.append('g')
-            console.log(width,height);
+            // console.log(width,height);
 
             // 添加defs元素
             let defs = svg.append('defs')
@@ -308,6 +308,7 @@ export default {
             //预先缩放到中心位置
             const plotWidth = plot.node().getBoundingClientRect().width;
             const plotHeight = plot.node().getBoundingClientRect().height;
+
 
 
             let originTransformX = -plot.node().getBBox().x
