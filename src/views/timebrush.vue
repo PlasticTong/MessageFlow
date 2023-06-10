@@ -309,9 +309,6 @@ export default {
             const plotWidth = plot.node().getBoundingClientRect().width;
             const plotHeight = plot.node().getBoundingClientRect().height;
 
-            // console.log(plot.node().getBoundingClientRect())
-            // console.log(plot.node().getBBox())
-
 
 
             let originTransformX = -plot.node().getBBox().x
@@ -320,9 +317,6 @@ export default {
 
             let smallPlotWidth = plotWidth * originTransformK;
             let smallPlotHeight = plotHeight * originTransformK;
-
-            // originTransformX = originTransformX + (0.5 * width - 0.5 * smallPlotWidth)
-            // originTransformY = originTransformY + (0.5 * height - 0.5 * smallPlotHeight)
 
             let offsetTransformX = (0.5 * width - 0.5 * smallPlotWidth)
             let offsetTransformY = (0.5 * height - 0.5 * smallPlotHeight)
@@ -338,7 +332,7 @@ export default {
 
             let widthALL
             let heightALL
-            plot.select('.labels').attr("i",function(){
+            plot.select('.labels').attr("i",function(){ 
                 widthALL = this.getBoundingClientRect().width/2
                 heightALL = this.getBoundingClientRect().height/2
             })
