@@ -46,8 +46,7 @@ export default {
             handler() {
                 // this.drawLayer();
                 // console.log(this.numselect);
-                this.drawLayer(this.numselect);
-                this.numselect++
+                this.drawLayer();
             }
         },
         timeSelect: {
@@ -94,7 +93,7 @@ export default {
 
     methods: {
 
-        drawLayer(d) {
+        drawLayer() {
 
             /**
              * 
@@ -103,6 +102,8 @@ export default {
              */
             const svg = d3.select('#dTree-plot');
             svg.selectAll('*').remove()
+
+            
 
             const svgWidth = svg.node().getBoundingClientRect().width
             const svgHeight = svg.node().getBoundingClientRect().height
@@ -195,6 +196,8 @@ export default {
             //图2开始模拟坐标
             this.forceDirectedSimulation(node2Draw, link2Draw, innerWidth, _innerHeight)
 
+            
+
 
             //绑定外部连接边数据 TODO 也许可以在速度方面优化一下
             let graphLink = []
@@ -259,8 +262,7 @@ export default {
                             finalScale,
                             plotSkew)
             //图2
-            if (d == 0) {
-                this.drawGraph('global',
+            this.drawGraph('global',
                                 this.node2Draw, 
                                 this.link2Draw,
                                 {'x':padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180),'y':padding.top + middleMargin + partHeight}, 
@@ -269,7 +271,7 @@ export default {
                                 finalScale,
                                 plotSkew)
 
-                this.autofit(
+            this.autofit(
                     innerWidth,
                     _innerHeight,
                     {'x':padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180),'y':padding.top},
@@ -277,7 +279,6 @@ export default {
                     finalScale,
                     plotSkew,
                 );
-            }
 
 
 
@@ -295,6 +296,8 @@ export default {
                     return d.name == link_name
                 }).node()
 
+
+                console.log(globalNode)
 
                 const globalNodePos = {
                     'x':globalNode.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * globalNode.getBoundingClientRect().width,

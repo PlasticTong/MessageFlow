@@ -142,13 +142,19 @@ export default {
             const svg = d3.select(svgDOM)
             svg.selectAll('*').remove()
 
+            console.log('hh')
+
+
             //错误检测
             if(nodeData.length == 0)
                 return;
 
+
             const width = svg.node().getBoundingClientRect().width
             const height = svg.node().getBoundingClientRect().height
             const plot = svg.append('g')
+
+            
 
             // 添加defs元素
             let defs = svg.append('defs')
