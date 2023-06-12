@@ -1,16 +1,9 @@
 <template>
   <div>
-    <el-row :gutter="20">
-      <el-col :span="4">
-      <el-card shadow="hover">
-          <timeselect></timeselect>
-        </el-card>
-      </el-col>
-      <el-col :span="20">
-      <el-card shadow="hover">
-          <timebrush></timebrush>
-        </el-card>
-      </el-col>
+    <el-row>
+      <el-card style="width:100%" shadow="hover">
+          <timechooser></timechooser>
+      </el-card>
     </el-row>
     <!-- <el-row :gutter="20">
       <el-col :span="4">
@@ -57,8 +50,7 @@ import usertable from "../views/userinfo.vue";
 import dagre from "../views/degreeTree.vue"
 import martree from "../views/markovTree.vue"
 import mtree from "../views/mestree.vue"
-import timebrush from "../views/timebrush.vue"
-import timeselect from "./timeselect.vue";
+import timechooser from "./timechooser.vue";
 import markInfo from "./marInfoTable.vue";
 
 import Schart from "vue-schart";
