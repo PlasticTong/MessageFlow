@@ -11,8 +11,8 @@
     <el-table :data="tableDataForShow" highlight-current-row border class="table" ref="multipleTable"
       header-cell-class-name="table-header" @row-click=handleChoose>
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-      <el-table-column prop="source" label="起始点"></el-table-column>
-      <el-table-column prop="target" label="目标点">
+      <el-table-column prop="source.name" label="起始点"></el-table-column>
+      <el-table-column prop="target.name" label="目标点">
       </el-table-column>
       <el-table-column prop="time" label="传递时间"></el-table-column>
       <el-table-column prop="content" label="内容"></el-table-column>
@@ -33,7 +33,7 @@
 
 <script setup lang="ts" name="mestable">
 
-import { ref, reactive } from "vue";
+import { ref, reactive, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Delete, Edit, Search, Plus, Pointer } from "@element-plus/icons-vue";
 import { fetchMesData, testflask } from "../api/index";
@@ -52,6 +52,9 @@ function openDialog() {
   visiableDialog.value.dialogVisble = true
   console.log(visiableDialog.value.dialogVisble);
 }
+watch(store.state.linkFByTime, (curr, old) => {
+  console.log(curr, old) //false true
+})
 
 
 
@@ -115,12 +118,12 @@ const handleFilter = () => {
     if (store.state.filtermes.hop == '') {
       store.state.filtermesres=[]
       console.log("没有跳数过滤");
-      tableData.value = res.data.list.filter((e: { source: string; target: string; time: number; content: string }) =>
-        ((store.state.filtermes.ip ? e.source == store.state.filtermes.ip : true) || (store.state.filtermes.ip ? e.target == store.state.filtermes.ip : true)) &&
-        (store.state.time.start ? e.time >= Number(store.state.time.start) : true) && (store.state.time.end ? e.time <= Number(store.state.time.end) : true) &&
+      tableData.value = store.state.linkFByTime.filter((e: { source: any; target: any; time: number; content: string }) =>
+        ((store.state.filtermes.ip ? e.source.name == store.state.filtermes.ip : true) || (store.state.filtermes.ip ? e.target.name == store.state.filtermes.ip : true)) &&
+        // (store.state.time.start ? e.time >= Number(store.state.time.start) : true) && (store.state.time.end ? e.time <= Number(store.state.time.end) : true) &&
         (store.state.filtermes.content ? e.content == store.state.filtermes.content : true)
       )
-      console.log(tableData.value.length);
+      console.log(tableData.value);
       
       pageTotal.value = tableData.value.length || 0
       store.state.filtermesres = tableData.value
@@ -129,13 +132,14 @@ const handleFilter = () => {
 
       var resForhop: any[] = [];
       store.state.filtermesres=[]
-      tableData.value = res.data.list.filter((e: { source: string; time: number; content: string ;target:string}) =>
-      // ((store.state.filtermes.ip ? e.source == store.state.filtermes.ip : true) || (store.state.filtermes.ip ? e.target == store.state.filtermes.ip : true)) &&
-        (store.state.filtermes.timestart ? e.time >= Number(store.state.filtermes.timestart) : true) && (store.state.filtermes.timeend ? e.time <= Number(store.state.filtermes.timeend) : true) && (store.state.filtermes.content ? e.content == store.state.filtermes.content : true))
-      console.log(tableData.value.length+"ci");
+      tableData.value = store.state.linkFByTime
+      // tableData.value = res.data.list.filter((e: { source: string; time: number; content: string ;target:string}) =>
+      // // ((store.state.filtermes.ip ? e.source == store.state.filtermes.ip : true) || (store.state.filtermes.ip ? e.target == store.state.filtermes.ip : true)) &&
+      //   (store.state.filtermes.timestart ? e.time >= Number(store.state.filtermes.timestart) : true) && (store.state.filtermes.timeend ? e.time <= Number(store.state.filtermes.timeend) : true) && (store.state.filtermes.content ? e.content == store.state.filtermes.content : true))
+      console.log(tableData.value);
       console.log("有跳数过滤");
       resForhop = getPrevN3(store.state.filtermes.ip, Number(store.state.filtermes.hop)-1, tableData.value).concat(getAfterN3(store.state.filtermes.ip, Number(store.state.filtermes.hop)-1, tableData.value))
-      // console.log(resForhop);
+      console.log(resForhop);
       const set = new Set(resForhop)
       tableData.value = Array.from(set)
       // console.log(tableData.value.length);
@@ -187,11 +191,13 @@ const handleFilter = () => {
       let result_low: any[] = [];
       let result_high= new Set();
       data.forEach((e: { target: any; time: number; })=>{
-            if(e.target == targetIp){
+            if(e.target.name == targetIp){
               result.add(e)
               result_low.push(e)
             }
       });
+      console.log(result_low);
+      
           
       for (let i = 0; i < n; i++) {
         // console.log("第"+i+"次");
@@ -202,7 +208,7 @@ const handleFilter = () => {
         for (let j = 0; j < result_low.length; j++) {
           // let source = result_low[j].source
           data.forEach((e: { target: any; time: number; })=>{
-            if(e.target == result_low[j].source && e.time <= result_low[j].time){
+            if(e.target.name == result_low[j].source.name && e.time <= result_low[j].time){
               result.add(e)
               result_high.add(e)
             }
@@ -222,22 +228,24 @@ const handleFilter = () => {
       let result_low: any[] = [];
       let result_high= new Set();;
       data.forEach((e: { source: any; time: number; })=>{
-            if(e.source == targetIp){
+        // console.log(e.source.name);
+        
+            if(e.source.name == targetIp){
               result.add(e)
               result_low.push(e)
             }
       });
           
       for (let i = 0; i < n; i++) {
-        console.log("第"+i+"次");
-        console.log(result_low);
+        // console.log("第"+i+"次");
+        // console.log(result_low);
         
         
         result_high.clear()
         for (let j = 0; j < result_low.length; j++) {
           // let source = result_low[j].source
           data.forEach((e: { target: any; time: number; source: any})=>{
-            if(e.source == result_low[j].target && e.time >= result_low[j].time){
+            if(e.source.name == result_low[j].target.name && e.time >= result_low[j].time){
               result.add(e)
               result_high.add(e)
             }
@@ -321,10 +329,14 @@ const handleFilter = () => {
 // 获取表格数据
 const getData = () => {
   if (pagestate.choosemespage == 0) {
-    fetchMesData().then((res) => {
-      tableDataForShow.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex) * query.pageSize);
-      pageTotalForShow.value = res.data.pageTotal || 50;
-    })
+    console.log(store.state.linkFByTime);
+    
+    tableDataForShow.value = store.state.linkFByTime.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex) * query.pageSize);
+      pageTotalForShow.value = store.state.linkFByTime.length || 50;
+    // fetchMesData().then((res) => {
+    //   tableDataForShow.value = res.data.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex) * query.pageSize);
+    //   pageTotalForShow.value = res.data.pageTotal || 50;
+    // })
   }
   else {
     tableDataForShow.value = tableData.value.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex) * query.pageSize);

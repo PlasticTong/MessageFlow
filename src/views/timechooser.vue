@@ -142,8 +142,6 @@ export default {
             const svg = d3.select(svgDOM)
             svg.selectAll('*').remove()
 
-            console.log('hh')
-
 
             //错误检测
             if(nodeData.length == 0)
@@ -325,6 +323,9 @@ export default {
             }
             //上传选中的数据
             store.state.time = data.time
+            store.state.linkFByTime = data.linkData
+            store.state.nodeFByTime = data.nodeData
+            // console.log(data);
 
         },
         clearPlotData(){

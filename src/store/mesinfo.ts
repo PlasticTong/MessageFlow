@@ -14,9 +14,9 @@ export const store = createStore({
 				start:0,
 				end:0
 			},
-			//选取后的时间信息
-			mesBytime:[],
-			nodeBytime:[],
+			//选取时间后的信息
+			linkFByTime:[],
+			nodeFByTime:[],
 
 
 

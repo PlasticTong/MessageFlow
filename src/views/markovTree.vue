@@ -150,7 +150,7 @@ export default {
                 linksData = []
                 const set = new Set();
                 markovBy2.forEach((value, index) => {
-                    linksData.push({ id: index, source: value.source, target: value.target })
+                    linksData.push({ id: index, source: value.source, target: value.target,type:value.type })
                     set.add(value.source)
                     set.add(value.target)
                 })
@@ -166,7 +166,7 @@ export default {
                 linksData = []
                 const set = new Set();
                 markovBy3.forEach((value, index) => {
-                    linksData.push({ id: index, source: value.source, target: value.target })
+                    linksData.push({ id: index, source: value.source, target: value.target ,type:value.type})
                     set.add(value.source)
                     set.add(value.target)
                 })
@@ -182,7 +182,7 @@ export default {
                 linksData = []
                 const set = new Set();
                 markovBy4.forEach((value, index) => {
-                    linksData.push({ id: index, source: value.source, target: value.target })
+                    linksData.push({ id: index, source: value.source, target: value.target,type:value.type })
                     set.add(value.source)
                     set.add(value.target)
                 })
