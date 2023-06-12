@@ -299,6 +299,10 @@ export default {
                 'nodeData':nodesDataForDraw,
                 'linkData':uniqueArr,
                 'selected':false,
+                "time":{
+                    "start":this.timeSt,
+                    'end':this.timeEd
+                }
             }) 
         },
         deletePlotData(data){
@@ -314,6 +318,7 @@ export default {
                 }
             }
             //上传选中的数据
+            store.state.time = data.time
 
         },
         clearPlotData(){
