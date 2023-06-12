@@ -1,23 +1,49 @@
 <template>
     <div>
-    <el-table :data="marInfo2" highlight-current-row border class="table" ref="multipleTable"
+        <el-tabs v-model="activeName" type="card">
+            <el-tab-pane label="k=2" name="first">
+                <el-table :data="tableDataListFor2" highlight-current-row border class="table" ref="multipleTable"
       header-cell-class-name="table-header">
       <el-table-column prop="source" label="起始点"></el-table-column>
       <el-table-column prop="target" label="目标点"></el-table-column>
       <el-table-column prop="type" label="权值"></el-table-column>
       </el-table>
-      <el-table :data="marInfo3" highlight-current-row border class="table" ref="multipleTable"
-      header-cell-class-name="table-header">
+                <div class="pagination">
+                    <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query2.pageIndex"
+                        :page-size="query2.pageSize" :total="marInfo2.length"
+                        @current-change="handleCurrentChangeFor2"></el-pagination>
+                </div>
+            </el-tab-pane>
+            <el-tab-pane label="k=3" name="second">
+                <el-table :data="tableDataListFor3" highlight-current-row border
+                    class="table" ref="multipleTable" header-cell-class-name="table-header">
       <el-table-column prop="source" label="起始点"></el-table-column>
       <el-table-column prop="target" label="目标点"></el-table-column>
       <el-table-column prop="type" label="权值"></el-table-column>
       </el-table>
-      <el-table :data="marInfo4" highlight-current-row border class="table" ref="multipleTable"
-      header-cell-class-name="table-header">
+                <div class="pagination">
+                    <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query3.pageIndex"
+                        :page-size="query3.pageSize" :total="marInfo3.length"
+                        @current-change="handleCurrentChangeFor3"></el-pagination>
+                </div>
+            </el-tab-pane>
+            <el-tab-pane label="k=4" name="third"><el-table :data="tableDataListFor4" highlight-current-row border class="table"
+                    ref="multipleTable" header-cell-class-name="table-header">
       <el-table-column prop="source" label="起始点"></el-table-column>
       <el-table-column prop="target" label="目标点"></el-table-column>
       <el-table-column prop="type" label="权值"></el-table-column>
       </el-table>
+                <div class="pagination">
+                    <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query4.pageIndex"
+                        :page-size="query4.pageSize" :total="marInfo4.length"
+                        @current-change="handleCurrentChangeFor4"></el-pagination>
+                </div>
+            </el-tab-pane>
+        </el-tabs>
+
+
+
+
     </div>
 </template>
 
@@ -25,20 +51,34 @@
 import store from "../store/mesinfo"
 import { linksUserCho, fetchMar2data, fetchMar3data, fetchMar4data } from "../api/index.ts"
 export default {
-    data(){
-        fetchMar2data().then(res=>{
+    data() {
+        fetchMar2data().then(res => {
             this.marInfo2 = res.data.link
         })
-        fetchMar3data().then(res=>{
+        fetchMar3data().then(res => {
             this.marInfo3 = res.data.link
         })
-        fetchMar4data().then(res=>{
+        fetchMar4data().then(res => {
             this.marInfo4 = res.data.link
         })
-        return{
-            marInfo2:[],
-            marInfo3:[],
-            marInfo4:[],
+        return {
+            marInfo2: [],
+            marInfo3: [],
+            marInfo4: [],
+            activeName: 'first',
+            //三组马尔科夫链
+            query2: {
+                pageIndex: 1,
+                pageSize: 10
+            },
+            query3: {
+                pageIndex: 1,
+                pageSize: 10
+            },
+            query4: {
+                pageIndex: 1,
+                pageSize: 10
+            }
             // marInfo:[
             //     marInfo2,
             //     marInfo3,
@@ -47,16 +87,32 @@ export default {
         }
     },
     computed: {
+        tableDataListFor2() {
+            return this.marInfo2.slice((this.query2.pageIndex - 1) * this.query2.pageSize, (this.query2.pageIndex) * this.query2.pageSize)
+        },
+        tableDataListFor3() {
+            return this.marInfo3.slice((this.query3.pageIndex - 1) * this.query3.pageSize, (this.query3.pageIndex) * this.query3.pageSize)
+        },
+        tableDataListFor4() {
+            return this.marInfo4.slice((this.query4.pageIndex - 1) * this.query4.pageSize, (this.query4.pageIndex) * this.query4.pageSize)
+        },
         Obj() {
             return store.state.filtermesres
         }
     },
-    methods:{
+    methods: {
+        handleCurrentChangeFor2(currentPage) {
+            this.query2.pageIndex = currentPage;
+        },
+        handleCurrentChangeFor3(currentPage) {
+            this.query3.pageIndex = currentPage;
+        },
+        handleCurrentChangeFor4(currentPage) {
+            this.query4.pageIndex = currentPage;
+        },
     }
 }
 
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>
