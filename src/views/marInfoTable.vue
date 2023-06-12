@@ -3,11 +3,11 @@
         <el-tabs v-model="activeName" type="card">
             <el-tab-pane label="k=2" name="first">
                 <el-table :data="tableDataListFor2" highlight-current-row border class="table" ref="multipleTable"
-      header-cell-class-name="table-header">
-      <el-table-column prop="source" label="起始点"></el-table-column>
-      <el-table-column prop="target" label="目标点"></el-table-column>
-      <el-table-column prop="type" label="权值"></el-table-column>
-      </el-table>
+                    header-cell-class-name="table-header">
+                    <el-table-column prop="source" label="起始点"></el-table-column>
+                    <el-table-column prop="target" label="目标点"></el-table-column>
+                    <el-table-column prop="type" label="权值"></el-table-column>
+                </el-table>
                 <div class="pagination">
                     <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query2.pageIndex"
                         :page-size="query2.pageSize" :total="marInfo2.length"
@@ -15,24 +15,24 @@
                 </div>
             </el-tab-pane>
             <el-tab-pane label="k=3" name="second">
-                <el-table :data="tableDataListFor3" highlight-current-row border
-                    class="table" ref="multipleTable" header-cell-class-name="table-header">
-      <el-table-column prop="source" label="起始点"></el-table-column>
-      <el-table-column prop="target" label="目标点"></el-table-column>
-      <el-table-column prop="type" label="权值"></el-table-column>
-      </el-table>
+                <el-table :data="tableDataListFor3" highlight-current-row border class="table" ref="multipleTable"
+                    header-cell-class-name="table-header">
+                    <el-table-column prop="source" label="起始点"></el-table-column>
+                    <el-table-column prop="target" label="目标点"></el-table-column>
+                    <el-table-column prop="type" label="权值"></el-table-column>
+                </el-table>
                 <div class="pagination">
                     <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query3.pageIndex"
                         :page-size="query3.pageSize" :total="marInfo3.length"
                         @current-change="handleCurrentChangeFor3"></el-pagination>
                 </div>
             </el-tab-pane>
-            <el-tab-pane label="k=4" name="third"><el-table :data="tableDataListFor4" highlight-current-row border class="table"
-                    ref="multipleTable" header-cell-class-name="table-header">
-      <el-table-column prop="source" label="起始点"></el-table-column>
-      <el-table-column prop="target" label="目标点"></el-table-column>
-      <el-table-column prop="type" label="权值"></el-table-column>
-      </el-table>
+            <el-tab-pane label="k=4" name="third"><el-table :data="tableDataListFor4" highlight-current-row border
+                    class="table" ref="multipleTable" header-cell-class-name="table-header">
+                    <el-table-column prop="source" label="起始点"></el-table-column>
+                    <el-table-column prop="target" label="目标点"></el-table-column>
+                    <el-table-column prop="type" label="权值"></el-table-column>
+                </el-table>
                 <div class="pagination">
                     <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query4.pageIndex"
                         :page-size="query4.pageSize" :total="marInfo4.length"

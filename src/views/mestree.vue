@@ -76,7 +76,6 @@ export default {
             return store.state.filtermesres
         }
     },
-
     methods: {
         // handleClose(done) {
         //     this.visible = false; done()

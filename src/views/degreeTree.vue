@@ -297,7 +297,7 @@ export default {
                 }).node()
 
 
-                console.log(globalNode)
+                // console.log(globalNode)
 
                 const globalNodePos = {
                     'x':globalNode.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * globalNode.getBoundingClientRect().width,

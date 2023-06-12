@@ -31,6 +31,18 @@
     <el-row :gutter="20">
       <el-col :span="12">
         <el-card shadow="hover">
+          <markInfo></markInfo>
+        </el-card>
+      </el-col>
+      <el-col :span="12">
+        <el-card shadow="hover">
+          <markChoose></markChoose>
+        </el-card>
+      </el-col>
+    </el-row>
+    <el-row :gutter="20">
+      <el-col :span="12">
+        <el-card shadow="hover">
         <martree></martree>
         </el-card>
       </el-col>
@@ -40,7 +52,7 @@
         </el-card>
       </el-col>
     </el-row>
-    <markInfo></markInfo>
+    
   </div>
 </template>
 
@@ -52,6 +64,7 @@ import martree from "../views/markovTree.vue"
 import mtree from "../views/mestree.vue"
 import timechooser from "./timechooser.vue";
 import markInfo from "./marInfoTable.vue";
+import markChoose from "./marChoose.vue";
 
 import Schart from "vue-schart";
 import { ref, reactive } from "vue";

@@ -30,8 +30,8 @@
         </div>
 
         <div class="time-unit-controll">
-            <el-checkbox style="width:100px;height:35px" border="true" label="选择" @change="changeSelected" v-model="data.selected"></el-checkbox>
-            <el-button style="width:100px;height:35px"  @click="deleteSelf" size="medium" type="danger">删除</el-button>
+            <el-checkbox style="width:100px;height:35px" border label="选择" @change="changeSelected" v-model="data.selected"></el-checkbox>
+            <el-button style="width:100px;height:35px"  @click="deleteSelf"  type="danger">删除</el-button>
         </div>
 
     </div>

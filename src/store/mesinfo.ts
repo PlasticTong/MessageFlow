@@ -56,8 +56,10 @@ export const store = createStore({
 			//用户筛选马尔可夫结果
 			NodeMarFromUser:[],
 			//用户筛选马尔可夫结果
-			MarFromUser:[
-			]
+			MarFromUser:[],
+
+			//用户选取了马尔科夫链，在表格中展示出来
+			marInfoTable:[]
 
 		}
 	},

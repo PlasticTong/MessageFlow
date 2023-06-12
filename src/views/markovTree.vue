@@ -290,6 +290,9 @@ export default {
 
                         // console.log(store.state.MarFromUser);
 
+                        store.state.marInfoTable.push({id:`#Mar${d}K${data.id}`,source:data.source.name,target:data.target.name,type:data.type})
+                        // console.log(store.state.marInfoTable);
+
                         d3.select(`#Mar${d}K${data.id}`)
                             .style("stroke", "#0fb2cc")
                             .style("stroke-dasharray", 0);
@@ -298,6 +301,8 @@ export default {
                     else {
                         let index = this.currentchoose.indexOf(`Mar${d}K${data.id}`);
                         this.currentchoose.splice(index, 1)
+                        let index1 = store.state.marInfoTable.indexOf({id:`#Mar${d}K${data.id}`,source:data.source.name,target:data.target.name,type:data.type});
+                        store.state.marInfoTable.splice(index1, 1)
                         
                         //取消选取
 
