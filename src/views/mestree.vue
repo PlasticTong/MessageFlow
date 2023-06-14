@@ -138,6 +138,7 @@ export default {
         async handleFliter() {
             // this.generateVis2()
             store.state.filtermesresByhold = store.state.filtermesres
+            // console.log(store.state.filtermesresByhold);
             // console.log("阈值：" + this.threshold);
             // // console.log(this.maxx,this.minn);
             // for (let i = 0; i < store.state.filtermesres.length; i++) {
@@ -156,16 +157,15 @@ export default {
                 if (!crossmes[item.time]) {
                     crossmes[item.time] = []
                 }
-                let data = [item.source, item.target]
+                let data = [item.source.name, item.target.name]
                 crossmes[item.time].push(data)
-                set.add(item.source);
-                set.add(item.target);
+                set.add(item.source.name);
+                set.add(item.target.name);
             });
             const sourcesAndTargets = Array.from(set);
             // console.log(sourcesAndTargets);
             // console.log(crossmes);
             await mutiCross(crossmes, sourcesAndTargets).then(res => {
-                // console.log(res.data);
                 store.state.filteruserres = res.data;
             })
 
@@ -403,10 +403,10 @@ export default {
                 // console.log(d.source, d.time);
                 linegroup.append('path')
                     .attr('d', line([{
-                        name: d.source,
+                        name: d.source.name ,
                         time: d.time
                     }, {
-                        name: d.target,
+                        name: d.target.name ,
                         time: d.time + 1
                     }]))
                     .attr('id', `E${d.id}`)
@@ -432,10 +432,10 @@ export default {
                             linegroup2
                                 .append('path')
                                 .attr('d', line([{
-                                    name: d.source,
+                                    name: d.source.name ,
                                     time: d.time
                                 }, {
-                                    name: d.target,
+                                    name: d.target.name ,
                                     time: d.time + 1
                                 }]))
                                 .attr('id', `E2${d.id}`)
@@ -509,7 +509,7 @@ export default {
                     })
                     .append('title')
                     .text(dd => {
-                        return `source: ${d.source}\ntarget: ${d.target}\ntime: ${d.time}\ncontent: ${d.content}`;
+                        return `source: ${d.source.name }\ntarget: ${d.target.name }\ntime: ${d.time}\ncontent: ${d.content}`;
                     });;
 
                 // d3.select(`#E${44}`)
@@ -519,14 +519,14 @@ export default {
                 // 绘制点
                 dotgroup.append("circle")
                     .attr("class", `T${d.time}`)
-                    .attr("cy", yScale(d.source) + 0.5 * yband)
+                    .attr("cy", yScale(d.source.name ) + 0.5 * yband)
                     .attr("cx", xScale(d.time))
                     .attr("r", 8)
                     .style("fill", "black");
 
                 dotgroup.append("circle")
                     .attr("class", `T${d.time + 1}`)
-                    .attr("cy", yScale(d.target) + 0.5 * yband)
+                    .attr("cy", yScale(d.target.name ) + 0.5 * yband)
                     .attr("cx", xScale(d.time + 1))
                     .attr("r", 8)
                     .style("fill", "black");
@@ -534,22 +534,21 @@ export default {
 
             //连线
             store.state.filterresFromUser = []
-            // console.log(store.state.filtermesresByhold);
             for (let j = 1; j <= this.threshold; j++) {
                 for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
                     if (store.state.filtermesresByhold.find(e =>
-                        (e.target == store.state.filtermesresByhold[i].source && e.time == store.state.filtermesresByhold[i].time - j)
-                        || (e.source == store.state.filtermesresByhold[i].target && e.time == store.state.filtermesresByhold[i].time + j)
+                        (e.target.name  == store.state.filtermesresByhold[i].source.name && e.time == store.state.filtermesresByhold[i].time - j)
+                        || (e.source.name  == store.state.filtermesresByhold[i].target.name  && e.time == store.state.filtermesresByhold[i].time + j)
                     ) != null) {
                         store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
                         // console.log(store.state.filtermesresByhold[i]);
                         linegroup2
                             .append('path')
                             .attr('d', line([{
-                                name: store.state.filtermesresByhold[i].source,
+                                name: store.state.filtermesresByhold[i].source.name ,
                                 time: store.state.filtermesresByhold[i].time
                             }, {
-                                name: store.state.filtermesresByhold[i].target,
+                                name: store.state.filtermesresByhold[i].target.name ,
                                 time: store.state.filtermesresByhold[i].time + 1
                             }]))
                             .attr('id', `E2${store.state.filtermesresByhold[i].id}`)

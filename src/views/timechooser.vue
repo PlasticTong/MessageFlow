@@ -281,6 +281,7 @@ export default {
             //复制数据
             nodesDataForDraw = JSON.parse(JSON.stringify(nodesDataForDraw))
             uniqueArr = JSON.parse(JSON.stringify(uniqueArr))
+           let  uniqueArr2 = JSON.parse(JSON.stringify(uniqueArr))
 
             //模拟点的位置
             let simulation = d3.forceSimulation()
@@ -302,6 +303,8 @@ export default {
                 'timeRange':this.timeSt + '  至  ' + this.timeEd,
                 'nodeData':nodesDataForDraw,
                 'linkData':uniqueArr,
+                'linkDataForDraw':uniqueArr2,
+                'linkDataAll':mesByTime1,
                 'selected':false,
                 "time":{
                     "start":this.timeSt,
@@ -324,7 +327,9 @@ export default {
             //上传选中的数据
             store.state.time = data.time
             store.state.linkFByTime = data.linkData
+            store.state.linkFByTimeAll = data.linkDataAll
             store.state.nodeFByTime = data.nodeData
+            store.state.linkFByTimeDraw= data.linkDataForDraw
             // console.log(data);
 
         },

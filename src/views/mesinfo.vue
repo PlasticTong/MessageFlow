@@ -123,7 +123,7 @@ const handleFilter = () => {
         // (store.state.time.start ? e.time >= Number(store.state.time.start) : true) && (store.state.time.end ? e.time <= Number(store.state.time.end) : true) &&
         (store.state.filtermes.content ? e.content == store.state.filtermes.content : true)
       )
-      console.log(tableData.value);
+      // console.log(tableData.value);
       
       pageTotal.value = tableData.value.length || 0
       store.state.filtermesres = tableData.value
@@ -136,10 +136,10 @@ const handleFilter = () => {
       // tableData.value = res.data.list.filter((e: { source: string; time: number; content: string ;target:string}) =>
       // // ((store.state.filtermes.ip ? e.source == store.state.filtermes.ip : true) || (store.state.filtermes.ip ? e.target == store.state.filtermes.ip : true)) &&
       //   (store.state.filtermes.timestart ? e.time >= Number(store.state.filtermes.timestart) : true) && (store.state.filtermes.timeend ? e.time <= Number(store.state.filtermes.timeend) : true) && (store.state.filtermes.content ? e.content == store.state.filtermes.content : true))
-      console.log(tableData.value);
+      // console.log(tableData.value);
       console.log("有跳数过滤");
       resForhop = getPrevN3(store.state.filtermes.ip, Number(store.state.filtermes.hop)-1, tableData.value).concat(getAfterN3(store.state.filtermes.ip, Number(store.state.filtermes.hop)-1, tableData.value))
-      console.log(resForhop);
+      // console.log(resForhop);
       const set = new Set(resForhop)
       tableData.value = Array.from(set)
       // console.log(tableData.value.length);
@@ -196,7 +196,7 @@ const handleFilter = () => {
               result_low.push(e)
             }
       });
-      console.log(result_low);
+      // console.log(result_low);
       
           
       for (let i = 0; i < n; i++) {
@@ -329,7 +329,7 @@ const handleFilter = () => {
 // 获取表格数据
 const getData = () => {
   if (pagestate.choosemespage == 0) {
-    console.log(store.state.linkFByTime);
+    // console.log(store.state.linkFByTime);
     
     tableDataForShow.value = store.state.linkFByTime.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex) * query.pageSize);
       pageTotalForShow.value = store.state.linkFByTime.length || 50;

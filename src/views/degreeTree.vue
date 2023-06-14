@@ -25,7 +25,7 @@ export default {
             link1Draw: [],
 
             numselect: 0,
-            showline:true,
+            showline: true,
         };
     },
     mounted() {
@@ -36,7 +36,7 @@ export default {
             return store.state.MarFromUser
         },
         timeSelect() {
-            return store.state.time
+            return store.state.linkFByTime
         }
     },
 
@@ -52,40 +52,45 @@ export default {
         timeSelect: {
             deep: true,
             handler() {
-                fetchMesData().then(res => {
-
-
-                    const mesByTime1 = res.data.list.filter((e) => { return e.time <= store.state.time.end && e.time > store.state.time.start })
-                    const uniqueArr = mesByTime1.filter((item, index) => {
-                        return !mesByTime1.slice(0, index).some((prevItem) => {
-                            return (prevItem.target === item.target && prevItem.source === item.source);
-                        });
-                    });
-                    this.linksdown = JSON.parse(JSON.stringify(uniqueArr));
-                    this.link2Draw = uniqueArr
-
-                    const nodeset = new Set()
-                    uniqueArr.forEach(function (e) {
-                        nodeset.add(e.source)
-                        nodeset.add(e.target)
-                    })
-                    const nodesDataForDraw = []
-                    Array.from(nodeset).forEach((e, index) => {
-                        let str = e.replace(/\./g, '');
-
-                        nodesDataForDraw.push({ id: index, nameRe: str ,name:e})
-                    })
-
-                    const linkss = []
-                    uniqueArr.forEach(e => {
-                        const source = nodesDataForDraw.find(ele => ele.name == e.source).id
-                        const target = nodesDataForDraw.find(ele => ele.name == e.target).id
-                        linkss.push([source, target])
-                    })
-                    this.linksdown = JSON.parse(JSON.stringify(linkss));
-
-                    this.node2Draw = nodesDataForDraw
+                this.link2Draw = JSON.parse(JSON.stringify(store.state.linkFByTimeDraw));
+                const nodesDataForDraw = []
+                store.state.nodeFByTime.forEach((e, index) => {
+                    let str = e.name.replace(/\./g, '');
+                    nodesDataForDraw.push({ id: index, nameRe: str, name: e.name })
                 })
+                this.node2Draw = nodesDataForDraw
+                // fetchMesData().then(res => {
+
+
+                //     const mesByTime1 = res.data.list.filter((e) => { return e.time <= store.state.time.end && e.time > store.state.time.start })
+                //     const uniqueArr = mesByTime1.filter((item, index) => {
+                //         return !mesByTime1.slice(0, index).some((prevItem) => {
+                //             return (prevItem.target === item.target && prevItem.source === item.source);
+                //         });
+                //     });
+                //     this.linksdown = JSON.parse(JSON.stringify(uniqueArr));
+                //     this.link2Draw = uniqueArr
+
+                //     const nodeset = new Set()
+                //     uniqueArr.forEach(function (e) {
+                //         nodeset.add(e.source)
+                //         nodeset.add(e.target)
+                //     })
+                //     const nodesDataForDraw = []
+                //     Array.from(nodeset).forEach((e, index) => {
+                //         let str = e.replace(/\./g, '');
+
+                //         nodesDataForDraw.push({ id: index, nameRe: str, name: e })
+                //     })
+                //     const linkss = []
+                //     uniqueArr.forEach(e => {
+                //         const source = nodesDataForDraw.find(ele => ele.name == e.source).id
+                //         const target = nodesDataForDraw.find(ele => ele.name == e.target).id
+                //         linkss.push([source, target])
+                //     })
+                //     this.linksdown = JSON.parse(JSON.stringify(linkss));
+                //     this.node2Draw = nodesDataForDraw
+                // })
 
             }
         }
@@ -103,18 +108,18 @@ export default {
             const svg = d3.select('#dTree-plot');
             svg.selectAll('*').remove()
 
-            
+
 
             const svgWidth = svg.node().getBoundingClientRect().width
             const svgHeight = svg.node().getBoundingClientRect().height
 
             //定义和计算长度属性
             const padding = {//外围padding
-                'bottom':40,
-                'top':40,
-                'left':40,
-                'right':40,
-            }; 
+                'bottom': 40,
+                'top': 40,
+                'left': 40,
+                'right': 40,
+            };
             const borderSkew = 20;//边框的倾斜角度（平面上的倾斜），单位deg
             const plotSkew = 45;//图像的倾斜角度（空间上的倾斜），单位deg
             const middleMargin = 40; //上下两区域的间距，也是两个边框的上下间距
@@ -141,7 +146,7 @@ export default {
                 .attr('d', 'M 0,-5 L 10,0 L 0,5')
             //定义文字背景滤镜    
             let degreeTextBackground = defs.append('filter')
-                .attr('id','degreeTextBackground')
+                .attr('id', 'degreeTextBackground')
                 .attr('x', -0.05)
                 .attr('y', -0.05)
                 .attr('width', 1.1)
@@ -154,11 +159,11 @@ export default {
                 .attr('operator', 'over')
 
             //构造重叠的层次关系
-            svg.append('g').classed('globalBorder',true)
-            svg.append('g').classed('globalPlot',true) 
-            svg.append('g').classed('outerLink',true)
-            svg.append('g').classed('localBorder',true)
-            svg.append('g').classed('localPlot',true)
+            svg.append('g').classed('globalBorder', true)
+            svg.append('g').classed('globalPlot', true)
+            svg.append('g').classed('outerLink', true)
+            svg.append('g').classed('localBorder', true)
+            svg.append('g').classed('localPlot', true)
 
 
             /**
@@ -196,14 +201,14 @@ export default {
             //图2开始模拟坐标
             this.forceDirectedSimulation(node2Draw, link2Draw, innerWidth, _innerHeight)
 
-            
+
 
 
             //绑定外部连接边数据 TODO 也许可以在速度方面优化一下
             let graphLink = []
-            for(let i = 0;i < node1Draw.length;i++)
-                for(let j = 0;j < node2Draw.length;j++){
-                    if(node1Draw[i].name == node2Draw[j].name){
+            for (let i = 0; i < node1Draw.length; i++)
+                for (let j = 0; j < node2Draw.length; j++) {
+                    if (node1Draw[i].name == node2Draw[j].name) {
                         graphLink.push(node1Draw[i].name)
                     }
                 }
@@ -223,27 +228,27 @@ export default {
              * 
              */
             svg.select('.localBorder').append('path') //local边界
-                .attr('d',`M ${padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180)} ${padding.top}
+                .attr('d', `M ${padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180)} ${padding.top}
                            L ${padding.left + partWidth} ${padding.top} 
                            L ${padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180) + innerWidth} ${padding.top + partHeight} 
                            L ${padding.left} ${padding.top + partHeight}
                            L ${padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180)} ${padding.top}`)
                 .attr('fill', '#59db1b')
-                .attr('fill-opacity',0.7)
+                .attr('fill-opacity', 0.7)
                 .style('stroke', "#c2ff00")
                 .style('stroke-width', 4)
 
             svg.select('.globalBorder').append('path') //global边界
-                .attr('d',`M ${padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180)} ${padding.top}
+                .attr('d', `M ${padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180)} ${padding.top}
                            L ${padding.left + partWidth} ${padding.top} 
                            L ${padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180) + innerWidth} ${padding.top + partHeight} 
                            L ${padding.left} ${padding.top + partHeight}
                            L ${padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180)} ${padding.top}`)
                 .attr('fill', '#59db1b')
-                .attr('fill-opacity',0.7)
+                .attr('fill-opacity', 0.7)
                 .style('stroke', "#c2ff00")
                 .style('stroke-width', 2)
-                .style("transform",`translate(${0}px,${middleMargin + partHeight}px)`)
+                .style("transform", `translate(${0}px,${middleMargin + partHeight}px)`)
 
 
 
@@ -253,32 +258,32 @@ export default {
              * 
              */
             //图1
-            this.drawGraph('local', 
-                            node1Draw,
-                            link1Draw,
-                            {'x':padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180),'y':padding.top},
-                            innerWidth, 
-                            _innerHeight,  
-                            finalScale,
-                            plotSkew)
+            this.drawGraph('local',
+                node1Draw,
+                link1Draw,
+                { 'x': padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180), 'y': padding.top },
+                innerWidth,
+                _innerHeight,
+                finalScale,
+                plotSkew)
             //图2
             this.drawGraph('global',
-                                this.node2Draw, 
-                                this.link2Draw,
-                                {'x':padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180),'y':padding.top + middleMargin + partHeight}, 
-                                innerWidth, 
-                                _innerHeight, 
-                                finalScale,
-                                plotSkew)
+                this.node2Draw,
+                this.link2Draw,
+                { 'x': padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180), 'y': padding.top + middleMargin + partHeight },
+                innerWidth,
+                _innerHeight,
+                finalScale,
+                plotSkew)
 
             this.autofit(
-                    innerWidth,
-                    _innerHeight,
-                    {'x':padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180),'y':padding.top},
-                    {'x':padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180),'y':padding.top + middleMargin + partHeight},
-                    finalScale,
-                    plotSkew,
-                );
+                innerWidth,
+                _innerHeight,
+                { 'x': padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180), 'y': padding.top },
+                { 'x': padding.left + partHeight * Math.tan(borderSkew * Math.PI / 180), 'y': padding.top + middleMargin + partHeight },
+                finalScale,
+                plotSkew,
+            );
 
 
 
@@ -288,11 +293,11 @@ export default {
              * 
              */
             const linkPlot = svg.select('.outerLink')
-            for(let link_name of graphLink){
-                const globalNode = d3.selectAll(`.degreeNode-global`).filter((d,i)=>{
+            for (let link_name of graphLink) {
+                const globalNode = d3.selectAll(`.degreeNode-global`).filter((d, i) => {
                     return d.name == link_name
                 }).node()
-                const localNode = d3.selectAll(`.degreeNode-local`).filter((d,i)=>{
+                const localNode = d3.selectAll(`.degreeNode-local`).filter((d, i) => {
                     return d.name == link_name
                 }).node()
 
@@ -300,28 +305,28 @@ export default {
                 // console.log(globalNode)
 
                 const globalNodePos = {
-                    'x':globalNode.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * globalNode.getBoundingClientRect().width,
-                    'y':globalNode.getBoundingClientRect().y - svg.node().getBoundingClientRect().y + 0.5 * globalNode.getBoundingClientRect().height,
+                    'x': globalNode.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * globalNode.getBoundingClientRect().width,
+                    'y': globalNode.getBoundingClientRect().y - svg.node().getBoundingClientRect().y + 0.5 * globalNode.getBoundingClientRect().height,
                 }
                 const localNodePos = {
-                    'x':localNode.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * localNode.getBoundingClientRect().width,
-                    'y':localNode.getBoundingClientRect().y - svg.node().getBoundingClientRect().y + 0.5 * localNode.getBoundingClientRect().height,
+                    'x': localNode.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * localNode.getBoundingClientRect().width,
+                    'y': localNode.getBoundingClientRect().y - svg.node().getBoundingClientRect().y + 0.5 * localNode.getBoundingClientRect().height,
                 }
 
                 linkPlot.append('line')
-                    .attr('x1',globalNodePos.x)
-                    .attr('y1',globalNodePos.y)
-                    .attr('x2',localNodePos.x)
-                    .attr('y2',localNodePos.y)
-                    .attr('stroke','#156dc1')
-                    .attr('stroke-width',6 * finalScale)
-                    .attr('opacity',0.7)
-                    // .on('mouseover',function(d,i){
-                    //     d3.select(this).attr('stroke','#cc4125')
-                    // })
-                    // .on('mouseout',function(d,i){
-                    //     d3.select(this).attr('stroke','#156dc1')
-                    // })
+                    .attr('x1', globalNodePos.x)
+                    .attr('y1', globalNodePos.y)
+                    .attr('x2', localNodePos.x)
+                    .attr('y2', localNodePos.y)
+                    .attr('stroke', '#156dc1')
+                    .attr('stroke-width', 6 * finalScale)
+                    .attr('opacity', 0.7)
+                // .on('mouseover',function(d,i){
+                //     d3.select(this).attr('stroke','#cc4125')
+                // })
+                // .on('mouseout',function(d,i){
+                //     d3.select(this).attr('stroke','#156dc1')
+                // })
             }
 
 
@@ -334,6 +339,7 @@ export default {
 
             let linkForce = d3.forceLink(links)
                 .id((d) => { return d.name })
+                // console.log(links);
 
             simulation
                 .force('charge_force', d3.forceManyBody().strength(-100))
@@ -346,7 +352,7 @@ export default {
 
         }
         ,
-        drawGraph(name, nodes, links, origin, width, height, finalScale , plotSkew) {//绘制2.5D视图（不含边框）
+        drawGraph(name, nodes, links, origin, width, height, finalScale, plotSkew) {//绘制2.5D视图（不含边框）
 
             //错误检测 
             if (nodes.length == 0)
@@ -378,24 +384,24 @@ export default {
                 .attr('stroke', "white")
                 .attr('stroke-width', 2)
                 .classed(`degreeNode-${name}`, true)
-                .attr('cx', (d) => { return d.x})
+                .attr('cx', (d) => { return d.x })
                 .attr('cy', (d) => { return d.y })
-                .on('mouseover',function(d,i){
+                .on('mouseover', function (d, i) {
                     //添加标注文本
-                    const annoPlot = svg.append('g').classed('anno',true)
+                    const annoPlot = svg.append('g').classed('anno', true)
                     const node = this
                     annoPlot.append('text')
                         .text(d.name)
-                        .style('font-size',30)
-                        .attr("x",function(){
-                            return node.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * node.getBoundingClientRect().width - 0.5 * this.getBBox().width 
+                        .style('font-size', 30)
+                        .attr("x", function () {
+                            return node.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * node.getBoundingClientRect().width - 0.5 * this.getBBox().width
                         })
-                        .attr("y",function(){
+                        .attr("y", function () {
                             return node.getBoundingClientRect().y - svg.node().getBoundingClientRect().y - 10
                         })
-                        .attr('filter','url(#degreeTextBackground)')
+                        .attr('filter', 'url(#degreeTextBackground)')
                 })
-                .on('mouseout',()=>{
+                .on('mouseout', () => {
                     svg.select('.anno').remove()
                 })
 
@@ -403,8 +409,8 @@ export default {
 
         },
 
-        autofit(width,height,localOrigin,globalOrigin,finalScale,plotSkew){//移动缩放2.5D图元素，使得其位置自适应在边界中央，并且保持上下相对位置
-            
+        autofit(width, height, localOrigin, globalOrigin, finalScale, plotSkew) {//移动缩放2.5D图元素，使得其位置自适应在边界中央，并且保持上下相对位置
+
             const globalPlot = d3.select('#dTree-plot').select(`.globalPlot`)
             const localPlot = d3.select('#dTree-plot').select(`.localPlot`)
 
@@ -421,28 +427,26 @@ export default {
 
 
             //global变换
-            globalPlot.style('transform-origin',`${globalOrigin.x}px ${globalOrigin.y}px`)
+            globalPlot.style('transform-origin', `${globalOrigin.x}px ${globalOrigin.y}px`)
             globalPlot.style('transform', `rotateX(${plotSkew}deg) translate(${offsetTransformX}px,${offsetTransformY}px) scale(${finalScale}) translate(${originTransformX}px,${originTransformY}px)`)
             // globalPlot.style('transform', `skewX(${-20}deg) scale(${finalScale}) translate(${originTransformX}px,${originTransformY}px)`)
 
             //local变换
-            localPlot.style('transform-origin',`${localOrigin.x}px ${localOrigin.y}px`)
+            localPlot.style('transform-origin', `${localOrigin.x}px ${localOrigin.y}px`)
             localPlot.style('transform', `rotateX(${plotSkew}deg) translate(${offsetTransformX}px,${offsetTransformY}px) scale(${finalScale}) translate(${originTransformX - globalOrigin.x + localOrigin.x}px,${originTransformY - globalOrigin.y + localOrigin.y}px)`)
             // localPlot.style('transform', `skewX(${-20}deg) scale(${finalScale}) translate(${originTransformX - globalOrigin.x + localOrigin.x}px,${originTransformY - globalOrigin.y + localOrigin.y}px)`)
 
         },
 
 
-        connect(e,x) {
-            console.log(e)
-            console.log(this.showline)
+        connect(e, x) {
             const svg = d3.select('#dTree-plot')
             const linkPlot = svg.select('.outerLink')
-            if(this.showline){
-                linkPlot.style('display',null)
+            if (this.showline) {
+                linkPlot.style('display', null)
             }
-            else{
-                linkPlot.style('display','none')
+            else {
+                linkPlot.style('display', 'none')
             }
         },
         // handleDraw() {
