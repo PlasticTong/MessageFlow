@@ -22,6 +22,15 @@ const routes: RouteRecordRaw[] = [
                 component: () => import(/* webpackChunkName: "dashboard" */ '../views/dashboard.vue'),
             },
             {
+                path: '/fortest',
+                name: 'fortest',
+                meta: {
+                    title: '系统首页',
+                    permiss: '1',
+                },
+                component: () => import(/* webpackChunkName: "fortest" */ '../views/fortest.vue'),
+            },
+            {
                 path: '/mesinfo',
                 name: 'mestable',
                 meta: {

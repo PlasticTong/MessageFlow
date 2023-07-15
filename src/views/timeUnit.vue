@@ -1,37 +1,39 @@
 <template>
-    <div class="time-unit-container">
+    <div class="time-unit-container2">
 
-        <b>视图 <b style="color:green">{{data.index}}</b> 概览</b>
         <svg ref="time-unit-plot" class="time-unit-plot"></svg>
-        <div class="time-unit-info">
-            <el-descriptions style="width:100%" :column="1" border>
-                <el-descriptions-item labelClassName="time-unit-info-label">
-                    <template v-slot:label>
-                        <i class="el-icon-time"></i>
-                        时间范围
-                    </template>
-                    {{data.timeRange}}
-                </el-descriptions-item>
-                <el-descriptions-item>
-                <template v-slot:label>
-                    <i class="el-icon-mobile-phone"></i>
-                    节点数
-                </template>
-                    {{data.nodeData.length}}
-                </el-descriptions-item>
-                <el-descriptions-item>
-                <template v-slot:label>
-                    <i class="el-icon-location-outline"></i>
-                    边数
-                </template>
-                    {{data.linkData.length}}
-                </el-descriptions-item>
-            </el-descriptions>
-        </div>
-
-        <div class="time-unit-controll">
-            <el-checkbox style="width:100px;height:35px" border label="选择" @change="changeSelected" v-model="data.selected"></el-checkbox>
-            <el-button style="width:100px;height:35px"  @click="deleteSelf"  type="danger">删除</el-button>
+        <div>
+            <b>视图 <b style="color:green">{{ data.index }}</b> 概览</b>
+            <div class="time-unit-info">
+                <el-descriptions style="width:100%" direction="vertical" border>
+                    <el-descriptions-item labelClassName="time-unit-info-label">
+                        <template v-slot:label>
+                            <i class="el-icon-time"></i>
+                            时间范围
+                        </template>
+                        {{ data.timeRange }}
+                    </el-descriptions-item>
+                    <el-descriptions-item>
+                        <template v-slot:label>
+                            <i class="el-icon-mobile-phone"></i>
+                            节点数
+                        </template>
+                        {{ data.nodeData.length }}
+                    </el-descriptions-item>
+                    <el-descriptions-item>
+                        <template v-slot:label>
+                            <i class="el-icon-location-outline"></i>
+                            边数
+                        </template>
+                        {{ data.linkData.length }}
+                    </el-descriptions-item>
+                </el-descriptions>
+            </div>
+            <div class="time-unit-controll">
+                <el-checkbox style="width:100px;height:35px" border label="选择" @change="changeSelected"
+                    v-model="data.selected"></el-checkbox>
+                <el-button style="width:100px;height:35px" @click="deleteSelf" type="danger">删除</el-button>
+            </div>
         </div>
 
     </div>
@@ -40,38 +42,38 @@
 <script>
 import * as d3 from 'd3'
 import { store } from "../store/mesinfo"
-import { ElMessage, ElMessageBox,ElIcon } from "element-plus";
+import { ElMessage, ElMessageBox, ElIcon } from "element-plus";
 import { set } from 'lodash';
 import { noopDirectiveTransform } from '@vue/compiler-core';
-import { fetchMesData, testflask, mutiDraw,mutiCross } from "../api/index";
+import { fetchMesData, testflask, mutiDraw, mutiCross } from "../api/index";
 import axios from 'axios'
 import {
-  Check,
-  Delete,
-  Edit,
-  Message,
-  Search,
-  Star,
+    Check,
+    Delete,
+    Edit,
+    Message,
+    Search,
+    Star,
 } from '@element-plus/icons-vue'
 
 
 
 export default {
-    name:'timeUnit',
-    props:['data'],
+    name: 'timeUnit',
+    props: ['data'],
     data() {
         return {
         }
     },
 
-    watch:{
-        dateRange(v){
+    watch: {
+        dateRange(v) {
             console.log(v)
         }
     },
 
     methods: {
-        drawLinkMap(svgDOM,nodeData,linkData){
+        drawLinkMap(svgDOM, nodeData, linkData) {
             /**
              * 
              * svg：svg的DOM元素
@@ -83,7 +85,7 @@ export default {
             svg.selectAll('*').remove()
 
             //错误检测
-            if(nodeData.length == 0)
+            if (nodeData.length == 0)
                 return;
 
             const width = svg.node().getBoundingClientRect().width
@@ -116,7 +118,7 @@ export default {
                 .attr('stroke-width', 3)
                 .style('stroke', "#0fb2cc")
                 .attr('marker-end', 'url(#arrowhead)')
-                .attr('x1', (d) => { return d.source.x})
+                .attr('x1', (d) => { return d.source.x })
                 .attr('y1', (d) => { return d.source.y })
                 .attr('x2', (d) => { return d.target.x })
                 .attr('y2', (d) => { return d.target.y })
@@ -128,7 +130,7 @@ export default {
                 .join('circle')
                 .attr('r', 10)
                 .attr('fill', "#61b2e4")
-                .attr('cx', (d) => { return d.x})
+                .attr('cx', (d) => { return d.x })
                 .attr('cy', (d) => { return d.y })
 
             let label = plot.append('g')
@@ -152,7 +154,7 @@ export default {
 
             svg.call(zoom)
 
-        
+
             function zoomed() {
                 plot.select('.nodes').attr("transform", d3.event.transform);
                 plot.select('.links').attr("transform", d3.event.transform);
@@ -167,7 +169,7 @@ export default {
 
             let originTransformX = -plot.node().getBBox().x
             let originTransformY = -plot.node().getBBox().y
-            let originTransformK = Math.min(1.0*width/plotWidth,1.0*height/plotHeight) * 0.85
+            let originTransformK = Math.min(1.0 * width / plotWidth, 1.0 * height / plotHeight) * 0.85
 
             let smallPlotWidth = plotWidth * originTransformK;
             let smallPlotHeight = plotHeight * originTransformK;
@@ -177,81 +179,83 @@ export default {
 
 
             plot
-            .style('transform-origin','left top')
-            .attr("transform",`translate(${offsetTransformX},${offsetTransformY}) scale(${originTransformK}) translate(${originTransformX},${originTransformY})`)
+                .style('transform-origin', 'left top')
+                .attr("transform", `translate(${offsetTransformX},${offsetTransformY}) scale(${originTransformK}) translate(${originTransformX},${originTransformY})`)
         },
-        deleteSelf(){//删除数据
-            this.$emit("deletePlotData",this.data)
+        deleteSelf() {//删除数据
+            this.$emit("deletePlotData", this.data)
         },
-        
-        changeSelected(newValue){
-            if(newValue){
-                 this.$emit("selectPlotData",this.data)
+
+        changeSelected(newValue) {
+            if (newValue) {
+                this.$emit("selectPlotData", this.data)
             }
         },
 
     },
-    mounted(){
-        this.drawLinkMap(this.$refs['time-unit-plot'],this.data.nodeData,this.data.linkData)
+    mounted() {
+        this.drawLinkMap(this.$refs['time-unit-plot'], this.data.nodeData, this.data.linkData)
     }
 
 }
 </script>
 <style>
-
-
-.time-unit-container{
-    height: 100%;
+.time-unit-container2 {
+    height: 300px;
     display: flex;
     position: relative;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    margin:5px;
-    border:2px solid gray;
-    padding:10px 20px;
+    /* margin:5px; */
+    /* border:2px solid gray; */
+    padding: 10px 0px;
 }
 
-.time-unit-plot{
-    width:300px;
+.time-unit-plot {
+    width: 300px;
     height: 300px;
     border: 3px solid gray;
-    margin:5px 0px;
+    margin: 5px 0px;
 }
 
-.time-unit-info{
-    width:300px;
+.time-unit-info {
+    width: 300px;
     display: flex;
-    flex-direction:column;
+    flex-direction: column;
     align-items: center;
-    margin-top:30px;
-    margin-bottom:30px;
+    margin-top: 30px;
+    margin-bottom: 30px;
 }
 
-.time-unit-controll{
-    width:280px;
+.time-unit-controll {
+    width: 280px;
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    margin-bottom:30px;
+    margin-bottom: 30px;
 
 }
 
-.time-unit-info-label{
-    width:30%;
+.time-unit-info-label {
+    width: 30%;
 }
 
-.el-range-editor.is-disabled{
-    color:white;
-    background-color:white;
-    border-color:white;
+.el-range-editor.is-disabled {
+    color: white;
+    background-color: white;
+    border-color: white;
 }
 
-.el-range-editor.is-disabled input{
-    color:gray;
-    background-color:white;
-    border-color:white;
+.el-range-editor.is-disabled input {
+    color: gray;
+    background-color: white;
+    border-color: white;
 }
 
+.table {
+    width: 500px;
+    font-size: 3px;
+}
 </style>
    

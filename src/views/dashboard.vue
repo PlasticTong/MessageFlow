@@ -1,34 +1,35 @@
 <template>
   <div>
     <el-row>
+      <el-col :span = "6">
+      <el-card  style="height:100%" shadow="hover">
+          <timechooser></timechooser>
+      </el-card>
+    </el-col>
+    <el-col :span = "18">
+      <el-row>
+      <el-card shadow="hover">
+          <mtree></mtree>
+        </el-card>
+      </el-row>
+      <el-row>
+        <el-col :span = "12">
+          <el-card shadow="hover">
+        <martree></martree>
+        </el-card>
+        </el-col>
+        <el-col :span = "12"><el-card shadow="hover">
+          <dagre></dagre> 
+        </el-card></el-col>
+      </el-row>
+    </el-col>
+    <!-- <el-col :span="18">
       <el-card style="width:100%" shadow="hover">
           <timechooser></timechooser>
       </el-card>
+    </el-col> -->
     </el-row>
     <!-- <el-row :gutter="20">
-      <el-col :span="4">
-        <mestable></mestable>
-      </el-col>
-      <el-col :span="4">
-        <usertable></usertable>
-      </el-col>
-      <el-col :span="16">
-        <timebrush></timebrush>
-      </el-col>
-    </el-row> -->
-    <el-row>
-      <!-- <el-col :span="12"> -->
-        <el-card shadow="hover">
-          <mtree></mtree>
-        </el-card>
-      <!-- </el-col> -->
-      <!-- <el-col :span="12">
-        <el-card shadow="hover">
-        <dagre></dagre>
-        </el-card>
-      </el-col> -->
-    </el-row>
-    <el-row :gutter="20">
       <el-col :span="12">
         <el-card shadow="hover">
           <markInfo></markInfo>
@@ -39,8 +40,10 @@
           <markChoose></markChoose>
         </el-card>
       </el-col>
-    </el-row>
-    <el-row :gutter="20">
+    </el-row> -->
+
+
+    <!-- <el-row :gutter="20">
       <el-col :span="12">
         <el-card shadow="hover">
         <martree></martree>
@@ -51,7 +54,7 @@
         <dagre></dagre>
         </el-card>
       </el-col>
-    </el-row>
+    </el-row> -->
     
   </div>
 </template>

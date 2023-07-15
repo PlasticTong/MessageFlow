@@ -1,32 +1,36 @@
 <template>
     <div>
-        <h2>马尔科夫链</h2>
-        <el-form-item label="阶数选取">
-            <div class="input-box">
-                <el-input v-model="threshold" placeholder="阶数"></el-input>
-                <el-button @click="handleFliter">选取</el-button>
-            </div>
-        </el-form-item>
+        <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+            <el-tab-pane label="马尔科夫链" name="first">
+                <el-form-item label="阶数选取">
+                    <div class="input-box">
+                        <el-input v-model="threshold" placeholder="阶数"></el-input>
+                        <el-button @click="handleFliter">选取</el-button>
+                    </div>
+                </el-form-item>
 
-        <!--第一行图表-->
-        <div class="chart-row">
-            <div class="chart-column">
-                <svg id="markovchart1" width="450" height="450" v-show="threshold >= 1"></svg>
-            </div>
-            <div class="chart-column">
-                <svg id="markovchart2" width="450" height="450" v-show="threshold >= 2"></svg>
-            </div>
-        </div>
+                <!--第一行图表-->
+                <div class="chart-row">
+                    <div class="chart-column">
+                        <svg id="markovchart1" width="200" height="450" v-show="threshold >= 1"></svg>
+                    </div>
+                    <div class="chart-column">
+                        <svg id="markovchart2" width="200" height="450" v-show="threshold >= 2"></svg>
+                    </div>
+                </div>
 
-        <!--第二行图表-->
-        <div class="chart-row">
-            <div class="chart-column">
-                <svg id="markovchart3" width="450" height="450" v-show="threshold >= 3"></svg>
-            </div>
-            <div class="chart-column">
-                <svg id="markovchart4" width="450" height="450" v-show="threshold >= 4"></svg>
-            </div>
-        </div>
+                <!--第二行图表-->
+                <div class="chart-row">
+                    <div class="chart-column">
+                        <svg id="markovchart3" width="450" height="450" v-show="threshold >= 3"></svg>
+                    </div>
+                    <div class="chart-column">
+                        <svg id="markovchart4" width="450" height="450" v-show="threshold >= 4"></svg>
+                    </div>
+                </div>
+            </el-tab-pane>
+            <el-tab-pane label="详细信息" name="second">详细信息</el-tab-pane>
+        </el-tabs>
 
     </div>
 </template>
@@ -43,7 +47,8 @@ export default {
             rootnum: 0,
 
             charts: [],
-            currentchoose: []
+            currentchoose: [],
+            activeName:"first"
         }
     },
     mounted() {
@@ -80,7 +85,7 @@ export default {
 
             // 添加defs元素
             let defs = plot.append('defs')
-            
+
             //定义marker
             defs.append('marker')
                 .attr('id', 'markovArrowhead')
@@ -94,7 +99,7 @@ export default {
                 .attr('d', 'M 0,0 L 3,1.5 L 0,3')
             //定义文字背景滤镜    
             let markovTextBackground = defs.append('filter')
-                .attr('id','markovTextBackground')
+                .attr('id', 'markovTextBackground')
                 .attr('x', -0.05)
                 .attr('y', -0.05)
                 .attr('width', 1.1)
@@ -150,7 +155,7 @@ export default {
                 linksData = []
                 const set = new Set();
                 markovBy2.forEach((value, index) => {
-                    linksData.push({ id: index, source: value.source, target: value.target,type:value.type })
+                    linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
                     set.add(value.source)
                     set.add(value.target)
                 })
@@ -166,7 +171,7 @@ export default {
                 linksData = []
                 const set = new Set();
                 markovBy3.forEach((value, index) => {
-                    linksData.push({ id: index, source: value.source, target: value.target ,type:value.type})
+                    linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
                     set.add(value.source)
                     set.add(value.target)
                 })
@@ -182,7 +187,7 @@ export default {
                 linksData = []
                 const set = new Set();
                 markovBy4.forEach((value, index) => {
-                    linksData.push({ id: index, source: value.source, target: value.target,type:value.type })
+                    linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
                     set.add(value.source)
                     set.add(value.target)
                 })
@@ -290,7 +295,7 @@ export default {
 
                         // console.log(store.state.MarFromUser);
 
-                        store.state.marInfoTable.push({id:`#Mar${d}K${data.id}`,source:data.source.name,target:data.target.name,type:data.type})
+                        store.state.marInfoTable.push({ id: `#Mar${d}K${data.id}`, source: data.source.name, target: data.target.name, type: data.type })
                         // console.log(store.state.marInfoTable);
 
                         d3.select(`#Mar${d}K${data.id}`)
@@ -301,27 +306,27 @@ export default {
                     else {
                         let index = this.currentchoose.indexOf(`Mar${d}K${data.id}`);
                         this.currentchoose.splice(index, 1)
-                        let index1 = store.state.marInfoTable.indexOf({id:`#Mar${d}K${data.id}`,source:data.source.name,target:data.target.name,type:data.type});
+                        let index1 = store.state.marInfoTable.indexOf({ id: `#Mar${d}K${data.id}`, source: data.source.name, target: data.target.name, type: data.type });
                         store.state.marInfoTable.splice(index1, 1)
-                        
+
                         //取消选取
 
-                         // 匹配IPv4地址的正则表达式
-                         const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
+                        // 匹配IPv4地址的正则表达式
+                        const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
                         // 使用match方法获取所有符合条件的IP地址
-                        const ipList = data.source.name.match(ipPattern);   
-                        const ipList2 = data.target.name.match(ipPattern);                       
+                        const ipList = data.source.name.match(ipPattern);
+                        const ipList2 = data.target.name.match(ipPattern);
                         for (let i = 0; i < ipList.length - 1; i++) {
-                            for(let j = 0; j < store.state.MarFromUser.length; j++){
-                                if(store.state.MarFromUser[j].id == ipList[i] && store.state.MarFromUser[j].parentId == ipList[i + 1]){
+                            for (let j = 0; j < store.state.MarFromUser.length; j++) {
+                                if (store.state.MarFromUser[j].id == ipList[i] && store.state.MarFromUser[j].parentId == ipList[i + 1]) {
                                     store.state.MarFromUser[j].k -= 1
                                 }
-                                if(store.state.MarFromUser[j].id == ipList2[i] && store.state.MarFromUser[j].parentId == ipList2[i + 1]){
+                                if (store.state.MarFromUser[j].id == ipList2[i] && store.state.MarFromUser[j].parentId == ipList2[i + 1]) {
                                     store.state.MarFromUser[j].k -= 1
                                 }
-                                if(store.state.MarFromUser[j].k == 0){
-                                    store.state.MarFromUser.splice(j,1)
-                                    j-=1
+                                if (store.state.MarFromUser[j].k == 0) {
+                                    store.state.MarFromUser.splice(j, 1)
+                                    j -= 1
                                 }
                             }
                         }
@@ -372,13 +377,13 @@ export default {
                 .attr('stroke', "white")
                 .attr('stroke-width', 2)
                 .attr('cx', (d) => { return d.x })
-                .attr('cy', (d) => { return d.y  })
-                .on('mouseover',(d)=>{
+                .attr('cy', (d) => { return d.y })
+                .on('mouseover', (d) => {
                     // console.log('over_d:',d)
-                    label.dispatch('show',{'detail':d.name})
+                    label.dispatch('show', { 'detail': d.name })
                 })
-                .on('mouseout',(d)=>{
-                    label.dispatch('hide',{'detail':d.name})
+                .on('mouseout', (d) => {
+                    label.dispatch('hide', { 'detail': d.name })
                 })
 
             let label = plot.append('g')
@@ -393,21 +398,21 @@ export default {
                 .attr('y', function (d) {
                     return d.y + 0.3 * this.getBoundingClientRect().height - 20
                 })
-                .attr('filter','url(#markovTextBackground)')
-                .on('show',function(d){
-                    if(d.name == d3.event.detail){
-                        d3.select(this).style('display',null)
+                .attr('filter', 'url(#markovTextBackground)')
+                .on('show', function (d) {
+                    if (d.name == d3.event.detail) {
+                        d3.select(this).style('display', null)
                     }
                 })
-                .on('hide',function(d){
-                    if(d.name == d3.event.detail){
-                        d3.select(this).style('display','none')
+                .on('hide', function (d) {
+                    if (d.name == d3.event.detail) {
+                        d3.select(this).style('display', 'none')
                     }
                 })
 
 
 
-                
+
 
             //设定zoom
             function zoomed() {
@@ -439,7 +444,7 @@ export default {
                 .attr("transform", `translate(${offsetTransformX},${offsetTransformY}) scale(${originTransformK}) translate(${originTransformX},${originTransformY})`)
 
             //取消文本的可见性
-            label.style('display','none') //在最后取消可见性是因为要保持最优缩放连文本尺寸也算在内
+            label.style('display', 'none') //在最后取消可见性是因为要保持最优缩放连文本尺寸也算在内
 
 
         },
@@ -466,12 +471,19 @@ svg {
 }
 </style>
 <style>
+.example-showcase .el-dropdown-link {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
 .chart-row {
     display: flex;
 }
 
 .chart-column {
-    width: 50%;
+    width: 30%;
+    height: 30%;
     display: flex;
 }
 
