@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia';
 import {createStore} from 'vuex';
-import mestable from "../../public/tablemes2.json";
+import mestable from "../../public/tablemes4.json";
 import usertable from "../../public/table.json";
 import markov from "../../public/Markov.json";
 
 export const store = createStore({
 	state: () => {
 		return {
+			check:false,
 			//所有时间
 			timeSlect:[],
 			//选取的时间
@@ -23,8 +24,8 @@ export const store = createStore({
 
 
 			
-			mesinfo2: mestable,
-			mesinfo: mestable,
+			// mesinfo2: mestable,
+			mesinfo: [],
 			userinfo: usertable,
 			markov:markov,
 			chooseUser: {
@@ -61,7 +62,26 @@ export const store = createStore({
 			MarFromUser:[],
 
 			//用户选取了马尔科夫链，在表格中展示出来
-			marInfoTable:[]
+			marInfoTable:[],
+
+			marcal2:[],
+			marcal3:[],
+			marcal4:[],
+			clealF:0,
+			filename:null,
+
+			//绘制马尔科夫链
+			drawMar:false,
+
+			mar2:[],
+			mar3:[],
+			mar4:[],
+
+			//用户在表里面选择的信息
+			infoChoose:null,
+			threshold:6,
+
+
 
 		}
 	},

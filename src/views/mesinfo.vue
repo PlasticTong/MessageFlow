@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="height: 70%;">
+  <div class="container">
     <Child :user="user" ref="visiableDialog"></Child>
     <h2 class="mb10">筛选条件</h2>
     <el-button type="warning" @click="openDialog">打开弹窗</el-button>
@@ -447,6 +447,10 @@ const handleReset = (sourcename: string, targetname: string) => {
 </script>
 
 <style  lang="scss" scoped>
+.container{
+  width:2936px
+
+}
 .handle-box {
   margin-bottom: 20px;
 }

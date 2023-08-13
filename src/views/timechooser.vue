@@ -1,10 +1,13 @@
 <template>
-    <h2 style="margin:5px 5px">时间筛选器</h2>
+    <div class="mar-title">
+        <h2 style="margin: 5px 5px;font-size: 30px;">时间筛选器</h2>
+    </div>
+    
     <div class="time-chooser-container">
 
         <div class="time-select-container">
             <svg class="time-select-sketch"></svg>
-            <el-slider v-model="value" range :max="max" @change="changeSlider"></el-slider>
+            <el-slider v-model="this.value" range :max="this.max" @change="changeSlider"></el-slider>
             <div style="display:flex;justify-content:space-between">
                 <el-button type="primary" style="width:100px" @click="addPlotData">确定</el-button>
                 <el-button type="danger" style="width:100px" @click="clearPlotData">清空</el-button>
@@ -35,11 +38,8 @@ export default {
 
 
     data() {
-        const lastItem = store.state.mesinfo.list[store.state.mesinfo.list.length - 1];
-
-
         return {
-            max: lastItem.time,
+            max: 100,
             num: 0,
             timeSt: 0,
             timeEd: 0,
@@ -48,9 +48,27 @@ export default {
             plotDataIndex: 0,
         }
     },
+    computed:{
+        maxnum(){
+            return store.state.mesinfo
+        }
+
+    },
+    watch:{
+        maxnum:{
+            deep: true,
+            handler() {
+                this.max = store.state.mesinfo.list[store.state.mesinfo.list.length - 1].time
+                // console.log(this.max);
+                console.log('asdasdasdasdsadas');
+            }
+        }
+
+    },
 
     methods: {
         changeSlider(v) {//slider改变
+            console.log(store.state.mesinfo);
             this.drawTimeSketch()
         },
         drawTimeSketch() {
@@ -64,7 +82,7 @@ export default {
             this.timeSt = this.value[0]
             store.state.timeSlect.push({ start: this.value[0], end: this.value[1] })
 
-            const mesByTime1 = store.state.mesinfo2.list.filter((e) => { return e.time <= this.timeEd && e.time > this.timeSt })
+            const mesByTime1 = store.state.mesinfo.list.filter((e) => { return e.time <= this.timeEd && e.time > this.timeSt })
             // store.state.mesBytime = mesByTime1
             let uniqueArr = []
             mesByTime1.forEach((item, index) => {
@@ -247,6 +265,7 @@ export default {
                 .attr("transform", `translate(${offsetTransformX},${offsetTransformY}) scale(${originTransformK}) translate(${originTransformX},${originTransformY})`)
         },
         addPlotData() {
+            console.log(store.state.mesinfo);
             /**
              * 
              * 准备数据
@@ -255,8 +274,9 @@ export default {
             this.timeEd = this.value[1]
             this.timeSt = this.value[0]
             store.state.timeSlect.push({ start: this.value[0], end: this.value[1] })
+            console.log(store.state.mesinfo);
 
-            const mesByTime1 = store.state.mesinfo2.list.filter((e) => { return e.time <= this.timeEd && e.time > this.timeSt })
+            const mesByTime1 = store.state.mesinfo.list.filter((e) => { return e.time <= this.timeEd && e.time > this.timeSt })
             let uniqueArr = []
             mesByTime1.forEach((item, index) => {
                 if (!mesByTime1.slice(0, index).some((prevItem) => {
@@ -343,7 +363,12 @@ export default {
 
 }
 </script>
-<style>
+<style scoped>
+.mar-title{
+    display: flex;
+    color:white;
+    background-color: #6d6d6d;
+}
 .time-chooser-container {
     width: 10%;
     display: flex;

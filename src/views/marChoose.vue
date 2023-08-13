@@ -38,7 +38,7 @@ export default{
             deep: true,
             handler() {
                 this.tableDataListFor = store.state.marInfoTable
-                console.log(store.state.marInfoTable);
+                // console.log(store.state.marInfoTable);
             }
         },
     }
@@ -47,4 +47,8 @@ export default{
 
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.table{
+    width:80%
+}
+</style>

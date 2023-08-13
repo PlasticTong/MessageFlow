@@ -1,8 +1,27 @@
 <template>
-    <h2 class="mb10">消息流</h2>
+    <div class="mar-title">
+        <h2 style="margin: 5px 5px;font-size: 30px;">指挥结构</h2>
+    </div>
     <el-checkbox v-model="showline" @change="connect">显示连线</el-checkbox>
-    <svg id='dTree-plot'>
-    </svg>
+    <!-- <el-button @click="drawLink">连线</el-button> -->
+    <el-tabs v-model="activeName2" type="card" @tab-click="plotswitch">
+        <el-tab-pane label="单层" name="first">
+            <div v-loading="loading" class='chart-column'>
+                <svg id='dTree-plot-one' height="800" width="1497px"></svg>
+            </div>
+        </el-tab-pane>
+        <el-tab-pane label="双层" name="second">
+            <div v-loading="loading" class='chart-column'>
+                <svg id='dTree-plot'></svg>
+            </div>
+        </el-tab-pane>
+        <el-tab-pane label="三层" name="third">
+            <div v-loading="loading" class='chart-column'>
+
+            </div>
+
+        </el-tab-pane>
+    </el-tabs>
 </template>
    
 <script>
@@ -26,10 +45,13 @@ export default {
 
             numselect: 0,
             showline: true,
+            loading: false
         };
     },
     mounted() {
         this.drawLayer();
+        const svg = d3.select('#dTree-plot');
+        console.log(svg.attr('width'));
     },
     computed: {
         NodeMarFromUser() {
@@ -46,7 +68,9 @@ export default {
             handler() {
                 // this.drawLayer();
                 // console.log(this.numselect);
-                this.drawLayer();
+                // this.drawLayer();
+                this.drawOne()
+
             }
         },
         timeSelect: {
@@ -97,6 +121,128 @@ export default {
     },
 
     methods: {
+        plotswitch(tab) {
+            console.log(tab.props.name);
+            if (tab.props.name == 'first') {
+                this.drawOne()
+            }
+
+
+        },
+        drawOne() {
+            const svg = d3.select('#dTree-plot-one');
+            svg.selectAll('*').remove()
+            let width = 1472
+            let height = 804
+            const plot = svg.append('g')
+            let defs = svg.append('defs')
+            //定义marker箭头
+            defs.append('marker')
+                .attr('id', 'degreeArrowhead')
+                .attr('markerWidth', 4)
+                .attr('markerHeight', 4)
+                .attr('viewBox', '0 -5 12 12')
+                .attr('refX', 20)
+                .attr('refY', 0)
+                .attr('orient', 'auto')
+                .append('path')
+                .attr('fill', '#434343')
+                .attr('d', 'M 0,-5 L 10,0 L 0,5')
+
+
+            /**
+             * 
+             * 准备数据
+             * 
+             */
+            //local准备数据
+            const data1 = store.state.MarFromUser;
+            let node1Draw = new Set()
+            let link1Draw = []
+            for (let link of data1) {
+                if (link['id'] !== undefined && link['parentId'] !== undefined) {
+                    link1Draw.push({ 'source': link['id'], 'target': link['parentId'] })
+                    node1Draw.add(link['id'])
+                    node1Draw.add(link['parentId'])
+                }
+            }
+            node1Draw = Array.from(node1Draw).map(v => {
+                let str = v.replace(/\./g, ''); // 使用正则表达式替换掉所有的"."字符
+                return { 'name': v, 'nameRe': str }
+            })
+            console.log(node1Draw);
+            console.log(link1Draw);
+
+            // this.node1Draw = node1Draw
+            // this.link1Draw = link1Draw
+
+
+            //利用力导引图模拟坐标
+            let simulation = d3.forceSimulation()
+                .nodes(node1Draw)
+
+            simulation
+                .force('charge_force', d3.forceManyBody().strength(-600))
+                .force('center_force', d3.forceCenter(width / 2, height / 2))
+
+            let linkForce = d3.forceLink(link1Draw)
+                .id((d) => { return d.name })
+            simulation.force('links', linkForce)
+
+            simulation.stop();
+            simulation.tick(300);
+
+
+
+
+            //创建元素
+            let link = plot.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(link1Draw)
+                .enter()
+                .append('line')
+                .attr('stroke-width', 4)
+                .style('stroke', "#666666")
+                .style('cursor', 'pointer')
+                .attr('marker-end', `url(#degreeArrowhead)`)
+                .attr('x1', (d) => { return d.source.x })
+                .attr('y1', (d) => { return d.source.y })
+                .attr('x2', (d) => { return d.target.x })
+                .attr('y2', (d) => { return d.target.y })
+
+
+            let node = plot.append('g')
+                .attr('class', 'nodes')
+                .selectAll('circle')
+                .data(node1Draw)
+                .enter()
+                .append('circle')
+                .attr('r', 10)
+                .attr('fill', "#b256f0")
+                .attr('stroke', "white")
+                .attr('stroke-width', 2)
+                .attr('cx', (d) => { return d.x })
+                .attr('cy', (d) => { return d.y })
+            
+                //预先缩放到中心位置
+            const plotWidth = plot.node().getBoundingClientRect().width;
+            const plotHeight = plot.node().getBoundingClientRect().height;
+            let originTransformX = -plot.node().getBBox().x
+            let originTransformY = -plot.node().getBBox().y
+            let originTransformK = Math.min(1.0 * width / plotWidth, 1.0 * height / plotHeight) * 0.85
+            let smallPlotWidth = plotWidth * originTransformK;
+            let smallPlotHeight = plotHeight * originTransformK;
+            let offsetTransformX = (0.5 * width - 0.5 * smallPlotWidth)
+            let offsetTransformY = (0.5 * height - 0.5 * smallPlotHeight)
+            plot
+                .style('transform-origin', 'left top')
+                .attr("transform", `translate(${offsetTransformX},${offsetTransformY}) scale(${originTransformK}) translate(${originTransformX},${originTransformY})`)
+
+
+
+
+        },
 
         drawLayer() {
 
@@ -320,7 +466,7 @@ export default {
                     .attr('y2', localNodePos.y)
                     .attr('stroke', '#156dc1')
                     .attr('stroke-width', 6 * finalScale)
-                    .attr('opacity', 0.7)
+                    .attr('opacity', 0.4)
                 // .on('mouseover',function(d,i){
                 //     d3.select(this).attr('stroke','#cc4125')
                 // })
@@ -331,6 +477,124 @@ export default {
 
 
 
+
+
+        },
+        drawLink() {
+            console.log(123123123);
+
+            const svg = d3.select('#dTree-plot');
+            svg.select('.outerLink').remove();
+            const svgWidth = svg.node().getBoundingClientRect().width
+            const svgHeight = svg.node().getBoundingClientRect().height
+
+            //定义和计算长度属性
+            const padding = {//外围padding
+                'bottom': 40,
+                'top': 40,
+                'left': 40,
+                'right': 40,
+            };
+            const borderSkew = 20;//边框的倾斜角度（平面上的倾斜），单位deg
+            const plotSkew = 45;//图像的倾斜角度（空间上的倾斜），单位deg
+            const middleMargin = 40; //上下两区域的间距，也是两个边框的上下间距
+
+            const partWidth = svgWidth - padding.right - padding.left;//分层画布的宽度
+            const partHeight = 0.5 * (svgHeight - padding.top - padding.bottom - middleMargin);//分层画布的高度
+
+            const innerWidth = partWidth - 2 * partHeight * Math.tan(borderSkew * Math.PI / 180)//边框内画布的宽度
+            const innerHeight = partHeight;//边框内画布的高度
+            const _innerHeight = innerHeight / Math.cos(plotSkew * Math.PI / 180) //折叠前边框内画布高度
+
+
+            svg.append('g').classed('outerLink', true)
+            /**
+            * 
+            * 准备数据
+            * 
+            */
+            //local准备数据
+            const data1 = store.state.MarFromUser;
+            let node1Draw = new Set()
+            let link1Draw = []
+            for (let link of data1) {
+                if (link['id'] !== undefined && link['parentId'] !== undefined) {
+                    link1Draw.push({ 'source': link['id'], 'target': link['parentId'] })
+                    node1Draw.add(link['id'])
+                    node1Draw.add(link['parentId'])
+                }
+            }
+            node1Draw = Array.from(node1Draw).map(v => {
+                let str = v.replace(/\./g, ''); // 使用正则表达式替换掉所有的"."字符
+                return { 'name': v, 'nameRe': str }
+            })
+
+            this.node1Draw = node1Draw
+            this.link1Draw = link1Draw
+
+            //global准备数据
+            let node2Draw = this.node2Draw;
+            let link2Draw = this.link2Draw;
+
+            //绑定外部连接边数据 TODO 也许可以在速度方面优化一下
+            let graphLink = []
+            for (let i = 0; i < node1Draw.length; i++)
+                for (let j = 0; j < node2Draw.length; j++) {
+                    if (node1Draw[i].name == node2Draw[j].name) {
+                        graphLink.push(node1Draw[i].name)
+                    }
+                }
+
+            //求取缩放比例
+            const data2Size = {
+                'width': Math.max(...node2Draw.map(v => v.x)) - Math.min(...node2Draw.map(v => v.x)),
+                'height': Math.max(...node2Draw.map(v => v.y)) - Math.min(...node2Draw.map(v => v.y)),
+            }
+            const data2Scale = Math.min(innerWidth / (data2Size.width + 20), _innerHeight / (data2Size.height + 20)) //20 = cellSize * 2 所以点半径改的时候这里也要一起改
+            const finalScale = data2Scale * 0.8
+
+
+
+
+            /**
+            * 
+            * 绘制外部连接线
+            * 
+            */
+            const linkPlot = svg.select('.outerLink')
+            for (let link_name of graphLink) {
+                const globalNode = d3.selectAll(`.degreeNode-global`).filter((d, i) => {
+                    return d.name == link_name
+                }).node()
+                const localNode = d3.selectAll(`.degreeNode-local`).filter((d, i) => {
+                    return d.name == link_name
+                }).node()
+
+
+                const globalNodePos = {
+                    'x': globalNode.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * globalNode.getBoundingClientRect().width,
+                    'y': globalNode.getBoundingClientRect().y - svg.node().getBoundingClientRect().y + 0.5 * globalNode.getBoundingClientRect().height,
+                }
+                const localNodePos = {
+                    'x': localNode.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * localNode.getBoundingClientRect().width,
+                    'y': localNode.getBoundingClientRect().y - svg.node().getBoundingClientRect().y + 0.5 * localNode.getBoundingClientRect().height,
+                }
+
+                linkPlot.append('line')
+                    .attr('x1', globalNodePos.x)
+                    .attr('y1', globalNodePos.y)
+                    .attr('x2', localNodePos.x)
+                    .attr('y2', localNodePos.y)
+                    .attr('stroke', '#156dc1')
+                    .attr('stroke-width', 6 * finalScale)
+                    .attr('opacity', 0.4)
+                // .on('mouseover',function(d,i){
+                //     d3.select(this).attr('stroke','#cc4125')
+                // })
+                // .on('mouseout',function(d,i){
+                //     d3.select(this).attr('stroke','#156dc1')
+                // })
+            }
         },
         forceDirectedSimulation(nodes, links, width, height) {//进行力导引模拟
             //配置模拟器
@@ -339,7 +603,7 @@ export default {
 
             let linkForce = d3.forceLink(links)
                 .id((d) => { return d.name })
-                // console.log(links);
+            // console.log(links);
 
             simulation
                 .force('charge_force', d3.forceManyBody().strength(-100))
@@ -352,7 +616,7 @@ export default {
 
         }
         ,
-        drawGraph(name, nodes, links, origin, width, height, finalScale, plotSkew) {//绘制2.5D视图（不含边框）
+        drawGraph(name, nodes, links, origin, width2, height2, finalScale, plotSkew) {//绘制2.5D视图（不含边框）
 
             //错误检测 
             if (nodes.length == 0)
@@ -364,6 +628,7 @@ export default {
 
 
             let linkPlot = plot.append('g')
+                .attr('class', 'links')
                 .selectAll('line')
                 .data(links)
                 .join('line')
@@ -374,36 +639,125 @@ export default {
                 .attr('y1', (d) => { return d.source.y })
                 .attr('x2', (d) => { return d.target.x })
                 .attr('y2', (d) => { return d.target.y })
+            // 添加defs元素
+            let defs = svg.append('defs')
+            // 定义箭头
+            defs.append('marker')
+                .attr('id', 'arrowhead')
+                .attr('markerWidth', 4)
+                .attr('markerHeight', 4)
+                .attr('viewBox', '0 -5 12 12') // Arrow head points in x direction
+                .attr('refX', 20) // Horizontal offset
+                .attr('refY', 0) // Vertical offset
+                .attr('orient', 'auto')
+                // .attr('markerUnits', "10")
+                .append('path')
+                .attr('fill', 'red')
+                .attr('d', 'M 0,-5 L 10,0 L 0,5')
 
-            let nodePlot = plot.append('g')
-                .selectAll('circle')
-                .data(nodes)
-                .join('circle')
-                .attr('r', 10)
-                .attr('fill', "#b256f0")
-                .attr('stroke', "white")
-                .attr('stroke-width', 2)
-                .classed(`degreeNode-${name}`, true)
-                .attr('cx', (d) => { return d.x })
-                .attr('cy', (d) => { return d.y })
-                .on('mouseover', function (d, i) {
-                    //添加标注文本
-                    const annoPlot = svg.append('g').classed('anno', true)
-                    const node = this
-                    annoPlot.append('text')
-                        .text(d.name)
-                        .style('font-size', 30)
-                        .attr("x", function () {
-                            return node.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * node.getBoundingClientRect().width - 0.5 * this.getBBox().width
-                        })
-                        .attr("y", function () {
-                            return node.getBoundingClientRect().y - svg.node().getBoundingClientRect().y - 10
-                        })
-                        .attr('filter', 'url(#degreeTextBackground)')
-                })
-                .on('mouseout', () => {
-                    svg.select('.anno').remove()
-                })
+            const that = this
+
+
+
+
+            if (name == "local") {
+                let nodePlot = plot.append('g')
+                    .attr('class', 'nodes')
+                    .selectAll('circle')
+                    .data(nodes)
+                    .join('circle')
+                    .attr('r', 10)
+                    .attr('fill', "#b256f0")
+                    .attr('stroke', "white")
+                    .attr('stroke-width', 2)
+                    .attr('marker-end', 'url(#arrowhead)')
+                    .classed(`degreeNode-${name}`, true)
+                    .attr('cx', (d) => { return d.x })
+                    .attr('cy', (d) => { return d.y })
+
+                let label = plot.append('g')
+                    .attr('class', 'labels2')
+                    .classed('anno', true)
+                    .selectAll('text')
+                    .data(nodes)
+                    .join('text')
+                    .text(d => d.name)
+                    .attr('x', function (d) {
+                        return d.x - 0.5 * this.getBoundingClientRect().width
+                    })
+                    .attr('y', function (d) {
+                        return d.y + 0.3 * this.getBoundingClientRect().height
+                    })
+
+
+                const width = svg.node().getBoundingClientRect().width
+                const height = svg.node().getBoundingClientRect().height
+                const zoom = d3.zoom()
+                    .scaleExtent([0.1, 40])
+                    .translateExtent([[-10000, -10000], [width + 100000, height + 10000000]])
+                    // .filter(filter)
+                    .on("zoom", zoomed);
+
+                plot.call(zoom)
+                function zoomed() {
+                    plot.select('.nodes').attr("transform", d3.event.transform);
+                    plot.select('.links').attr("transform", d3.event.transform);
+                    plot.select('.labels2').attr("transform", d3.event.transform);
+                    that.drawLink()
+                    // svg.select('.outerLink').remove();
+                }
+            } else {
+                let nodePlot = plot.append('g')
+                    .attr('class', 'nodes')
+                    .selectAll('circle')
+                    .data(nodes)
+                    .join('circle')
+                    .attr('r', 10)
+                    .attr('fill', "#b256f0")
+                    .attr('stroke', "white")
+                    .attr('stroke-width', 2)
+                    .attr('marker-end', 'url(#arrowhead)')
+                    .classed(`degreeNode-${name}`, true)
+                    .attr('cx', (d) => { return d.x })
+                    .attr('cy', (d) => { return d.y })
+                    .on('mouseover', function (d, i) {
+                        //添加标注文本
+                        const annoPlot = svg.append('g').attr('class', 'labels').classed('anno', true)
+                        const node = this
+                        annoPlot.append('text')
+                            .text(d.name)
+                            .style('font-size', 30)
+                            .attr("x", function () {
+                                return node.getBoundingClientRect().x - svg.node().getBoundingClientRect().x + 0.5 * node.getBoundingClientRect().width - 0.5 * this.getBBox().width
+                            })
+                            .attr("y", function () {
+                                return node.getBoundingClientRect().y - svg.node().getBoundingClientRect().y - 10
+                            })
+                            .attr('filter', 'url(#degreeTextBackground)')
+                    })
+                    .on('mouseout', () => {
+                        svg.select('.labels').remove()
+                    })
+
+
+                const width = svg.node().getBoundingClientRect().width
+                const height = svg.node().getBoundingClientRect().height
+                const zoom = d3.zoom()
+                    .scaleExtent([0.1, 40])
+                    .translateExtent([[-10000, -10000], [width + 100000, height + 10000000]])
+                    // .filter(filter)
+                    .on("zoom", zoomed);
+
+                plot.call(zoom)
+                function zoomed() {
+                    plot.select('.nodes').attr("transform", d3.event.transform);
+                    plot.select('.links').attr("transform", d3.event.transform);
+                    plot.select('.labels').attr("transform", d3.event.transform);
+                    that.drawLink()
+                    // svg.select('.outerLink').remove();
+                }
+            }
+
 
 
 
@@ -553,7 +907,12 @@ export default {
 };
 </script>
    
-<style>
+<style scoped>
+.mar-title{
+    display: flex;
+    color:white;
+    background-color: #6d6d6d;
+}
 /* .tree {
     border: 1px solid #9e4a4a00;
     padding: 20px;

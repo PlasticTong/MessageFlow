@@ -1,14 +1,9 @@
 <template>
-    <div class='page'>
-        <!-- <div class='control'>
-        <el-table :data="Mlist" style="width: 100%" highlight-current-row @current-change="handleCurrentChange" ref="table">
-          <el-table-column prop="0" label="id" width="40"></el-table-column>
-          <el-table-column :prop="(index).toString()" :label="(index).toString()" v-for="index of k" :key="index" />
-        </el-table>
-      </div> -->
+    <div class="mar-title">
+        <h2 style="margin: 5px 5px;font-size: 30px;">消息流</h2>
+    </div>
+    <!-- <div class='page'>
         <div class='view1'>
-            <!-- <el-slider v-model="store.state.filtermes" range show-stops :max="timeend" :min="timestart" /> -->
-
             <el-button @click="drawer = true" type="primary" style="margin-left: 16px;">
                 点我打开
             </el-button>
@@ -19,13 +14,32 @@
                         <el-input v-model="threshold" placeholder="阈值"></el-input>
                         <el-button @click="handleFliter">筛选</el-button>
                         <el-button type="danger" @click="handleReset">重置</el-button>
-                        <!-- <el-button type="primary" @click="handleExport">导出</el-button> -->
                     </div>
                 </el-form-item>
                 <usertable></usertable>
             </el-drawer>
             <svg id="chart" width="800" height="600"></svg>
         </div>
+    </div> -->
+    <div class='page'>
+        <el-tabs v-model="activeName">
+            <el-tab-pane label="消息流" name="first">
+                <div class="container">
+                <svg id="chart" width="800" height="500"></svg>
+                <el-form-item label="时间阈值">
+                    <div class="input-box">
+                        <el-input v-model="threshold" placeholder="阈值"></el-input>
+                        <el-button @click="handleFliter">筛选</el-button>
+                        <el-button type="danger" @click="handleReset">重置</el-button>
+                    </div>
+                </el-form-item>
+            </div>
+            </el-tab-pane>
+            <el-tab-pane label="消息信息" name="second">
+                <mestable></mestable>               
+            </el-tab-pane>
+            <el-tab-pane label="用户信息" name="third"><usertable></usertable></el-tab-pane>
+        </el-tabs>
     </div>
 </template>
 <script>
@@ -65,9 +79,10 @@ export default {
             selectColor: "green",
             oldCurrentRow: undefined,
             messageColor: "#DCDCDC",
-            threshold: 1, //阈值s
+            threshold: 6, //阈值s
             drawer: false,
             direction: 'rtl',
+            activeName: "first"
 
         };
     },
@@ -136,6 +151,7 @@ export default {
             this.generateVis2()
         },
         async handleFliter() {
+           store.state.threshold=  this.threshold
             // this.generateVis2()
             store.state.filtermesresByhold = store.state.filtermesres
             // console.log(store.state.filtermesresByhold);
@@ -204,6 +220,7 @@ export default {
             ElMessage.success("筛选成功！");
             await this.generateVis2()
             // await this.handleConnectivity()
+            store.state.drawMar = true
         },
         handleExport() {
             var date = new Date();
@@ -344,7 +361,7 @@ export default {
 
 
             const timeX = []
-            for(let i = minTime.time;i<maxTime.time + 2;i++){
+            for (let i = minTime.time; i < maxTime.time + 2; i++) {
                 timeX.push(i)
                 // console.log(i);
             }
@@ -403,10 +420,10 @@ export default {
                 // console.log(d.source, d.time);
                 linegroup.append('path')
                     .attr('d', line([{
-                        name: d.source.name ,
+                        name: d.source.name,
                         time: d.time
                     }, {
-                        name: d.target.name ,
+                        name: d.target.name,
                         time: d.time + 1
                     }]))
                     .attr('id', `E${d.id}`)
@@ -414,7 +431,7 @@ export default {
                     .classed("chooseline", false)
                     .classed("unchooseline", true)
                     // .attr('class', `M${d.markov}`)
-                    .attr('fill', 'none')
+                    // .attr('fill', 'none')
                     .attr('stroke-width', 5)
                     .attr("marker-end", "url(#arrow)")
                     // .style("stroke", that.messageColor)
@@ -432,10 +449,10 @@ export default {
                             linegroup2
                                 .append('path')
                                 .attr('d', line([{
-                                    name: d.source.name ,
+                                    name: d.source.name,
                                     time: d.time
                                 }, {
-                                    name: d.target.name ,
+                                    name: d.target.name,
                                     time: d.time + 1
                                 }]))
                                 .attr('id', `E2${d.id}`)
@@ -509,7 +526,7 @@ export default {
                     })
                     .append('title')
                     .text(dd => {
-                        return `source: ${d.source.name }\ntarget: ${d.target.name }\ntime: ${d.time}\ncontent: ${d.content}`;
+                        return `source: ${d.source.name}\ntarget: ${d.target.name}\ntime: ${d.time}\ncontent: ${d.content}`;
                     });;
 
                 // d3.select(`#E${44}`)
@@ -519,17 +536,17 @@ export default {
                 // 绘制点
                 dotgroup.append("circle")
                     .attr("class", `T${d.time}`)
-                    .attr("cy", yScale(d.source.name ) + 0.5 * yband)
+                    .attr("cy", yScale(d.source.name) + 0.5 * yband)
                     .attr("cx", xScale(d.time))
                     .attr("r", 8)
-                    .style("fill", "black");
+                    .style("fill", "blue");
 
                 dotgroup.append("circle")
                     .attr("class", `T${d.time + 1}`)
-                    .attr("cy", yScale(d.target.name ) + 0.5 * yband)
+                    .attr("cy", yScale(d.target.name) + 0.5 * yband)
                     .attr("cx", xScale(d.time + 1))
                     .attr("r", 8)
-                    .style("fill", "black");
+                    .style("fill", "blue");
             });
 
             //连线
@@ -537,18 +554,18 @@ export default {
             for (let j = 1; j <= this.threshold; j++) {
                 for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
                     if (store.state.filtermesresByhold.find(e =>
-                        (e.target.name  == store.state.filtermesresByhold[i].source.name && e.time == store.state.filtermesresByhold[i].time - j)
-                        || (e.source.name  == store.state.filtermesresByhold[i].target.name  && e.time == store.state.filtermesresByhold[i].time + j)
+                        (e.target.name == store.state.filtermesresByhold[i].source.name && e.time == store.state.filtermesresByhold[i].time - j)
+                        || (e.source.name == store.state.filtermesresByhold[i].target.name && e.time == store.state.filtermesresByhold[i].time + j)
                     ) != null) {
                         store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
                         // console.log(store.state.filtermesresByhold[i]);
                         linegroup2
                             .append('path')
                             .attr('d', line([{
-                                name: store.state.filtermesresByhold[i].source.name ,
+                                name: store.state.filtermesresByhold[i].source.name,
                                 time: store.state.filtermesresByhold[i].time
                             }, {
-                                name: store.state.filtermesresByhold[i].target.name ,
+                                name: store.state.filtermesresByhold[i].target.name,
                                 time: store.state.filtermesresByhold[i].time + 1
                             }]))
                             .attr('id', `E2${store.state.filtermesresByhold[i].id}`)
@@ -747,6 +764,23 @@ export default {
 };
 </script>
 <style>
+.mar-title{
+    display: flex;
+    color:white;
+    background-color: #6d6d6d;
+}
+.input-box{
+    display: flex;
+    flex-direction: row;
+}
+.container{
+    display: flex;
+    flex-direction: column;
+    justify-content:space-between;
+  width:2936px;
+  height: 500px;
+
+}
 .page {
     width: 100%;
     height: 100%;

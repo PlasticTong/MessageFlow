@@ -1,15 +1,32 @@
 <template>
+    <div class="mar-title">
+        <h2 style="margin: 5px 5px;font-size: 30px;">马尔科夫链</h2>
+    </div>
     <div>
-        <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+        <el-tabs v-model="activeName">
             <el-tab-pane label="马尔科夫链" name="first">
-                <el-form-item label="阶数选取">
-                    <div class="input-box">
-                        <el-input v-model="threshold" placeholder="阶数"></el-input>
-                        <el-button @click="handleFliter">选取</el-button>
-                    </div>
-                </el-form-item>
+                <el-button @click="handleFliter"><label style="font-size:20px">选取</label></el-button>
+                <el-button type="danger" @click="clearAll()"><label style="font-size: 20px;">重置</label></el-button>
+                <el-tabs v-model="activeName2" type="card">
+                    <!-- <el-tabs v-model="activeName2" type="card" @tab-click="plotswitch"> -->
+                    <el-tab-pane label="k=2" name="first">
+                        <!-- <div v-loading="loading"> -->
+                        <svg id="markovchart2" width="1450" height="800"></svg>
+                        <!-- </div> -->
+                    </el-tab-pane>
+                    <el-tab-pane label="k=3" name="second">
+                        <!-- <div v-loading="loading" > -->
+                        <svg id="markovchart3" width="1450" height="800"></svg>
+                        <!-- </div> -->
+                    </el-tab-pane>
+                    <el-tab-pane label="k=4" name="third">
+                        <!-- <div v-loading="loading"> -->
+                        <svg id="markovchart4" width="1450" height="800"></svg>
+                        <!-- </div> -->
 
-                <!--第一行图表-->
+                    </el-tab-pane>
+                </el-tabs>
+                <!-- <div>
                 <div class="chart-row">
                     <div class="chart-column">
                         <svg id="markovchart1" width="200" height="450" v-show="threshold >= 1"></svg>
@@ -18,18 +35,22 @@
                         <svg id="markovchart2" width="200" height="450" v-show="threshold >= 2"></svg>
                     </div>
                 </div>
-
-                <!--第二行图表-->
                 <div class="chart-row">
                     <div class="chart-column">
                         <svg id="markovchart3" width="450" height="450" v-show="threshold >= 3"></svg>
                     </div>
                     <div class="chart-column">
-                        <svg id="markovchart4" width="450" height="450" v-show="threshold >= 4"></svg>
+                        <svg id="markovchart3" width="450" height="450" v-show="threshold >= 3"></svg>
                     </div>
                 </div>
+            </div> -->
             </el-tab-pane>
-            <el-tab-pane label="详细信息" name="second">详细信息</el-tab-pane>
+            <el-tab-pane label="详细信息" name="second">
+                <marInfoTable></marInfoTable>
+            </el-tab-pane>
+            <el-tab-pane label="选取信息" name="third">
+                <marChoose></marChoose>
+            </el-tab-pane>
         </el-tabs>
 
     </div>
@@ -37,58 +58,126 @@
 <script>
 import * as d3 from 'd3'
 import { store } from "../store/mesinfo"
-import { linksUserCho, fetchMar2data, fetchMar3data, fetchMar4data } from "../api/index.ts"
+import { linksUserCho, fetchMar2data, fetchMar3data, fetchMar4data, selectG, markovData, filIp } from "../api/index.ts"
 import Login from './login.vue'
 import { ElMessage, ElMessageBox } from "element-plus";
+import marInfoTable from "../views/marInfoTable.vue"
+import marChoose from "../views/marChoose.vue"
+// import { fa } from 'element-plus/es/locale';
 export default {
+    components: { marInfoTable, marChoose },
     data() {
         return {
-            threshold: 1,
+            threshold: 4,
             rootnum: 0,
 
             charts: [],
             currentchoose: [],
-            activeName:"first"
+            activeName: "first",
+            activeName2: "first",
+            sum: true,
+            marinfo2: [],
+            marinfo3: [],
+            marinfo4: [],
+            k: [false, false, false],
+            loading: true
         }
     },
+
     mounted() {
     },
     methods: {
-        handleFliter() {
-            // linksUserCho({ data: store.state.filterresFromUser, param: { order: this.threshold, delta: 12 } }).then(res => {
-            //     console.log(res);
-            // })
-            // const text = "192.168.1.1-191.168.1.13-192.168.12.3";
-
-            // // 匹配IPv4地址的正则表达式
-            // const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
-
-            // // 使用match方法获取所有符合条件的IP地址
-            // const ipList = text.match(ipPattern);
-
-            // // 输出结果
-            // console.log(ipList);
-
-            // console.log(this.threshold);
-            for (let i = 1; i <= this.threshold; i++) {
-                d3.select(`#markovchart${i}`)
-                this.drawMarkov(i)
-            }
+        clearAll() {
+            store.state.clearF += 1
+            store.state.MarFromUser = []
+            ElMessage.error("清除成功！")
+            for (let data in this.currentchoose) {
+                console.log(this.currentchoose[data]);
+                d3.select(`#${this.currentchoose[data]}`)
+                    .style("stroke", "#666666")
+                    .style("storke-dasharray", 0);
+            } this.currentchoose = []
         },
-        async drawMarkov(d) {
-            let svg = d3.select(`#markovchart${d}`).attr('width', 450).attr('height', 450)
+
+        async handleFliter() {
+            let threshold = store.state.threshold
+            let markovBy_real = []
+            const dataSend = {
+                data: store.state.filterresFromUser,
+                parameter: {
+                    k: 2,
+                    delta: 24
+                }
+            }
+            await markovData(dataSend).then(res => {
+                markovBy_real = res.data
+                store.state.marcal2 = JSON.parse(JSON.stringify(res.data))
+            })
+
+            // let markovBy_real3 = []
+            // const dataSend3 = {
+            //     data: store.state.filterresFromUser,
+            //     parameter: {
+            //         k: 3,
+            //         delta: 24
+            //     }
+            // }
+            // await markovData(dataSend3).then(res => {
+            //     markovBy_real3 = res.data
+            //     store.state.marcal3 = JSON.parse(JSON.stringify(res.data))
+            // })
+
+            // let markovBy_real4 = []
+            // const dataSend4 = {
+            //     data: store.state.filterresFromUser,
+            //     parameter: {
+            //         k: 4,
+            //         delta: 24
+            //     }
+            // }
+            // await markovData(dataSend4).then(res => {
+            //     markovBy_real4 = res.data
+            //     store.state.marcal4 = JSON.parse(JSON.stringify(res.data))
+            // })
+
+            this.marinfo2 = markovBy_real
+            // this.marinfo3 = markovBy_real3
+            // this.marinfo4 = markovBy_real4
+
+            this.drawMarkov(2, markovBy_real, 1)
+            // this.drawMarkov(3, markovBy_real, 1)
+            // this.drawMarkov(4, markovBy_real, 1)
+        },
+        plotswitch(tab) {
+            console.log(tab.props.name);
+            const d = tab.props.name == 'first' ? 2 :
+                tab.props.name == 'second' ? 3 :
+                    tab.props.name == 'third' ? 4 : 0;
+            if (this.k[d - 2] == false) {
+                this.drawMarkov(d)
+                this.k[d - 2] = true
+            }
+
+
+        },
+        async drawMarkov(d, markovBy_real, num) {
+            ElMessage.success("开始绘制")
+            // this.loading = true
+            // console.log(`绘制#markovchart${d}`);
+            let svg = d3.select(`#markovchart${d}`).attr('width', 1450).attr('height', 800)
             svg.selectAll('*').remove();
-            let width = svg.node().getBoundingClientRect().width
-            let height = svg.node().getBoundingClientRect().height
+            let width = 1450
+            let height = 804
 
             const plot = svg.append('g')
+            // .attr('id', `markovchartplot${d}`)
 
             // 添加defs元素
             let defs = plot.append('defs')
 
             //定义marker
             defs.append('marker')
-                .attr('id', 'markovArrowhead')
+                .attr('id', `markovArrowhead${d}`)
                 .attr('markerWidth', 3)
                 .attr('markerHeight', 3)
                 .attr('refX', 3 + 2.5) // Horizontal offset
@@ -99,7 +188,7 @@ export default {
                 .attr('d', 'M 0,0 L 3,1.5 L 0,3')
             //定义文字背景滤镜    
             let markovTextBackground = defs.append('filter')
-                .attr('id', 'markovTextBackground')
+                .attr('id', `markovTextBackground${d}`)
                 .attr('x', -0.05)
                 .attr('y', -0.05)
                 .attr('width', 1.1)
@@ -136,80 +225,118 @@ export default {
 
 
 
-            let markovBy2 = []
-            let markovBy3 = []
-            let markovBy4 = []
-            //获取数据
-            await fetchMar2data().then(res => {
-                markovBy2 = res.data.link
+            // let markovBy2 = []
+            // let markovBy3 = []
+            // let markovBy4 = []
+            // //获取数据
+            // await fetchMar2data().then(res => {
+            //     markovBy2 = res.data.link
+            // })
+            // await fetchMar3data().then(res => {
+            //     markovBy3 = res.data.link
+            // })
+
+            // await fetchMar4data().then(res => {
+            //     markovBy4 = res.data.link
+            // })
+
+
+            linksData = []
+            const set = new Set();
+            markovBy_real.forEach((value, index) => {
+                linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
+                set.add(value.source)
+                set.add(value.target)
             })
-            await fetchMar3data().then(res => {
-                markovBy3 = res.data.link
+            // store.state.mar2 = linksData
+            const sourcesAndTargets = Array.from(set);
+            nodesData = []
+            sourcesAndTargets.forEach(item => {
+                let data = { name: item }
+                nodesData.push(data)
             })
+            // if (d == 2) {
+            //     linksData = []
+            //     const set = new Set();
+            //     markovBy2.forEach((value, index) => {
+            //         linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
+            //         set.add(value.source)
+            //         set.add(value.target)
+            //     })
+            //     store.state.mar2 = linksData
+            //     const sourcesAndTargets = Array.from(set);
+            //     nodesData = []
+            //     sourcesAndTargets.forEach(item => {
+            //         let data = { name: item }
+            //         nodesData.push(data)
+            //     })
+            // }
 
-            await fetchMar4data().then(res => {
-                markovBy4 = res.data.link
-            })
+            // if (d == 3) {
+            //     linksData = []
+            //     const set = new Set();
+            //     markovBy3.forEach((value, index) => {
+            //         linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
+            //         set.add(value.source)
+            //         set.add(value.target)
+            //     })
+            //     store.state.mar3 = linksData
+            //     const sourcesAndTargets = Array.from(set);
+            //     nodesData = []
+            //     sourcesAndTargets.forEach(item => {
+            //         let data = { name: item }
+            //         nodesData.push(data)
+            //     })
+            // }
 
-            if (d == 2) {
-                linksData = []
-                const set = new Set();
-                markovBy2.forEach((value, index) => {
-                    linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
-                    set.add(value.source)
-                    set.add(value.target)
-                })
-                const sourcesAndTargets = Array.from(set);
-                nodesData = []
-                sourcesAndTargets.forEach(item => {
-                    let data = { name: item }
-                    nodesData.push(data)
-                })
-            }
+            // if (d == 4) {
+            //     linksData = []
+            //     const set = new Set();
+            //     markovBy4.forEach((value, index) => {
+            //         linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
+            //         set.add(value.source)
+            //         set.add(value.target)
+            //     })
+            //     store.state.mar4 = linksData
+            //     const sourcesAndTargets = Array.from(set);
+            //     nodesData = []
+            //     sourcesAndTargets.forEach(item => {
+            //         let data = { name: item }
+            //         nodesData.push(data)
+            //     })
+            // }
+            // if (num == 1) {
+            //     await filIp({ 'data': linksData, 'name': store.state.filtermes.ip }).then(res => {
+            //         const set = new Set();
+            //         linksData = res.data
+            //         linksData.forEach(e => {
 
-            if (d == 3) {
-                linksData = []
-                const set = new Set();
-                markovBy3.forEach((value, index) => {
-                    linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
-                    set.add(value.source)
-                    set.add(value.target)
-                })
-                const sourcesAndTargets = Array.from(set);
-                nodesData = []
-                sourcesAndTargets.forEach(item => {
-                    let data = { name: item }
-                    nodesData.push(data)
-                })
-            }
+            //             set.add(e.source)
+            //             set.add(e.target)
+            //         })
+            //         const sourcesAndTargets = Array.from(set);
+            //         nodesData = []
+            //         sourcesAndTargets.forEach(item => {
+            //             let data = { name: item }
+            //             nodesData.push(data)
+            //         })
 
-            if (d == 4) {
-                linksData = []
-                const set = new Set();
-                markovBy4.forEach((value, index) => {
-                    linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
-                    set.add(value.source)
-                    set.add(value.target)
-                })
-                const sourcesAndTargets = Array.from(set);
-                nodesData = []
-                sourcesAndTargets.forEach(item => {
-                    let data = { name: item }
-                    nodesData.push(data)
-                })
-            }
+            //     })
+            // }
 
             //利用力导引图模拟坐标
             let simulation = d3.forceSimulation()
                 .nodes(nodesData)
 
             simulation
-                .force('charge_force', d3.forceManyBody().strength(-600))
+                .force('charge_force', d3.forceManyBody().strength(-60))
                 .force('center_force', d3.forceCenter(width / 2, height / 2))
 
             let linkForce = d3.forceLink(linksData)
                 .id((d) => { return d.name })
             simulation.force('links', linkForce)
+
+
 
             simulation.stop();
             simulation.tick(300);
@@ -231,19 +358,104 @@ export default {
                 .enter()
                 .append('line')
                 .attr('id', function (data) { return `Mar${d}K${data.id}` })
-                .attr('stroke-width', 4)
+                .attr('stroke-width', function (d) { return Math.log(parseInt(d.type) * Math.E ** 3); })
                 .style('stroke', "#666666")
                 .style('cursor', 'pointer')
-                .attr('marker-end', 'url(#markovArrowhead)')
+                .attr('marker-end', `url(#markovArrowhead${d})`)
                 .attr('x1', (d) => { return d.source.x })
                 .attr('y1', (d) => { return d.source.y })
                 .attr('x2', (d) => { return d.target.x })
                 .attr('y2', (d) => { return d.target.y })
+                .on("contextmenu", async data => {
+                    event.preventDefault();
+                    let mes = {
+                        name: data.target.name,
+                        data: linksData
+                    }
+                    let result = []
+                    await selectG(mes).then(res => {
+                        res.data.forEach(e => {
+                            result.push(linksData[e])
+                            d3.select(`#Mar${d}K${e}`)
+                                .style("stroke", "#0fb2cc")
+                                .style("stroke-dasharray", 0);
+                        })
+                    })
+                    if (this.currentchoose.find(e => e == `Mar${d}K${data.id}`) == null) {
+                        result.forEach(dataAll => {
+                            this.currentchoose.push(`Mar${d}K${dataAll.id}`)
+                            // 匹配IPv4地址的正则表达式
+                            const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
+                            // 使用match方法获取所有符合条件的IP地址
+                            const ipList = dataAll.source.name.match(ipPattern);
+                            for (let i = 0; i < ipList.length - 1; i++) {
+                                let flag = 0;
+                                for (let j = 0; j < store.state.MarFromUser.length; j++) {
+                                    if (store.state.MarFromUser[j].id == ipList[i] && store.state.MarFromUser[j].parentId == ipList[i + 1]) {
+                                        store.state.MarFromUser[j].k += 1
+                                        flag = 1
+                                    }
+                                }
+                                if (flag == 0) {
+                                    store.state.MarFromUser.push({ id: ipList[i], parentId: ipList[i + 1], k: 1 })
+                                }
+                            }
+                            // 使用match方法获取所有符合条件的IP地址
+                            const ipList2 = dataAll.target.name.match(ipPattern);
+                            for (let i = 0; i < ipList2.length - 1; i++) {
+                                let flag = 0;
+                                for (let j = 0; j < store.state.MarFromUser.length; j++) {
+                                    if (store.state.MarFromUser[j].id == ipList2[i] && store.state.MarFromUser[j].parentId == ipList2[i + 1]) {
+                                        store.state.MarFromUser[j].k += 1
+                                        flag = 1
+                                    }
+                                }
+                                if (flag == 0) {
+                                    store.state.MarFromUser.push({ id: ipList2[i], parentId: ipList2[i + 1], k: 1 })
+                                }
+                            }
+                            store.state.marInfoTable.push({ id: `#Mar${d}K${dataAll.id}`, source: dataAll.source.name, target: dataAll.target.name, type: dataAll.type })
+                            ElMessage.success("选取成功" + `Mar${d}K${dataAll.id}`);
+
+                        })
+                    } else {
+                        result.forEach(dataAll => {
+                            let index = this.currentchoose.indexOf(`Mar${d}K${dataAll.id}`);
+                            this.currentchoose.splice(index, 1)
+                            let index1 = store.state.marInfoTable.indexOf({ id: `#Mar${d}K${dataAll.id}`, source: dataAll.source.name, target: dataAll.target.name, type: dataAll.type });
+                            store.state.marInfoTable.splice(index1, 1)
+                            //取消选取
+                            // 匹配IPv4地址的正则表达式
+                            const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
+                            // 使用match方法获取所有符合条件的IP地址
+                            const ipList = dataAll.source.name.match(ipPattern);
+                            const ipList2 = dataAll.target.name.match(ipPattern);
+                            for (let i = 0; i < ipList.length - 1; i++) {
+                                for (let j = 0; j < store.state.MarFromUser.length; j++) {
+                                    if (store.state.MarFromUser[j].id == ipList[i] && store.state.MarFromUser[j].parentId == ipList[i + 1]) {
+                                        store.state.MarFromUser[j].k -= 1
+                                    }
+                                    if (store.state.MarFromUser[j].id == ipList2[i] && store.state.MarFromUser[j].parentId == ipList2[i + 1]) {
+                                        store.state.MarFromUser[j].k -= 1
+                                    }
+                                    if (store.state.MarFromUser[j].k == 0) {
+                                        store.state.MarFromUser.splice(j, 1)
+                                        j -= 1
+                                    }
+                                }
+                            }
+                            console.log(store.state.MarFromUser);
+                            d3.select(`#Mar${d}K${dataAll.id}`)
+                                .style("stroke", "#666666")
+                                .style("stroke-dasharray", 0);
+                            ElMessage.error("取消选取" + `Mar${d}K${dataAll.id}`);
+                        })
+                    }
+
+                })
                 .on("click", data => {
                     if (this.currentchoose.find(e => e == `Mar${d}K${data.id}`) == null) {
                         this.currentchoose.push(`Mar${d}K${data.id}`)
-
-
                         // 匹配IPv4地址的正则表达式
                         const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
                         // 使用match方法获取所有符合条件的IP地址
@@ -260,7 +472,6 @@ export default {
                                 store.state.MarFromUser.push({ id: ipList[i], parentId: ipList[i + 1], k: 1 })
                             }
                         }
-
                         // 使用match方法获取所有符合条件的IP地址
                         const ipList2 = data.target.name.match(ipPattern);
                         for (let i = 0; i < ipList2.length - 1; i++) {
@@ -275,28 +486,8 @@ export default {
                                 store.state.MarFromUser.push({ id: ipList2[i], parentId: ipList2[i + 1], k: 1 })
                             }
                         }
-
-                        // const ipRegex = /(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)/;
-                        // // if(store.state.MarFromUser.find(e=>e.))
-                        // // console.log(this.rootnum);
-                        // if (store.state.MarFromUser.length == 0) {
-                        //     store.state.MarFromUser.push({ id: d.source.name.match(ipRegex)[1] })
-                        // }
-                        // const res1 = { id: d.source.name.match(ipRegex)[2], parentId: d.source.name.match(ipRegex)[1] }
-                        // const res2 = { id: d.target.name.match(ipRegex)[2], parentId: d.source.name.match(ipRegex)[2] }
-
-                        // if (store.state.MarFromUser.find(e => e.id == res1.id && e.parentId == res1.parentId) == null) {
-                        //     store.state.MarFromUser.push(res1)
-                        // }
-
-                        // if (store.state.MarFromUser.find(e => e.id == res2.id && e.parentId == res1.parentId) == null) {
-                        //     store.state.MarFromUser.push(res2)
-                        // }
-
-                        // console.log(store.state.MarFromUser);
-
                         store.state.marInfoTable.push({ id: `#Mar${d}K${data.id}`, source: data.source.name, target: data.target.name, type: data.type })
-                        // console.log(store.state.marInfoTable);
+
 
                         d3.select(`#Mar${d}K${data.id}`)
                             .style("stroke", "#0fb2cc")
@@ -308,9 +499,7 @@ export default {
                         this.currentchoose.splice(index, 1)
                         let index1 = store.state.marInfoTable.indexOf({ id: `#Mar${d}K${data.id}`, source: data.source.name, target: data.target.name, type: data.type });
                         store.state.marInfoTable.splice(index1, 1)
-
                         //取消选取
-
                         // 匹配IPv4地址的正则表达式
                         const ipPattern = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
                         // 使用match方法获取所有符合条件的IP地址
@@ -330,28 +519,22 @@ export default {
                                 }
                             }
                         }
-
-                        // let a = [1,2,3,4,5,6,7,8,9]
-                        // for(let i =0;i<a.length;i++){
-                        //     if(a[i]==3 || a[i]==4){
-                        //         a.splice(i,1)
-                        //         i -=1
-                        //     }
-                        //     console.log(i,a[i]);
-                        // }
-                        // console.log(a);
-
                         console.log(store.state.MarFromUser);
-
-
-
-
                         d3.select(`#Mar${d}K${data.id}`)
                             .style("stroke", "#666666")
                             .style("stroke-dasharray", 0);
                         ElMessage.error("取消选取" + `Mar${d}K${data.id}`);
                     }
                 })
+                .on('mouseover', (d) => {
+                    // console.log('over_d:',d)
+                    linkText.dispatch('show', { 'detail': d.id })
+                })
+                .on('mouseout', (d) => {
+                    linkText.dispatch('hide', { 'detail': d.id })
+                })
+
+
 
             let linkText = plot.append('g')
                 .attr('class', 'linkLabels')
@@ -359,13 +542,75 @@ export default {
                 .data(linksData)
                 .join('text')
                 .text(d => d.type)
+                .style('display', 'none')
                 .attr("x", function (d) {
                     return (d.source.x + d.target.x) / 2;
                 })
                 .attr("y", function (d) {
                     return (d.source.y + d.target.y) / 2;
                 })
+                // .on('show', function (d) {
+                //     if (d.id == d3.event.detail) {
+                //         d3.select(this).style('display', null)
+                //     }
+                // })
+                // .on('hide', function (d) {
+                //     if (d.id == d3.event.detail) {
+                //         d3.select(this).style('display', 'none')
+                //     }
+                // })
 
+
+            // function drag(simulation) {
+
+            //     function dragstarted(event) {
+            //         console.log(event);
+            //         if (!event.active) simulation.alphaTarget(0.3).restart();
+            //         event.vx = event.x;
+            //         event.vy = event.y;
+            //     }
+
+            //     function dragged(event) {
+            //         event.vx = event.x;
+            //         event.vy = event.y;
+            //     }
+
+            //     function dragended(event) {
+            //         if (!event.active) simulation.alphaTarget(0);
+            //         event.vx = null;
+            //         event.vy = null;
+            //     }
+
+            //     return d3.drag()
+            //         .on("start", dragstarted)
+            //         .on("drag", dragged)
+            //         .on("end", dragended);
+            // }
+
+
+            // function started(d) {
+            //     console.log(d);
+            //     // if (!d3.event.active) {
+            //     //     simulation.alphaTarget(.2).restart()
+            //     // }
+            //     d.fx = d.x // fx fy 表示节点一下次节点被固定的位置
+            //     d.fy = d.y
+            // }
+
+            // function dragged(d) {
+            //     d.fx = d3.event.x
+            //     d.fy = d3.event.y
+            // }
+
+            // function ended(d) {
+            //     // if (!d3.event.active) {
+            //     //     simulation.alphaTarget(0)
+            //     // }
+            //     d.fx = null
+            //     d.fy = null
+            // }
+
+            // console.log(nodesData);
             let node = plot.append('g')
                 .attr('class', 'nodes')
                 .selectAll('circle')
@@ -373,7 +618,14 @@ export default {
                 .enter()
                 .append('circle')
                 .attr('r', 10)
-                .attr('fill', "#b256f0")
+                // .attr('fill', "#b256f0")
+                .attr('fill',(d)=>{
+                    if(d.name.match(store.state.filtermes.ip)){
+                        return 'red'
+                    }else{
+                        return "#b256f0"
+                    }
+                })
                 .attr('stroke', "white")
                 .attr('stroke-width', 2)
                 .attr('cx', (d) => { return d.x })
@@ -385,6 +637,10 @@ export default {
                 .on('mouseout', (d) => {
                     label.dispatch('hide', { 'detail': d.name })
                 })
+                // .call(d3.drag()
+                //     .on('start', started)
+                //     .on('drag', dragged)
+                //     .on('end', ended))
 
             let label = plot.append('g')
                 .attr('class', 'labels')
@@ -398,7 +654,7 @@ export default {
                 .attr('y', function (d) {
                     return d.y + 0.3 * this.getBoundingClientRect().height - 20
                 })
-                .attr('filter', 'url(#markovTextBackground)')
+                .attr('filter', `url(#markovTextBackground${d})`)
                 .on('show', function (d) {
                     if (d.name == d3.event.detail) {
                         d3.select(this).style('display', null)
@@ -409,6 +665,21 @@ export default {
                         d3.select(this).style('display', 'none')
                     }
                 })
+
+            // simulation.on('tick', ticked)
+
+            // function ticked() {
+            //     link.attr('x1', d => d.source.x)
+            //         .attr('y1', d => d.source.y)
+            //         .attr('x2', d => d.target.x)
+            //         .attr('y2', d => d.target.y)
+
+            //     node.attr('cx', d => d.x)
+            //         .attr('cy', d => d.y)
+
+            //     // label.attr('x', d => d.x)
+            //     //     .attr('y', d => d.y)
+            // }
 
 
 
@@ -446,6 +717,13 @@ export default {
             //取消文本的可见性
             label.style('display', 'none') //在最后取消可见性是因为要保持最优缩放连文本尺寸也算在内
 
+            // this.loading = false
+
+
+
+
+            //   invalidation.then(() => simulation.stop());
+
 
         },
         circleColor(d) {
@@ -462,6 +740,44 @@ export default {
                 return 'red'
             }
         }
+    },
+    computed: {
+        fil() {
+            return this.sum
+        },
+        clearFF() {
+            return store.state.clearF
+        },
+        // draw() {
+        //     return store.state.drawMar
+        // }
+    },
+    watch: {
+        // draw: {
+        //     deep: true,
+        //     handler() {
+        //         if (store.state.drawMar == true && this.k[0] == false) {
+        //             this.drawMarkov(2)
+        //             this.k[0] = true
+
+        //         }
+        //     }
+        // }
+        fil: {
+            deep: true,
+            handler() {
+                if (this.sum -= true) {
+                    this.drawMarkov(2, this.marinfo2, 1)
+                    this.drawMarkov(3, this.marinfo3, 1)
+                    this.drawMarkov(4, this.marinfo4, 1)
+                } else {
+                    this.drawMarkov(2, this.marinfo2, 0)
+                    this.drawMarkov(3, this.marinfo3, 0)
+                    this.drawMarkov(4, this.marinfo4, 0)
+                }
+            }
+        }
+
     }
 }
 </script>
@@ -469,26 +785,22 @@ export default {
 svg {
     border: 1px solid #ccc;
 }
-</style>
-<style>
-.example-showcase .el-dropdown-link {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-}
 
+::v-deep .el-tabs_item{
+    font-size: 20px !important;
+}
 .chart-row {
     display: flex;
+    justify-content: center;
 }
 
 .chart-column {
-    width: 30%;
-    height: 30%;
+    width:30%;
+    height:30%;
     display: flex;
 }
-
-.chart-column svg {
-    width: 100%;
+.chart-column svg{
+    width:100%;
 }
 
 .links line {
@@ -513,6 +825,12 @@ svg {
 .input-box el-input {
     margin-right: 12px;
     width: 200px;
+}
+
+.mar-title{
+    display: flex;
+    color:white;
+    background-color: #6d6d6d;
 }
 </style>
    

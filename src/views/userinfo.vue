@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="height: 50%;">
+  <div class="container" >
     <!-- <h2 class="mb10">所选用户</h2>
     <el-table
       :data="[infoALL.state.userinfo.list[infoALL.state.chooseUser.soure], infoALL.state.userinfo.list[infoALL.state.chooseUser.target]]"
@@ -69,6 +69,10 @@ const handlePageChange = (val: number) => {
 </script>
 
 <style scoped>
+.container{
+  width:2936px;
+
+}
 .handle-box {
   margin-bottom: 20px;
 }
@@ -76,17 +80,6 @@ const handlePageChange = (val: number) => {
 .handle-select {
   width: 120px;
 }
-
-
-
-
-.container {
-  height: 100%;
-}
-
-
-
-
 
 
 .handle-input {

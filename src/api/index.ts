@@ -1,5 +1,6 @@
 import request from '../utils/request';
 import requestForFlask from '../utils/requestForFlask.js';
+import requestForFlask2 from '../utils/requestForFlask2.js';
 
 export const testflask = (user: string, pass: number) => {
     return requestForFlask({
@@ -34,11 +35,11 @@ export const mutiDraw = (data1: JSON) => {
     });
 };
 
-export const mutiCross = (data1: JSON,data2: JSON,) => {
+export const mutiCross = (data1: JSON, data2: JSON,) => {
     return requestForFlask({
         url: '/mesfilter/mesCross',
         method: 'post',
-        data: [data1,data2]
+        data: [data1, data2]
         // params:{
         //     data:data
         // }
@@ -46,12 +47,69 @@ export const mutiCross = (data1: JSON,data2: JSON,) => {
 };
 
 export const markovData = (data1: JSON) => {
-    return requestForFlask({
-        url: '/mesfilter/markov',
+    return requestForFlask2({
+        url: '/mesfilter/path_generation',
         method: 'post',
         data: data1
         // params:{
         //     data:data
+        // }
+    });
+};
+
+export const selectG = (data1: JSON) => {
+    return requestForFlask({
+        url: '/mesfilter/selectGra',
+        method: 'post',
+        data: data1
+        // params:{
+        //     data:data1
+        // }
+    });
+};
+
+export const readdata = (data1: JSON) => {
+    return requestForFlask({
+        url: '/mesfilter/readdata',
+        method: 'post',
+        data: data1
+        // params:{
+        //     data:data1
+        // }
+    });
+};
+
+export const senddata = (data1: JSON) => {
+    return requestForFlask({
+        url: '/mesfilter/senddata',
+        method: 'post',
+        data: data1
+        // params:{
+        //     data:data1
+        // }
+    });
+};
+
+
+
+export const filIp = (data1: JSON) => {
+    return requestForFlask({
+        url: '/mesfilter/filIp',
+        method: 'post',
+        data: data1
+        // params:{
+        //     data:data1
+        // }
+    });
+};
+
+export const uploadfile = (data1: FormData) => {
+    return requestForFlask({
+        url: '/mesfilter/uploadfile',
+        method: 'post',
+        data: data1
+        // params:{
+        //     data:data1
         // }
     });
 };

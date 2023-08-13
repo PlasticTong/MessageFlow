@@ -2,10 +2,11 @@
     <div>
         <el-tabs v-model="activeName" type="card">
             <el-tab-pane label="k=2" name="first">
-                <el-table :data="tableDataListFor2" highlight-current-row border class="table" ref="multipleTable"
+                <el-table :data="tableDataListFor2" @row-click=handleRowClick highlight-current-row border class="table" ref="multipleTable"
                     header-cell-class-name="table-header">
-                    <el-table-column prop="source" label="起始点"></el-table-column>
-                    <el-table-column prop="target" label="目标点"></el-table-column>
+                    <el-table-column prop="id" label="ID"></el-table-column>
+                    <el-table-column prop="source.name" label="起始点"></el-table-column>
+                    <el-table-column prop="target.name" label="目标点"></el-table-column>
                     <el-table-column prop="type" label="权值"></el-table-column>
                 </el-table>
                 <div class="pagination">
@@ -17,8 +18,9 @@
             <el-tab-pane label="k=3" name="second">
                 <el-table :data="tableDataListFor3" highlight-current-row border class="table" ref="multipleTable"
                     header-cell-class-name="table-header">
-                    <el-table-column prop="source" label="起始点"></el-table-column>
-                    <el-table-column prop="target" label="目标点"></el-table-column>
+                    <el-table-column prop="id" label="ID"></el-table-column>
+                    <el-table-column prop="source.name" label="起始点"></el-table-column>
+                    <el-table-column prop="target.name" label="目标点"></el-table-column>
                     <el-table-column prop="type" label="权值"></el-table-column>
                 </el-table>
                 <div class="pagination">
@@ -29,8 +31,9 @@
             </el-tab-pane>
             <el-tab-pane label="k=4" name="third"><el-table :data="tableDataListFor4" highlight-current-row border
                     class="table" ref="multipleTable" header-cell-class-name="table-header">
-                    <el-table-column prop="source" label="起始点"></el-table-column>
-                    <el-table-column prop="target" label="目标点"></el-table-column>
+                    <el-table-column prop="id" label="ID"></el-table-column>
+                    <el-table-column prop="source.name" label="起始点"></el-table-column>
+                    <el-table-column prop="target.name" label="目标点"></el-table-column>
                     <el-table-column prop="type" label="权值"></el-table-column>
                 </el-table>
                 <div class="pagination">
@@ -52,15 +55,15 @@ import store from "../store/mesinfo"
 import { linksUserCho, fetchMar2data, fetchMar3data, fetchMar4data } from "../api/index.ts"
 export default {
     data() {
-        fetchMar2data().then(res => {
-            this.marInfo2 = res.data.link
-        })
-        fetchMar3data().then(res => {
-            this.marInfo3 = res.data.link
-        })
-        fetchMar4data().then(res => {
-            this.marInfo4 = res.data.link
-        })
+        // fetchMar2data().then(res => {
+        //     this.marInfo2 = res.data.link
+        // })
+        // fetchMar3data().then(res => {
+        //     this.marInfo3 = res.data.link
+        // })
+        // fetchMar4data().then(res => {
+        //     this.marInfo4 = res.data.link
+        // })
         return {
             marInfo2: [],
             marInfo3: [],
@@ -98,7 +101,37 @@ export default {
         },
         Obj() {
             return store.state.filtermesres
+        },
+        mar2inf(){
+            return store.state.mar2
+        },
+        mar3inf(){
+            return store.state.mar3
+        },
+        mar4inf(){
+            return store.state.mar4
         }
+    },
+    watch:{
+        mar2inf:{
+            deep: true,
+            handler() {
+                this.marInfo2 = store.state.mar2
+            }
+        },
+        mar3inf:{
+            deep: true,
+            handler() {
+                this.marInfo3 = store.state.mar3
+            }
+        },
+        mar4inf:{
+            deep: true,
+            handler() {
+                this.marInfo4 = store.state.mar4
+            }
+        }
+
     },
     methods: {
         handleCurrentChangeFor2(currentPage) {
@@ -110,9 +143,17 @@ export default {
         handleCurrentChangeFor4(currentPage) {
             this.query4.pageIndex = currentPage;
         },
+        handleRowClick(row) {
+            // store.state.infoChoose = row.data.id
+            console.log(row.id); // 输出选中行的信息
+        }
     }
 }
 
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.table {
+    width: 80%;
+}
+</style>
