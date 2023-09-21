@@ -102,11 +102,17 @@ export default {
         async handleFliter() {
             let threshold = store.state.threshold
             let markovBy_real = []
+            let dataForchoose = []
+            for(let i in store.state.filterresFromUser){
+                // console.log(store.state.mesinfo.list[store.state.filterresFromUser[i]-1]);
+                dataForchoose.push(store.state.mesinfo.list[store.state.filterresFromUser[i]-1])
+                dataForchoose[i].timeForMar = (dataForchoose[i].timesecond - store.state.mesinfo.list[store.state.filterresFromUser[0]-1].timesecond)/(store.state.timeSlice * 60000 * 10)
+            }
             const dataSend = {
-                data: store.state.filterresFromUser,
+                data: dataForchoose,
                 parameter: {
                     k: 2,
-                    delta: 24
+                    delta: store.state.formInline.threshold
                 }
             }
             await markovData(dataSend).then(res => {
@@ -114,25 +120,25 @@ export default {
                 store.state.marcal2 = JSON.parse(JSON.stringify(res.data))
             })
 
-            // let markovBy_real3 = []
-            // const dataSend3 = {
-            //     data: store.state.filterresFromUser,
-            //     parameter: {
-            //         k: 3,
-            //         delta: 24
-            //     }
-            // }
-            // await markovData(dataSend3).then(res => {
-            //     markovBy_real3 = res.data
-            //     store.state.marcal3 = JSON.parse(JSON.stringify(res.data))
-            // })
+            let markovBy_real3 = []
+            const dataSend3 = {
+                data: dataForchoose,
+                parameter: {
+                    k: 3,
+                    delta: store.state.formInline.threshold
+                }
+            }
+            await markovData(dataSend3).then(res => {
+                markovBy_real3 = res.data
+                store.state.marcal3 = JSON.parse(JSON.stringify(res.data))
+            })
 
             // let markovBy_real4 = []
             // const dataSend4 = {
-            //     data: store.state.filterresFromUser,
+            //     data: dataForchoose,
             //     parameter: {
             //         k: 4,
-            //         delta: 24
+            //         delta: store.state.formInline.threshold
             //     }
             // }
             // await markovData(dataSend4).then(res => {
@@ -141,12 +147,12 @@ export default {
             // })
 
             this.marinfo2 = markovBy_real
-            // this.marinfo3 = markovBy_real3
+            this.marinfo3 = markovBy_real3
             // this.marinfo4 = markovBy_real4
 
             this.drawMarkov(2, markovBy_real, 1)
-            // this.drawMarkov(3, markovBy_real, 1)
-            // this.drawMarkov(4, markovBy_real, 1)
+            this.drawMarkov(3, markovBy_real3, 1)
+            // this.drawMarkov(4, markovBy_real4, 1)
         },
         plotswitch(tab) {
             console.log(tab.props.name);
@@ -177,15 +183,18 @@ export default {
 
             //定义marker
             defs.append('marker')
-                .attr('id', `markovArrowhead${d}`)
+                .attr('id', `markovArrowhead`)
                 .attr('markerWidth', 3)
                 .attr('markerHeight', 3)
-                .attr('refX', 3 + 2.5) // Horizontal offset
-                .attr('refY', 1.5) // Vertical offset
+                .attr('viewBox', '0 -5 12 12')
+                .attr('refX', 10)
+                .attr('refY', 0)
                 .attr('orient', 'auto')
                 .append('path')
                 .attr('fill', '#434343')
-                .attr('d', 'M 0,0 L 3,1.5 L 0,3')
+                .attr('d', 'M 0,-5 L 10,0 L 0,5')
+
+
             //定义文字背景滤镜    
             let markovTextBackground = defs.append('filter')
                 .attr('id', `markovTextBackground${d}`)
@@ -225,9 +234,9 @@ export default {
 
 
 
-            // let markovBy2 = []
-            // let markovBy3 = []
-            // let markovBy4 = []
+            let markovBy2 = []
+            let markovBy3 = []
+            let markovBy4 = []
             // //获取数据
             // await fetchMar2data().then(res => {
             //     markovBy2 = res.data.link
@@ -255,75 +264,6 @@ export default {
                 let data = { name: item }
                 nodesData.push(data)
             })
-            // if (d == 2) {
-            //     linksData = []
-            //     const set = new Set();
-            //     markovBy2.forEach((value, index) => {
-            //         linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
-            //         set.add(value.source)
-            //         set.add(value.target)
-            //     })
-            //     store.state.mar2 = linksData
-            //     const sourcesAndTargets = Array.from(set);
-            //     nodesData = []
-            //     sourcesAndTargets.forEach(item => {
-            //         let data = { name: item }
-            //         nodesData.push(data)
-            //     })
-            // }
-
-            // if (d == 3) {
-            //     linksData = []
-            //     const set = new Set();
-            //     markovBy3.forEach((value, index) => {
-            //         linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
-            //         set.add(value.source)
-            //         set.add(value.target)
-            //     })
-            //     store.state.mar3 = linksData
-            //     const sourcesAndTargets = Array.from(set);
-            //     nodesData = []
-            //     sourcesAndTargets.forEach(item => {
-            //         let data = { name: item }
-            //         nodesData.push(data)
-            //     })
-            // }
-
-            // if (d == 4) {
-            //     linksData = []
-            //     const set = new Set();
-            //     markovBy4.forEach((value, index) => {
-            //         linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
-            //         set.add(value.source)
-            //         set.add(value.target)
-            //     })
-            //     store.state.mar4 = linksData
-            //     const sourcesAndTargets = Array.from(set);
-            //     nodesData = []
-            //     sourcesAndTargets.forEach(item => {
-            //         let data = { name: item }
-            //         nodesData.push(data)
-            //     })
-            // }
-            // if (num == 1) {
-            //     await filIp({ 'data': linksData, 'name': store.state.filtermes.ip }).then(res => {
-            //         const set = new Set();
-            //         linksData = res.data
-            //         linksData.forEach(e => {
-
-            //             set.add(e.source)
-            //             set.add(e.target)
-            //         })
-            //         const sourcesAndTargets = Array.from(set);
-            //         nodesData = []
-            //         sourcesAndTargets.forEach(item => {
-            //             let data = { name: item }
-            //             nodesData.push(data)
-            //         })
-
-            //     })
-            // }
-
             //利用力导引图模拟坐标
             let simulation = d3.forceSimulation()
                 .nodes(nodesData)
@@ -520,6 +460,7 @@ export default {
                             }
                         }
                         console.log(store.state.MarFromUser);
+                        console.log(d3.select(`#Mar${d}K${data.id}`));
                         d3.select(`#Mar${d}K${data.id}`)
                             .style("stroke", "#666666")
                             .style("stroke-dasharray", 0);
@@ -549,16 +490,16 @@ export default {
                 .attr("y", function (d) {
                     return (d.source.y + d.target.y) / 2;
                 })
-                // .on('show', function (d) {
-                //     if (d.id == d3.event.detail) {
-                //         d3.select(this).style('display', null)
-                //     }
-                // })
-                // .on('hide', function (d) {
-                //     if (d.id == d3.event.detail) {
-                //         d3.select(this).style('display', 'none')
-                //     }
-                // })
+                .on('show', function (d) {
+                    if (d.id == d3.event.detail) {
+                        d3.select(this).style('display', null)
+                    }
+                })
+                .on('hide', function (d) {
+                    if (d.id == d3.event.detail) {
+                        d3.select(this).style('display', 'none')
+                    }
+                })
 
 
             // function drag(simulation) {
@@ -588,27 +529,30 @@ export default {
             // }
 
 
-            // function started(d) {
-            //     console.log(d);
-            //     // if (!d3.event.active) {
-            //     //     simulation.alphaTarget(.2).restart()
-            //     // }
-            //     d.fx = d.x // fx fy 表示节点一下次节点被固定的位置
-            //     d.fy = d.y
-            // }
+            function started(d) {
+                // simulation.on('tick', ticked)
+                console.log(d);
+                if (!d3.event.active) {
+                    simulation.alphaTarget(.2).restart()
+                }
+                d.fx = d.x // fx fy 表示节点一下次节点被固定的位置
+                d.fy = d.y
+            }
 
-            // function dragged(d) {
-            //     d.fx = d3.event.x
-            //     d.fy = d3.event.y
-            // }
+            function dragged(d) {
+                // simulation.on('tick', ticked)
+                d.fx = d3.event.x
+                d.fy = d3.event.y
+            }
 
-            // function ended(d) {
-            //     // if (!d3.event.active) {
-            //     //     simulation.alphaTarget(0)
-            //     // }
-            //     d.fx = null
-            //     d.fy = null
-            // }
+            function ended(d) {
+                // simulation.on('tick', ticked)
+                if (!d3.event.active) {
+                    simulation.alphaTarget(0)
+                }
+                d.fx = d.x 
+                d.fy = d.y
+            }
 
             // console.log(nodesData);
             let node = plot.append('g')
@@ -637,10 +581,10 @@ export default {
                 .on('mouseout', (d) => {
                     label.dispatch('hide', { 'detail': d.name })
                 })
-                // .call(d3.drag()
-                //     .on('start', started)
-                //     .on('drag', dragged)
-                //     .on('end', ended))
+                .call(d3.drag()
+                    .on('start', started)
+                    .on('drag', dragged)
+                    .on('end', ended))
 
             let label = plot.append('g')
                 .attr('class', 'labels')
@@ -677,8 +621,8 @@ export default {
             //     node.attr('cx', d => d.x)
             //         .attr('cy', d => d.y)
 
-            //     // label.attr('x', d => d.x)
-            //     //     .attr('y', d => d.y)
+            //     label.attr('x', d => d.x)
+            //         .attr('y', d => d.y)
             // }
 
 
@@ -714,10 +658,10 @@ export default {
                 .style('transform-origin', 'left top')
                 .attr("transform", `translate(${offsetTransformX},${offsetTransformY}) scale(${originTransformK}) translate(${originTransformX},${originTransformY})`)
 
-            //取消文本的可见性
+            // //取消文本的可见性
             label.style('display', 'none') //在最后取消可见性是因为要保持最优缩放连文本尺寸也算在内
 
-            // this.loading = false
+            this.loading = false
 
 
 

@@ -2,43 +2,47 @@
     <div class="mar-title">
         <h2 style="margin: 5px 5px;font-size: 30px;">消息流</h2>
     </div>
-    <!-- <div class='page'>
-        <div class='view1'>
-            <el-button @click="drawer = true" type="primary" style="margin-left: 16px;">
-                点我打开
-            </el-button>
-            <el-drawer v-model="drawer" :direction="direction">
-                <mestable></mestable>
-                <el-form-item label="时间阈值">
-                    <div class="input-box">
-                        <el-input v-model="threshold" placeholder="阈值"></el-input>
-                        <el-button @click="handleFliter">筛选</el-button>
-                        <el-button type="danger" @click="handleReset">重置</el-button>
-                    </div>
-                </el-form-item>
-                <usertable></usertable>
-            </el-drawer>
-            <svg id="chart" width="800" height="600"></svg>
-        </div>
-    </div> -->
     <div class='page'>
         <el-tabs v-model="activeName">
-            <el-tab-pane label="消息流" name="first">
+            <el-tab-pane name="first">
+                <template #label>
+                    <span style="font-size: 20px;">
+                        <span>消息流</span>
+                    </span>
+                </template>
                 <div class="container">
-                <svg id="chart" width="800" height="500"></svg>
-                <el-form-item label="时间阈值">
-                    <div class="input-box">
-                        <el-input v-model="threshold" placeholder="阈值"></el-input>
-                        <el-button @click="handleFliter">筛选</el-button>
-                        <el-button type="danger" @click="handleReset">重置</el-button>
+                    <div style="display: flex;flex-direction: row;">
+                        <el-input v-model="this.accY" placeholder="纵轴精确度" style="width: 10%;margin-right: 10px;"></el-input>
+                        <el-button @click="generateVis2"
+                            style="border-radius: 10px;  background-color: aquamarine; color: blue;">绘制</el-button>
+                        <el-button type="primary" icon="el-icon-edit" @click="openAcc" circle></el-button>
                     </div>
-                </el-form-item>
-            </div>
+                    <svg id="chart" width="800" height="500"></svg>
+                    <!-- <el-form-item label="时间阈值">
+                        <div class="input-box">
+                            <el-input v-model="threshold" placeholder="阈值"></el-input>
+                            <el-button @click="handleFliter">筛选</el-button>
+                            <el-button type="danger" @click="handleReset">重置</el-button>
+                        </div>
+                    </el-form-item> -->
+                </div>
             </el-tab-pane>
-            <el-tab-pane label="消息信息" name="second">
-                <mestable></mestable>               
+            <el-tab-pane name="second">
+                <template #label>
+                    <span style="font-size: 20px;">
+                        <span>消息信息</span>
+                    </span>
+                </template>
+                <mestable></mestable>
             </el-tab-pane>
-            <el-tab-pane label="用户信息" name="third"><usertable></usertable></el-tab-pane>
+            <el-tab-pane name="third">
+                <template #label>
+                    <span style="font-size: 20px;">
+                        <span>用户信息</span>
+                    </span>
+                </template>
+                <usertable></usertable>
+            </el-tab-pane>
         </el-tabs>
     </div>
 </template>
@@ -82,7 +86,10 @@ export default {
             threshold: 6, //阈值s
             drawer: false,
             direction: 'rtl',
-            activeName: "first"
+            activeName: "first",
+            accY: "",//纵轴准确度，每n个展示一个
+
+            filterresFromUser: [], //用户选择好的数据，即导出数据
 
         };
     },
@@ -151,7 +158,7 @@ export default {
             this.generateVis2()
         },
         async handleFliter() {
-           store.state.threshold=  this.threshold
+            store.state.threshold = this.threshold
             // this.generateVis2()
             store.state.filtermesresByhold = store.state.filtermesres
             // console.log(store.state.filtermesresByhold);
@@ -184,149 +191,57 @@ export default {
             await mutiCross(crossmes, sourcesAndTargets).then(res => {
                 store.state.filteruserres = res.data;
             })
-
-
-
-            // const arr2WithIndex = sourcesAndTargets.map((value) => {
-            //     let num = 0;
-            //     filterMesData.forEach(e => {
-            //         if (e.source == value) {
-            //             num = num + 1
-            //         }
-            //         if (e.target == value) {
-            //             num = num - 1
-            //         }
-            //     })
-            //     return { value, num: num };
-            // });
-
-            // // 根据数组 arr1 中的值大小顺序进行排序
-            // arr2WithIndex.sort((a, b) => a.num - b.num);
-
-            // // 将排序后的对象数组还原回原始的值数组
-            // const sortedArr2 = arr2WithIndex.map((item) => item.value);
-
-
-            // const sourcesAndTargetsRes = []
-            // for(let j=1;j<=sourcesAndTargets.length;j++){
-            //     let data ={"ids":j,"name":sourcesAndTargets[j-1]}
-            //     sourcesAndTargetsRes.push(data)
-            // }
-            // console.log(sortedArr2);
-            // store.state.filteruserres = sortedArr2;
-
-
-
             ElMessage.success("筛选成功！");
             await this.generateVis2()
             // await this.handleConnectivity()
             store.state.drawMar = true
         },
-        handleExport() {
-            var date = new Date();
-            var year = date.getFullYear(); //月份从0~11，所以加一
-            let month = date.getMonth();
-            // console.log("month", month);
-            var dateArr = [
-                date.getMonth() + 1,
-                date.getDate(),
-                date.getHours(),
-                date.getMinutes(),
-                date.getSeconds(),
-            ];
-            //如果格式是MM则需要此步骤，如果是M格式则此循环注释掉
-            for (var i = 0; i < dateArr.length; i++) {
-                if (dateArr[i] >= 1 && dateArr[i] <= 9) {
-                    dateArr[i] = "0" + dateArr[i];
-                }
-            }
-            var strDate =
-                year +
-                "/" +
-                dateArr[0] +
-                "/" +
-                dateArr[1] +
-                " " +
-                dateArr[2] +
-                ":" +
-                dateArr[3] +
-                ":" +
-                dateArr[4];
-            //此处可以拿外部的变量接收，也可直接返回  strDate:2022-05-01 13:25:30
-            //this.date = strDate;
-
-
-
-
-
-            const blob = new Blob([JSON.stringify(store.state.filterresFromUser, null, 2)], {
-                type: 'application/json'
-            })
-            // console.log(blob);
-            // // FileSaver.saveAs(blob, strDate)
-            // console.log("nihao");
-            // linksUserCho(store.state.filterresFromUser).then(res=>{
-            //     console.log(res);
-            // })
-
-            const dataSend = {
-                data: store.state.filterresFromUser,
-                parameter: {
-                    k: 3,
-                    delta: 7
-                }
-            }
-
-            markovData(dataSend).then(res => {
-                console.log(res);
-            })
-
-
-
-
-
-
-
-
-
-        },
         generateVis2() {
-            // console.log("12312312312312");
-            let that = this;
-            //计算最大值最小值
-            let filterMesData = [];
-            filterMesData = Object.values(store.state.filtermesres)
-            var maxTime = 0;
-            var minTime = 0;
-            if (filterMesData != []) {
-                maxTime = filterMesData.reduce(function (prev, curr) {
-                    return prev.time > curr.time ? prev : curr;
-                }, {});
-                minTime = filterMesData.reduce(function (prev, curr) {
-                    return prev.time < curr.time ? prev : curr;
-                }, {});
+            //纵轴精确度若没填，默认1
+            if (this.accY == '') {
+                this.accY = 1
             }
-            this.maxx = maxTime
-            this.minn = minTime
+            let that = this;
+            //重置选取数据
+            this.filterresFromUser = []
+            //对数据先进行处理
 
-            let filterMesDataByHold = [];
-            filterMesDataByHold = Object.values(store.state.filtermesresByhold)
+            //绘制的数据
+            let filterMesDataByHold = store.state.linkFByTime;
+
+            //把form表单中 IP段；IP段 分割
+            let IPfromChoose = []
+            if (store.state.formInline.user != "") {
+                IPfromChoose = store.state.formInline.user.split(";")
+            }
+
+            //判断ip是否是该network ip段
+            function isIPInNetwork(ip, network) {
+                var ipParts = ip.split(".");
+                var networkParts = network.split(".");
+                // 判断 IP 地址是否在网络地址中
+                for (var i = 0; i < 3; i++) {
+                    if (ipParts[i] !== networkParts[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
 
 
 
-
-            let filterUserData = [];
-            filterUserData = Object.values(store.state.filteruserres)
-            // let filterUserDataNUM = [];
-            // for(let i=0;i<filterUserData.length;i++){
-            //     console.log(filterUserData[i].num);
-            //     filterUserDataNUM.push(filterUserData[i].ids)
-            // }
+            //所有ip数据，去重
+            let filterUserData = new Set()
+            for (let i = 0; i < filterMesDataByHold.length; i++) {
+                filterUserData.add(filterMesDataByHold[i].source.name)
+                filterUserData.add(filterMesDataByHold[i].target.name)
+            }
+            filterUserData = Array.from(filterUserData)
 
 
 
             // console.log('D3开始渲染');
-            const svg = d3.select('#chart').attr('width', 3000);
+            const svg = d3.select('#chart').attr('width', 4000);
             svg.select("#maingroup").remove();
             const width = +svg.attr('width');
             const height = +svg.attr('height');
@@ -360,16 +275,53 @@ export default {
             //     // console.log(linegroup);
 
 
-            const timeX = []
-            for (let i = minTime.time; i < maxTime.time + 2; i++) {
-                timeX.push(i)
-                // console.log(i);
-            }
+            // const timeX = []
+            // for (let i = minTime.time; i < maxTime.time + 2; i++) {
+            //     timeX.push(i)
+            //     // console.log(i);
+            // }
             // console.log(timeX);
+
+            //定义时间格式
+            function formatDate(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+                const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                return formattedDate;
+            }
+
+            //计算时间片
+            let timeData = new Set()
+            //默认导入数据时间片，但是现在为用户输入时间片，所以用不到
+            // let timeInterval = Date.parse(filterMesData.list[1].time) - Date.parse(filterMesData.list[0].time)
+            if (store.state.timeSlice == null) {
+                ElMessage.error("未输入时间片！")
+                return
+            }
+            //时间片单位是10分钟
+            let timeInterval = store.state.timeSlice * 60000 * 10
+            //计算最大时间
+            let maxTime = Date.parse(filterMesDataByHold[filterMesDataByHold.length - 1].time) + timeInterval
+            //计算最小时间
+            let minTime = Date.parse(filterMesDataByHold[0].time)
+            console.log(Date.parse(filterMesDataByHold[filterMesDataByHold.length - 1].time));
+            //timedata是横轴的数据，需要补充上没有时间的数据，所以用最大最小时间来
+            for (let i = 0; i < ((maxTime - minTime) / timeInterval); i++) {
+                timeData.add(formatDate(new Date(minTime + i * timeInterval)))
+            }
+            timeData = Array.from(timeData)
+            //作图逻辑原因，需要补充最大后面一个时间
+            timeData.push(formatDate(new Date(Date.parse(timeData[timeData.length - 1]) + timeInterval)))
+            console.log(timeData);
+            this.timeAll = timeData.length
             // 设置坐标轴
             const xScale = d3.scaleBand()
                 // .domain([1,2,3,3.5])
-                .domain(timeX)
+                .domain(timeData)
                 .range([0, innerwidth]);
             const yScale = d3.scaleBand()
                 .domain(filterUserData)
@@ -417,14 +369,13 @@ export default {
             // })
             //绘制边和箭头
             filterMesDataByHold.forEach(d => {
-                // console.log(d.source, d.time);
                 linegroup.append('path')
                     .attr('d', line([{
                         name: d.source.name,
-                        time: d.time
+                        time: formatDate(new Date(d.time))//格式化时间
                     }, {
                         name: d.target.name,
-                        time: d.time + 1
+                        time: formatDate(new Date(Date.parse(d.time) + timeInterval))//格式化下一个时间
                     }]))
                     .attr('id', `E${d.id}`)
                     .style('cursor', 'pointer')
@@ -432,8 +383,9 @@ export default {
                     .classed("unchooseline", true)
                     // .attr('class', `M${d.markov}`)
                     // .attr('fill', 'none')
-                    .attr('stroke-width', 5)
+
                     .attr("marker-end", "url(#arrow)")
+                    .attr('stroke-width', 5)
                     // .style("stroke", that.messageColor)
                     // .style("stroke-dasharray", 6)
                     .on("click", function () {
@@ -441,172 +393,80 @@ export default {
                         if (store.state.filterresFromUser.find(user => user == d.id) == null) {
                             ElMessage.success("选取成功" + d.id);
                             store.state.filterresFromUser.push(d.id)
-                            // console.log("成功" + store.state.filterresFromUser);
-                            // d3.select(`#E${d.id}`)
-                            //     .style("stroke", that.marColor)
-                            //     .style("stroke-dasharray", 0);
-
-                            linegroup2
-                                .append('path')
-                                .attr('d', line([{
-                                    name: d.source.name,
-                                    time: d.time
-                                }, {
-                                    name: d.target.name,
-                                    time: d.time + 1
-                                }]))
-                                .attr('id', `E2${d.id}`)
-                                .style("stroke", that.marColor)
-                                .style("stroke-dasharray", 0)
-                                // .attr('class', `M${d.markov}`)
-                                .attr('fill', 'none')
-                                .attr('stroke-width', 5)
-                                .attr("marker-end", "url(#arrow)")
-                                .style('cursor', 'pointer')
-                                .on("click", function () {
-                                    ElMessage.error("取消选取" + d.id);
-                                    let index = store.state.filterresFromUser.indexOf(d.id);
-                                    store.state.filterresFromUser.splice(index, 1)
-                                    // console.log("取消" + store.state.filterresFromUser);
-                                    d3.select(`#E2${d.id}`)
-                                        .remove()
-                                })
-
-
-
+                            d3.select(this)
+                                .classed("chooseline", true)
+                                .classed("unchooseline", false)
                         }
-                        // else {
-                        //     ElMessage.error("取消选取" + d.id);
-                        //     let index = store.state.filterresFromUser.indexOf(d.id);
-                        //     store.state.filterresFromUser.splice(index, 1)
-                        //     console.log("取消" + store.state.filterresFromUser);
-                        //     d3.select(`#E2${d.id}`)
-                        //         .style("stroke", that.messageColor)
-                        //         .style("stroke-dasharray", 6);
-
-
-                        //     // linegroup2
-                        //     //     .append('path')
-                        //     //     .attr('d', line([{
-                        //     //         name: d.source,
-                        //     //         time: d.time
-                        //     //     }, {
-                        //     //         name: d.target,
-                        //     //         time: d.time + 1
-                        //     //     }]))
-                        //     //     .attr('id', `E2${d.id}`)
-                        //     //     .style("stroke", "none")
-                        //     //     .style("stroke-dasharray", 0)
-                        //     //     // .attr('class', `M${d.markov}`)
-                        //     //     .attr('fill', 'none')
-                        //     //     .attr('stroke-width', 5)
-                        //     //     .attr("marker-end", "url(#arrow)")
-                        // }
-
-                        // if (d.markov != undefined) {
-                        //     // 恢复上次选择的颜色
-                        //     if (that.oldCurrentRow != undefined) {
-                        //         d3.selectAll(`.M${that.oldCurrentRow}`)
-                        //             .style("stroke", that.marColor);
-                        //     }
-                        //     // 弹窗当前选择
-                        //     that.$message.success("选择了" + d.markov);
-                        //     // 记录当前选择 以便下次选择时恢复颜色
-                        //     that.oldCurrentRow = d.markov;
-                        //     // 高亮当前选择
-                        //     d3.selectAll(`.M${d.markov}`)
-                        //         .style("stroke", that.selectColor)
-                        //         .style("stroke-dasharray", 0);
-                        //     // 在表格中高亮当前选择
-                        //     that.$refs.table.setCurrentRow(that.$refs.table.data.find(function (e) {
-                        //         return e[0] == d.markov;
-                        //     }))
-                        // }
-
+                        else {
+                            ElMessage.error("取消选取" + d.id);
+                            let index = store.state.filterresFromUser.indexOf(d.id);
+                            store.state.filterresFromUser.splice(index, 1)
+                            d3.select(this)
+                                .classed("chooseline", false)
+                                .classed("unchooseline", true)
+                        }
                     })
                     .append('title')
                     .text(dd => {
-                        return `source: ${d.source.name}\ntarget: ${d.target.name}\ntime: ${d.time}\ncontent: ${d.content}`;
-                    });;
-
-                // d3.select(`#E${44}`)
-                // .classed("chooseline",true)
-                // .classed("unchooseline",false)
+                        return `source: ${d.source.name}\ntarget: ${d.target.name}\ntime: ${d.time}\n`;
+                    });
 
                 // 绘制点
                 dotgroup.append("circle")
-                    .attr("class", `T${d.time}`)
+                    .attr("class", `T${d.source.name}`)
                     .attr("cy", yScale(d.source.name) + 0.5 * yband)
-                    .attr("cx", xScale(d.time))
+                    .attr("cx", xScale(formatDate(new Date(d.time))))
                     .attr("r", 8)
-                    .style("fill", "blue");
+                    .style("fill", function () {
+                        //对筛选条件进行判断，若是筛选的标红
+                        if (IPfromChoose != []) {
+                            for (let i = 0; i < IPfromChoose.length; i++) {
+                                if (isIPInNetwork(d.source.name, IPfromChoose[i])) {
+                                    return "red"
+                                }
+                            }
+                            return "blue"
+                        } else {
+                            return "blue"
+                        }
+                    });
 
                 dotgroup.append("circle")
-                    .attr("class", `T${d.time + 1}`)
+                    .attr("class", `T${d.target.name}`)
                     .attr("cy", yScale(d.target.name) + 0.5 * yband)
-                    .attr("cx", xScale(d.time + 1))
+                    .attr("cx", xScale(formatDate(new Date(Date.parse(d.time) + timeInterval))))
                     .attr("r", 8)
-                    .style("fill", "blue");
+                    .style("fill", function () {
+                        //对筛选条件进行判断，若是筛选的标红
+                        if (IPfromChoose != []) {
+                            for (let i = 0; i < IPfromChoose.length; i++) {
+                                if (isIPInNetwork(d.target.name, IPfromChoose[i])) {
+                                    return "red"
+                                }
+                            }
+                            return "blue"
+                        } else {
+                            return "blue"
+                        }
+                    });
+
             });
 
-            //连线
-            store.state.filterresFromUser = []
-            for (let j = 1; j <= this.threshold; j++) {
-                for (let i = 0; i < store.state.filtermesresByhold.length; i++) {
-                    if (store.state.filtermesresByhold.find(e =>
-                        (e.target.name == store.state.filtermesresByhold[i].source.name && e.time == store.state.filtermesresByhold[i].time - j)
-                        || (e.source.name == store.state.filtermesresByhold[i].target.name && e.time == store.state.filtermesresByhold[i].time + j)
-                    ) != null) {
-                        store.state.filterresFromUser.push(store.state.filtermesresByhold[i]);
-                        // console.log(store.state.filtermesresByhold[i]);
-                        linegroup2
-                            .append('path')
-                            .attr('d', line([{
-                                name: store.state.filtermesresByhold[i].source.name,
-                                time: store.state.filtermesresByhold[i].time
-                            }, {
-                                name: store.state.filtermesresByhold[i].target.name,
-                                time: store.state.filtermesresByhold[i].time + 1
-                            }]))
-                            .attr('id', `E2${store.state.filtermesresByhold[i].id}`)
-                            .style("stroke", that.marColor)
-                            .style("stroke-dasharray", 0)
-                            // .attr('class', `M${d.markov}`)
-                            .attr('fill', 'none')
-                            .attr('stroke-width', 5)
-                            .attr("marker-end", "url(#arrow)")
-                            .style('cursor', 'pointer')
-                            .on("click", function () {
-                                ElMessage.error("取消选取" + store.state.filtermesresByhold[i].id);
-                                let index = store.state.filterresFromUser.indexOf(store.state.filtermesresByhold[i].id);
-                                store.state.filterresFromUser.splice(index, 1)
-                                // console.log("取消" + store.state.filterresFromUser);
-                                d3.select(`#E2${store.state.filtermesresByhold[i].id}`)
-                                    .remove()
-                            })
-                        // d3.select(`#E${store.state.filtermesresByhold[i].id}`)
-                        //     .classed("chooseline", true)
-                        //     .classed("unchooseline", false)
-                    }
+            //通过时间阈值对原始点进行连线
+            for (let i = 0; i < filterMesDataByHold.length; i++) {
+                // 若在该时间阈值内，存在一条消息的起点是我的终点（我的时间之后），或者一条消息的终点是我的起点（我的时间之前），认为我们是连接一起的，消息标黑
+                if (filterMesDataByHold.find(e =>
+                    (e.target.name == filterMesDataByHold[i].source.name && Date.parse(filterMesDataByHold[i].time) - store.state.formInline.threshold * timeInterval <= Date.parse(e.time) && Date.parse(e.time) <= Date.parse(filterMesDataByHold[i].time))
+                    || (e.source.name == filterMesDataByHold[i].target.name && Date.parse(filterMesDataByHold[i].time) <= Date.parse(e.time) && Date.parse(e.time)<= Date.parse(filterMesDataByHold[i].time) + store.state.formInline.threshold * timeInterval)
+                ) != null) {
+                    store.state.filterresFromUser.push(filterMesDataByHold[i].id);
+                    d3.select(`#E${filterMesDataByHold[i].id}`)
+                        .classed("chooseline", true)
+                        .classed("unchooseline", false)
                 }
             }
 
-            // let linkmust = linegroup2
-            //     .append('path')
-            //     .attr('d', line([{
-            //         name: "192.168.1.2",
-            //         time: 1
-            //     }, {
-            //         name: "192.168.1.10",
-            //         time: 2
-            //     }]))
-            //     // .attr('id', `E${d.id}`)
-            //     .style("stroke", "red")
-            //     .style("stroke-dasharray", 0)
-            //     // .attr('class', `M${d.markov}`)
-            //     .attr('fill', 'none')
-            //     .attr('stroke-width', 5)
-            //     .attr("marker-end", "url(#arrow)")
+
 
 
 
@@ -614,7 +474,7 @@ export default {
             let xAxisModel = svg.select('#maingroup')
                 .select('.axis')
                 .append('rect')
-                .attr('x', 0)
+                .attr('x', -100)
                 .attr('y', -50)
                 .attr('width', '100%')
                 .attr('height', 80)
@@ -622,14 +482,11 @@ export default {
             let yAxisModel = svg.select('#maingroup')
                 .select('.axis')
                 .append('rect')
-                .attr('x', -50)
+                .attr('x', -110)
                 .attr('y', 0)
-                .attr('width', 160)
+                .attr('width', 110)
                 .attr('height', '100%')
                 .attr('fill', 'white')
-
-
-
 
             const yAxis = d3.axisLeft(yScale);
             const gY = axis.append('g')
@@ -641,6 +498,12 @@ export default {
             const gX = axis.append('g')
                 .classed('xAxis', true)
                 .call(xAxis);
+            gX.selectAll(".tick")
+                .each(function (d, i) {
+                    d3.select(this).attr("id", "tick-" + i);
+                    // 该点准确度不为0，省略
+                    if (i % that.accY != 0) { d3.select(this).style("display", "none") }
+                });
 
             function calAppendY() {
                 let appendMove = 0;
@@ -658,11 +521,13 @@ export default {
                     if (appendMove < text_width)
                         appendMove = text_width
                 })
-                return appendMove
+                return appendMove+30
             }
 
             gY.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
             gX.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
+            yAxisModel.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
+            xAxisModel.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
 
             svg.select('.linegroup').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
             svg.select('.linegroup2').attr("transform", `translate(${calAppendX()},${calAppendY()})`)
@@ -706,7 +571,7 @@ export default {
 
                 //位移，保持相对位置
                 svg.select('.xAxis').attr("transform", `translate(${d3.event.transform.x},${calAppendY()}) scale(${d3.event.transform.k})`)
-                svg.select('.yAxis').attr("transform", `translate(${calAppendX()},${d3.event.transform.y}) scale(${d3.event.transform.k})`)
+                svg.select('.yAxis').attr("transform", `translate(${calAppendX()-50},${d3.event.transform.y}) scale(${d3.event.transform.k})`)
 
             }
 
@@ -745,13 +610,13 @@ export default {
     watch: {
         Obj(newVal, oldVal) {
             //可以对数据执行相应的操作
-            // console.log("重新绘制")
+            console.log("重新绘制")
             this.generateVis2()
 
         }
     },
     mounted() {
-        this.generateVis2();
+        // this.generateVis2();
     },
     updated() {
         // d3.select('#maingroup').remove();
@@ -764,23 +629,26 @@ export default {
 };
 </script>
 <style>
-.mar-title{
+.mar-title {
     display: flex;
-    color:white;
+    color: white;
     background-color: #6d6d6d;
 }
-.input-box{
+
+.input-box {
     display: flex;
     flex-direction: row;
 }
-.container{
+
+.container {
     display: flex;
     flex-direction: column;
-    justify-content:space-between;
-  width:2936px;
-  height: 500px;
+    justify-content: space-between;
+    width: 2936px;
+    height: 500px;
 
 }
+
 .page {
     width: 100%;
     height: 100%;

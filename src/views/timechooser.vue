@@ -2,17 +2,30 @@
     <div class="mar-title">
         <h2 style="margin: 5px 5px;font-size: 30px;">时间筛选器</h2>
     </div>
-    
+
     <div class="time-chooser-container">
 
         <div class="time-select-container">
             <svg class="time-select-sketch"></svg>
-            <el-slider v-model="this.value" range :max="this.max" @change="changeSlider"></el-slider>
-            <div style="display:flex;justify-content:space-between">
-                <el-button type="primary" style="width:100px" @click="addPlotData">确定</el-button>
-                <el-button type="danger" style="width:100px" @click="clearPlotData">清空</el-button>
-            </div>
+            <!-- <el-slider v-model="this.value" range :max="this.max" @change="changeSlider"></el-slider> -->
+            <el-slider v-model="this.timevalue" range :max="this.timemax" :min="this.timemin"
+                value-format="yyyy-MM-dd HH:mm:ss" @change="changeSlider" :show-tooltip="false">
+            </el-slider>
+            <el-row>
+                <el-col :span="12"><el-input type="datetime-local" v-model="this.datestart"
+                        style="width:200px;height: 50px;font-size: 20px;" placeholder="起始时间"></el-input></el-col>
+                <el-col :span="12"><el-input type="datetime-local" v-model="this.dateend"
+                        style="width:200px;height: 50px;font-size: 20px;" placeholder="终止时间"></el-input></el-col>
+            </el-row>
             <div class="time-inner-border"></div>
+            <div style="display:flex;justify-content:space-between">
+                <el-button type="primary" style="width:200px;height: 50px;font-size: 30px;"
+                    @click="addPlotData">确定</el-button>
+                <el-button type="danger" style="width:200px;height: 50px;font-size: 30px;"
+                    @click="clearPlotData">清空</el-button>
+            </div>
+
+
         </div>
 
         <!-- <div class="time-inner-border"></div> -->
@@ -46,30 +59,61 @@ export default {
             value: [0, 0],
             plotDataArray: [],//候选图数据
             plotDataIndex: 0,
+            datestart: "",
+            dateend: "",
+            timevalue: [0, 0],
+            timemax: "",
+            timemin: ""
         }
     },
-    computed:{
-        maxnum(){
-            return store.state.mesinfo
+    computed: {
+        maxnum() {
+            return store.state.mesinfo.list
+        },
+        timeread() {
+            return this.timevalue
         }
 
     },
-    watch:{
-        maxnum:{
+    watch: {
+        maxnum: {
+            // deep: true,
+            handler() {
+                console.log(store.state.mesinfo);
+                this.max = store.state.mesinfo.list[store.state.mesinfo.list.length - 1].time
+                this.timemax = Date.parse(new Date(this.max))
+                this.timemin = Date.parse(new Date(store.state.mesinfo.list[0].time))
+                this.timevalue[0] = this.timemin
+                this.timevalue[1] = this.timemax
+            }
+        },
+        timeread: {
             deep: true,
             handler() {
-                this.max = store.state.mesinfo.list[store.state.mesinfo.list.length - 1].time
-                // console.log(this.max);
-                console.log('asdasdasdasdsadas');
+                this.datestart = this.formatDate(new Date(this.timevalue[0]))
+                this.dateend = this.formatDate(new Date(this.timevalue[0]))
             }
         }
 
     },
 
     methods: {
+        //定义时间格式
+        formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+            return formattedDate;
+        },
         changeSlider(v) {//slider改变
-            console.log(store.state.mesinfo);
-            this.drawTimeSketch()
+
+            // this.timevalue[0] = this.formatDate(new Date(v[0]))
+            // this.timevalue[1] = this.formatDate(new Date(v[1]))
+            // this.drawTimeSketch()
         },
         drawTimeSketch() {
             /**
@@ -77,12 +121,12 @@ export default {
              * 准备数据
              * 
              */
-            // console.log(store.state.mesinfo.list);
-            this.timeEd = this.value[1]
-            this.timeSt = this.value[0]
-            store.state.timeSlect.push({ start: this.value[0], end: this.value[1] })
-
-            const mesByTime1 = store.state.mesinfo.list.filter((e) => { return e.time <= this.timeEd && e.time > this.timeSt })
+            this.timeEd = this.timevalue[1]
+            this.timeSt = this.timevalue[0]
+            store.state.timeSlect={ start: this.formatDate(new Date(this.timevalue[0])), end: this.formatDate(new Date(this.timevalue[0])) }
+            // console.log(this.timevalue);
+            const mesByTime1 = store.state.mesinfo.list.filter((e) => { return Date.parse(e.time) <= this.timeEd && Date.parse(e.time) >= this.timeSt })
+            // console.log(mesByTime1);
             // store.state.mesBytime = mesByTime1
             let uniqueArr = []
             mesByTime1.forEach((item, index) => {
@@ -137,7 +181,7 @@ export default {
                     return 1 / d.weight;
                 })
             simulation.force('links', linkForce)
-            //启动
+            // //启动
             simulation.stop();
             simulation.tick(300);
 
@@ -265,24 +309,25 @@ export default {
                 .attr("transform", `translate(${offsetTransformX},${offsetTransformY}) scale(${originTransformK}) translate(${originTransformX},${originTransformY})`)
         },
         addPlotData() {
-            console.log(store.state.mesinfo);
+            this.drawTimeSketch()
+            console.log("时间：" + this.datestart);
             /**
              * 
              * 准备数据
              * 
              */
-            this.timeEd = this.value[1]
-            this.timeSt = this.value[0]
-            store.state.timeSlect.push({ start: this.value[0], end: this.value[1] })
-            console.log(store.state.mesinfo);
-
-            const mesByTime1 = store.state.mesinfo.list.filter((e) => { return e.time <= this.timeEd && e.time > this.timeSt })
+            this.timeEd = this.timevalue[1]
+            this.timeSt = this.timevalue[0]
+            store.state.timeSlect={ start: this.formatDate(new Date(this.timevalue[0])), end: this.formatDate(new Date(this.timevalue[0])) }
+            // console.log(this.timevalue);
+            const mesByTime1 = store.state.mesinfo.list.filter((e) => { return Date.parse(e.time) <= this.timeEd && Date.parse(e.time) >= this.timeSt })
             let uniqueArr = []
             mesByTime1.forEach((item, index) => {
                 if (!mesByTime1.slice(0, index).some((prevItem) => {
                     return (prevItem.target === item.target && prevItem.source === item.source);
                 })) {
                     item.weight = 10
+                    item.timesecond = Date.parse(item.time)
                     uniqueArr.push(item)
                 }
                 else {
@@ -364,16 +409,18 @@ export default {
 }
 </script>
 <style scoped>
-.mar-title{
+.mar-title {
     display: flex;
-    color:white;
+    color: white;
     background-color: #6d6d6d;
 }
+
 .time-chooser-container {
-    width: 10%;
+    width: 100%;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
+    /* border: 1px solid black; */
 }
 
 .time-select-container {
@@ -389,7 +436,7 @@ export default {
 }
 
 .time-list-conatiner {
-    height: 960px;
+    height: 500px;
     /* flex:1 1 0; */
     display: flex;
     overflow: auto;

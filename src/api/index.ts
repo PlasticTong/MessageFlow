@@ -114,6 +114,44 @@ export const uploadfile = (data1: FormData) => {
     });
 };
 
+
+export const getwangzixiao = (data1: JSON) => {
+    return requestForFlask({
+        url: '/api/getWangZixiaoLayout',
+        method: 'post',
+        data: data1
+        // params:{
+        //     data:data1
+        // }
+    });
+};
+
+export const uploadCsvfile = (data1: FormData) => {
+    return requestForFlask({
+        url: '/mesfilter/uploadForCsv',
+        method: 'post',
+        data: data1
+    });
+};
+
+export const readForCsv = (data1: FormData) => {
+    return requestForFlask({
+        url: '/mesfilter/readForCsv',
+        method: 'post',
+        data: data1
+    });
+};
+
+export const searchData = (data1: FormData) => {
+    return requestForFlask({
+        url: '/mesfilter/searchData',
+        method: 'post',
+        data: data1
+    });
+};
+
+
+
 export const fetchData = () => {
     return request({
         url: './table.json',
@@ -144,6 +182,21 @@ export const fetchMar3data = () => {
 export const fetchMar4data = () => {
     return request({
         url: './marTree4.json',
+        method: 'get'
+    });
+};
+
+
+export const fetchMutiLinks = () => {
+    return request({
+        url: './links.json',
+        method: 'get'
+    });
+};
+
+export const fetchMutiNodes = () => {
+    return request({
+        url: './nodes.json',
         method: 'get'
     });
 };

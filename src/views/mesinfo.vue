@@ -1,28 +1,20 @@
 <template>
   <div class="container">
-    <Child :user="user" ref="visiableDialog"></Child>
+    <!-- <Child :user="user" ref="visiableDialog"></Child>
     <h2 class="mb10">筛选条件</h2>
-    <el-button type="warning" @click="openDialog">打开弹窗</el-button>
+    <div><el-button type="warning" @click="openDialog">打开弹窗</el-button>
     <el-button type="primary" :icon="Search" @click="handleFilter()">筛选</el-button>
-    <!-- <el-button type="primary" :icon="Search" @click="handleSearch(serachmes.source, serachmes.target)">搜索</el-button> -->
-    <el-button type="danger" :icon="Delete" @click="handleReset">重置</el-button>
-    <div style="padding-top: 20px;"></div>
+    <el-button type="danger" :icon="Delete" @click="handleReset">重置</el-button></div> -->
+    
+    <!-- <div style="padding-top: 20px;"></div> -->
     <h2 class="mb10">消息数据</h2>
-    <el-table :data="tableDataForShow" highlight-current-row border class="table" ref="multipleTable"
-      header-cell-class-name="table-header" @row-click=handleChoose>
+    <el-table :data="tableDataForShow" highlight-current-row border class="table" ref="multipleTable"  :row-style="{height:'30px'}"  :header-cell-style="{'font-size':'20px','text-align':'left'}"
+      header-cell-class-name="table-header">
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
       <el-table-column prop="source.name" label="起始点"></el-table-column>
       <el-table-column prop="target.name" label="目标点">
       </el-table-column>
       <el-table-column prop="time" label="传递时间"></el-table-column>
-      <el-table-column prop="content" label="内容"></el-table-column>
-      <!-- <el-table-column label="操作" width="220" align="center"> -->
-      <!-- <template #default="scope">
-          <el-button text :icon="Pointer" class="red" @click="handleChoose(scope.$index)" v-permiss="16">
-            选择
-          </el-button>
-        </template> -->
-      <!-- </el-table-column> -->
     </el-table>
     <div class="pagination">
       <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query.pageIndex"
@@ -52,9 +44,13 @@ function openDialog() {
   visiableDialog.value.dialogVisble = true
   console.log(visiableDialog.value.dialogVisble);
 }
-watch(store.state.linkFByTime, (curr, old) => {
-  console.log(curr, old) //false true
-})
+watch(()=>store.state.linkFByTime, (curr, old) => {
+  getData()
+  // console.log(curr, old) //false true
+  // console.log(123123123);
+  
+},
+{ deep: true })
 
 
 
@@ -196,7 +192,7 @@ const handleFilter = () => {
               result_low.push(e)
             }
       });
-      // console.log(result_low);
+      console.log(result_low);
       
           
       for (let i = 0; i < n; i++) {
@@ -382,36 +378,36 @@ const handlePageChange = (val: number) => {
 
 
 // 选取操作
-const handleChoose = (row: any) => {
-  console.log(row.id);
-  if (choosestate.choosemesForuser == 0) {
-    let highlightId = row.id;
-    // let highlightId = index + (query.pageIndex - 1) * query.pageSize + 1;
-    // infoALL.state.chooseUser.soure = infoALL.state.mesinfo.list[highlightId - 1].source;
-    // infoALL.state.chooseUser.target = infoALL.state.mesinfo.list[highlightId - 1].target;
-    for (let index in infoALL.state.userinfo.list) {
-      if (infoALL.state.mesinfo.list[highlightId - 1].source == infoALL.state.userinfo.list[index].name) {
-        infoALL.state.chooseUser.soure = Number(index)
-      }
-      if (infoALL.state.mesinfo.list[highlightId - 1].target == infoALL.state.userinfo.list[index].name) {
-        infoALL.state.chooseUser.target = Number(index)
-      }
-    }
-    ElMessage.success("选取成功");
-  }
-  else {
-    for (let index in infoALL.state.userinfo.list) {
-      if (serachmes.source == infoALL.state.userinfo.list[index].name) {
-        infoALL.state.chooseUser.soure = Number(index)
-      }
-      if (serachmes.target == infoALL.state.userinfo.list[index].name) {
-        infoALL.state.chooseUser.target = Number(index)
-      }
-    }
-    ElMessage.success("选取成功");
-  }
+// const handleChoose = (row: any) => {
+//   console.log(row.id);
+//   if (choosestate.choosemesForuser == 0) {
+//     let highlightId = row.id;
+//     // let highlightId = index + (query.pageIndex - 1) * query.pageSize + 1;
+//     // infoALL.state.chooseUser.soure = infoALL.state.mesinfo.list[highlightId - 1].source;
+//     // infoALL.state.chooseUser.target = infoALL.state.mesinfo.list[highlightId - 1].target;
+//     for (let index in infoALL.state.userinfo.list) {
+//       if (infoALL.state.mesinfo.list[highlightId - 1].source == infoALL.state.userinfo.list[index].name) {
+//         infoALL.state.chooseUser.soure = Number(index)
+//       }
+//       if (infoALL.state.mesinfo.list[highlightId - 1].target == infoALL.state.userinfo.list[index].name) {
+//         infoALL.state.chooseUser.target = Number(index)
+//       }
+//     }
+//     ElMessage.success("选取成功");
+//   }
+//   else {
+//     for (let index in infoALL.state.userinfo.list) {
+//       if (serachmes.source == infoALL.state.userinfo.list[index].name) {
+//         infoALL.state.chooseUser.soure = Number(index)
+//       }
+//       if (serachmes.target == infoALL.state.userinfo.list[index].name) {
+//         infoALL.state.chooseUser.target = Number(index)
+//       }
+//     }
+//     ElMessage.success("选取成功");
+//   }
 
-};
+// };
 
 // 查询操作
 const handleSearch = (sourcename: string, targetname: string) => {
@@ -430,7 +426,6 @@ const handleSearch = (sourcename: string, targetname: string) => {
   ElMessage.success("检索成功");
   choosestate.choosemesForuser = 1;
   pagestate.choosemespage = 1;
-  handleChoose(1);
   getData();
 };
 
@@ -465,8 +460,8 @@ const handleReset = (sourcename: string, targetname: string) => {
 
 .table {
   width: 100%;
-  // height: 50%;
-  font-size: 3px;
+  height: 100%;
+  font-size: 24px;
 }
 
 .red {

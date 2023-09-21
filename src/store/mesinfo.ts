@@ -80,6 +80,18 @@ export const store = createStore({
 			//用户在表里面选择的信息
 			infoChoose:null,
 			threshold:6,
+			formInline: {//表单数据
+                user: '',//IP
+                hop: '',//跳数
+                datastart: '',//起始时间
+                dataend: '',//终止时间
+                threshold: 1,//阈值
+                timestart: '',//换算成毫秒的时间
+                timeend: '',//换算成毫秒的时间
+                thresholdByTime: '',//换算成毫秒的阈值
+            },
+
+			timeSlice:null,
 
 
 
