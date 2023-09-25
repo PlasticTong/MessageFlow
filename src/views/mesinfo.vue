@@ -11,8 +11,8 @@
     <el-table :data="tableDataForShow" highlight-current-row border class="table" ref="multipleTable"  :row-style="{height:'30px'}"  :header-cell-style="{'font-size':'20px','text-align':'left'}"
       header-cell-class-name="table-header">
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-      <el-table-column prop="source.name" label="起始点"></el-table-column>
-      <el-table-column prop="target.name" label="目标点">
+      <el-table-column prop="source" label="起始点"></el-table-column>
+      <el-table-column prop="target" label="目标点">
       </el-table-column>
       <el-table-column prop="time" label="传递时间"></el-table-column>
     </el-table>

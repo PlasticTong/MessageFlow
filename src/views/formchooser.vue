@@ -48,7 +48,7 @@ export default {
     data() {
         return {
             formInline: {//表单数据
-                user: '192.168.1.0',//IP
+                user: '192.168.1.2',//IP
                 hop: '2',//跳数
                 datastart: '',//起始时间
                 dataend: '',//终止时间
@@ -84,7 +84,7 @@ export default {
                 //传入后台\
                 await searchData({
                    
-                        data: store.state.linkFByTime,
+                        data: store.state.linkFByTimeDraw,
                         form: this.formInline
                     
                     

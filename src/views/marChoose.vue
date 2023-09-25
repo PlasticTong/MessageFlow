@@ -6,7 +6,7 @@
                     header-cell-class-name="table-header">
                     <el-table-column prop="source" label="起始点"></el-table-column>
                     <el-table-column prop="target" label="目标点"></el-table-column>
-                    <el-table-column prop="type" label="权值"></el-table-column>
+                    <!-- <el-table-column prop="weight" label="权值"></el-table-column> -->
                 </el-table>
                 <!-- <div class="pagination">
                     <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query2.pageIndex"

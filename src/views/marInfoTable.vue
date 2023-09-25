@@ -4,10 +4,10 @@
             <el-tab-pane label="k=2" name="first">
                 <el-table :data="tableDataListFor2" @row-click=handleRowClick highlight-current-row border class="table" ref="multipleTable"
                     header-cell-class-name="table-header">
-                    <el-table-column prop="id" label="ID"></el-table-column>
-                    <el-table-column prop="source.name" label="起始点"></el-table-column>
-                    <el-table-column prop="target.name" label="目标点"></el-table-column>
-                    <el-table-column prop="type" label="权值"></el-table-column>
+                    <!-- <el-table-column prop="id" label="ID"></el-table-column> -->
+                    <el-table-column prop="source" label="起始点"></el-table-column>
+                    <el-table-column prop="target" label="目标点"></el-table-column>
+                    <el-table-column prop="weight" label="权值"></el-table-column>
                 </el-table>
                 <div class="pagination">
                     <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query2.pageIndex"
@@ -18,10 +18,10 @@
             <el-tab-pane label="k=3" name="second">
                 <el-table :data="tableDataListFor3" highlight-current-row border class="table" ref="multipleTable"
                     header-cell-class-name="table-header">
-                    <el-table-column prop="id" label="ID"></el-table-column>
-                    <el-table-column prop="source.name" label="起始点"></el-table-column>
-                    <el-table-column prop="target.name" label="目标点"></el-table-column>
-                    <el-table-column prop="type" label="权值"></el-table-column>
+                    <!-- <el-table-column prop="id" label="ID"></el-table-column> -->
+                    <el-table-column prop="source" label="起始点"></el-table-column>
+                    <el-table-column prop="target" label="目标点"></el-table-column>
+                    <el-table-column prop="weight" label="权值"></el-table-column>
                 </el-table>
                 <div class="pagination">
                     <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query3.pageIndex"
@@ -31,10 +31,10 @@
             </el-tab-pane>
             <el-tab-pane label="k=4" name="third"><el-table :data="tableDataListFor4" highlight-current-row border
                     class="table" ref="multipleTable" header-cell-class-name="table-header">
-                    <el-table-column prop="id" label="ID"></el-table-column>
-                    <el-table-column prop="source.name" label="起始点"></el-table-column>
-                    <el-table-column prop="target.name" label="目标点"></el-table-column>
-                    <el-table-column prop="type" label="权值"></el-table-column>
+                    <!-- <el-table-column prop="id" label="ID"></el-table-column> -->
+                    <el-table-column prop="source" label="起始点"></el-table-column>
+                    <el-table-column prop="target" label="目标点"></el-table-column>
+                    <el-table-column prop="weight" label="权值"></el-table-column>
                 </el-table>
                 <div class="pagination">
                     <el-pagination background layout="total, prev, pager, next, jumper" :current-page="query4.pageIndex"
@@ -116,6 +116,7 @@ export default {
         mar2inf:{
             deep: true,
             handler() {
+                console.log(store.state.mar2);
                 this.marInfo2 = store.state.mar2
             }
         },

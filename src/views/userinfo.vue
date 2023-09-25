@@ -15,13 +15,14 @@
     <el-table
       :data="infoALL.state.userinfo.list.slice((query.pageIndex - 1) * query.pageSize, (query.pageIndex ) * query.pageSize )"
       highlight-current-row
+      :header-cell-style="{'font-size':'20px','text-align':'left'}"
       :sortable="'state'" border class="table" ref="multipleTable" header-cell-class-name="table-header">
       <!-- :row-class-name="tableRowClassName"> -->
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-      <el-table-column prop="name" label="用户名"></el-table-column>
-      <el-table-column prop="state" label="身份">
+      <el-table-column prop="name" label="IP"></el-table-column>
+      <el-table-column prop="address" label="名称">
       </el-table-column>
-      <el-table-column prop="address" label="地址"></el-table-column>
+      <el-table-column prop="dept" label="部门"></el-table-column>
     </el-table>
     <div class="pagination">
       <el-pagination background layout="total, prev, pager, next,jumper" :current-page="query.pageIndex"
@@ -108,4 +109,11 @@ const handlePageChange = (val: number) => {
 
 .el-table .row-row {
   background-color: #FFFF00 !important;
+}
+
+
+.table {
+  width: 100%;
+  height: 100%;
+  font-size: 22px;
 }</style>

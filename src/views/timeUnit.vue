@@ -238,7 +238,7 @@ export default {
 }
 
 .time-unit-info-label {
-    width: 30%;
+    width: 60%;
 }
 
 .el-range-editor.is-disabled {

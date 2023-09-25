@@ -13,9 +13,10 @@
                 <div class="container">
                     <div style="display: flex;flex-direction: row;">
                         <el-input v-model="this.accY" placeholder="纵轴精确度" style="width: 10%;margin-right: 10px;"></el-input>
+                        <el-button @click="generateVis2" type="primary"
+                            style="border-radius: 10px;">绘制</el-button>
                         <el-button @click="generateVis2"
-                            style="border-radius: 10px;  background-color: aquamarine; color: blue;">绘制</el-button>
-                        <el-button type="primary" icon="el-icon-edit" @click="openAcc" circle></el-button>
+                            style="border-radius: 10px; " type="danger">修改</el-button>
                     </div>
                     <svg id="chart" width="800" height="500"></svg>
                     <!-- <el-form-item label="时间阈值">
@@ -150,6 +151,13 @@ export default {
 
         //     // this.generateVis2()
         // },
+        openAcc() {
+            //直接修改坐标轴精确度，不用重新绘制
+            for (let i = 0; i < this.timeAll; i++) {
+                if (i % this.accY != 0) { d3.select(`#tick-${i}`).style("display", "none") }
+                else { d3.select(`#tick-${i}`).style("display", "") }
+            }
+        },
         handleReset() {
             store.state.filterresFromUser = [],
                 store.state.filtermesresLine = []
@@ -233,8 +241,8 @@ export default {
             //所有ip数据，去重
             let filterUserData = new Set()
             for (let i = 0; i < filterMesDataByHold.length; i++) {
-                filterUserData.add(filterMesDataByHold[i].source.name)
-                filterUserData.add(filterMesDataByHold[i].target.name)
+                filterUserData.add(filterMesDataByHold[i].source)
+                filterUserData.add(filterMesDataByHold[i].target)
             }
             filterUserData = Array.from(filterUserData)
 
@@ -246,8 +254,8 @@ export default {
             const width = +svg.attr('width');
             const height = +svg.attr('height');
             const margin = { top: 10, bottom: 10, left: 10, right: 700 };
-            const innerwidth = width - margin.left - margin.right;
-            const innerheight = height - margin.top - margin.bottom;
+            // const innerwidth = width - margin.left - margin.right;
+            // const innerheight = height - margin.top - margin.bottom;
             // 初始化元素
             const g = svg.append('g')
                 .attr('id', 'maingroup')
@@ -316,8 +324,10 @@ export default {
             timeData = Array.from(timeData)
             //作图逻辑原因，需要补充最大后面一个时间
             timeData.push(formatDate(new Date(Date.parse(timeData[timeData.length - 1]) + timeInterval)))
-            console.log(timeData);
             this.timeAll = timeData.length
+
+            const innerwidth = timeData.length * 100
+            const innerheight = filterUserData.length * 50;
             // 设置坐标轴
             const xScale = d3.scaleBand()
                 // .domain([1,2,3,3.5])
@@ -371,10 +381,10 @@ export default {
             filterMesDataByHold.forEach(d => {
                 linegroup.append('path')
                     .attr('d', line([{
-                        name: d.source.name,
+                        name: d.source,
                         time: formatDate(new Date(d.time))//格式化时间
                     }, {
-                        name: d.target.name,
+                        name: d.target,
                         time: formatDate(new Date(Date.parse(d.time) + timeInterval))//格式化下一个时间
                     }]))
                     .attr('id', `E${d.id}`)
@@ -408,20 +418,20 @@ export default {
                     })
                     .append('title')
                     .text(dd => {
-                        return `source: ${d.source.name}\ntarget: ${d.target.name}\ntime: ${d.time}\n`;
+                        return `source: ${d.source}\ntarget: ${d.target}\ntime: ${d.time}\n`;
                     });
 
                 // 绘制点
                 dotgroup.append("circle")
-                    .attr("class", `T${d.source.name}`)
-                    .attr("cy", yScale(d.source.name) + 0.5 * yband)
+                    .attr("class", `T${d.source}`)
+                    .attr("cy", yScale(d.source) + 0.5 * yband)
                     .attr("cx", xScale(formatDate(new Date(d.time))))
                     .attr("r", 8)
                     .style("fill", function () {
                         //对筛选条件进行判断，若是筛选的标红
                         if (IPfromChoose != []) {
                             for (let i = 0; i < IPfromChoose.length; i++) {
-                                if (isIPInNetwork(d.source.name, IPfromChoose[i])) {
+                                if (isIPInNetwork(d.source, IPfromChoose[i])) {
                                     return "red"
                                 }
                             }
@@ -432,15 +442,15 @@ export default {
                     });
 
                 dotgroup.append("circle")
-                    .attr("class", `T${d.target.name}`)
-                    .attr("cy", yScale(d.target.name) + 0.5 * yband)
+                    .attr("class", `T${d.target}`)
+                    .attr("cy", yScale(d.target) + 0.5 * yband)
                     .attr("cx", xScale(formatDate(new Date(Date.parse(d.time) + timeInterval))))
                     .attr("r", 8)
                     .style("fill", function () {
                         //对筛选条件进行判断，若是筛选的标红
                         if (IPfromChoose != []) {
                             for (let i = 0; i < IPfromChoose.length; i++) {
-                                if (isIPInNetwork(d.target.name, IPfromChoose[i])) {
+                                if (isIPInNetwork(d.target, IPfromChoose[i])) {
                                     return "red"
                                 }
                             }
@@ -456,8 +466,8 @@ export default {
             for (let i = 0; i < filterMesDataByHold.length; i++) {
                 // 若在该时间阈值内，存在一条消息的起点是我的终点（我的时间之后），或者一条消息的终点是我的起点（我的时间之前），认为我们是连接一起的，消息标黑
                 if (filterMesDataByHold.find(e =>
-                    (e.target.name == filterMesDataByHold[i].source.name && Date.parse(filterMesDataByHold[i].time) - store.state.formInline.threshold * timeInterval <= Date.parse(e.time) && Date.parse(e.time) <= Date.parse(filterMesDataByHold[i].time))
-                    || (e.source.name == filterMesDataByHold[i].target.name && Date.parse(filterMesDataByHold[i].time) <= Date.parse(e.time) && Date.parse(e.time)<= Date.parse(filterMesDataByHold[i].time) + store.state.formInline.threshold * timeInterval)
+                    (e.target == filterMesDataByHold[i].source && Date.parse(filterMesDataByHold[i].time) - store.state.formInline.threshold * timeInterval <= Date.parse(e.time) && Date.parse(e.time) <= Date.parse(filterMesDataByHold[i].time))
+                    || (e.source == filterMesDataByHold[i].target && Date.parse(filterMesDataByHold[i].time) <= Date.parse(e.time) && Date.parse(e.time) <= Date.parse(filterMesDataByHold[i].time) + store.state.formInline.threshold * timeInterval)
                 ) != null) {
                     store.state.filterresFromUser.push(filterMesDataByHold[i].id);
                     d3.select(`#E${filterMesDataByHold[i].id}`)
@@ -521,7 +531,7 @@ export default {
                     if (appendMove < text_width)
                         appendMove = text_width
                 })
-                return appendMove+30
+                return appendMove + 35
             }
 
             gY.attr("transform", `translate(${calAppendX()},${calAppendY()})`)
@@ -539,8 +549,8 @@ export default {
 
 
             const zoom = d3.zoom()
-                .scaleExtent([0.5, 40])
-                .translateExtent([[-1000, -1000], [width + 900, height + 100]])
+                .scaleExtent([0.01, 40])
+                // .translateExtent([[-1000, -1000], [width + innerwidth, height + innerheight]])
                 // .filter(filter)
                 .on("zoom", zoomed);
 
@@ -571,7 +581,7 @@ export default {
 
                 //位移，保持相对位置
                 svg.select('.xAxis').attr("transform", `translate(${d3.event.transform.x},${calAppendY()}) scale(${d3.event.transform.k})`)
-                svg.select('.yAxis').attr("transform", `translate(${calAppendX()-50},${d3.event.transform.y}) scale(${d3.event.transform.k})`)
+                svg.select('.yAxis').attr("transform", `translate(${calAppendX() - 50},${d3.event.transform.y}) scale(${d3.event.transform.k})`)
 
             }
 

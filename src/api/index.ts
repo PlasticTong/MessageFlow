@@ -144,7 +144,7 @@ export const readForCsv = (data1: FormData) => {
 
 export const searchData = (data1: FormData) => {
     return requestForFlask({
-        url: '/mesfilter/searchData',
+        url: '/mesfilter/check_ip',
         method: 'post',
         data: data1
     });

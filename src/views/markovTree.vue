@@ -133,26 +133,29 @@ export default {
                 store.state.marcal3 = JSON.parse(JSON.stringify(res.data))
             })
 
-            // let markovBy_real4 = []
-            // const dataSend4 = {
-            //     data: dataForchoose,
-            //     parameter: {
-            //         k: 4,
-            //         delta: store.state.formInline.threshold
-            //     }
-            // }
-            // await markovData(dataSend4).then(res => {
-            //     markovBy_real4 = res.data
-            //     store.state.marcal4 = JSON.parse(JSON.stringify(res.data))
-            // })
+            let markovBy_real4 = []
+            const dataSend4 = {
+                data: dataForchoose,
+                parameter: {
+                    k: 4,
+                    delta: store.state.formInline.threshold
+                }
+            }
+            await markovData(dataSend4).then(res => {
+                markovBy_real4 = res.data
+                store.state.marcal4 = JSON.parse(JSON.stringify(res.data))
+            })
 
             this.marinfo2 = markovBy_real
             this.marinfo3 = markovBy_real3
-            // this.marinfo4 = markovBy_real4
+            this.marinfo4 = markovBy_real4
 
             this.drawMarkov(2, markovBy_real, 1)
             this.drawMarkov(3, markovBy_real3, 1)
-            // this.drawMarkov(4, markovBy_real4, 1)
+            this.drawMarkov(4, markovBy_real4, 1)
+            store.state.mar2 = markovBy_real
+            store.state.mar3 = markovBy_real3
+            store.state.mar4 = markovBy_real4
         },
         plotswitch(tab) {
             console.log(tab.props.name);
@@ -183,7 +186,7 @@ export default {
 
             //定义marker
             defs.append('marker')
-                .attr('id', `markovArrowhead`)
+                .attr('id', 'markovhead')
                 .attr('markerWidth', 3)
                 .attr('markerHeight', 3)
                 .attr('viewBox', '0 -5 12 12')
@@ -301,7 +304,7 @@ export default {
                 .attr('stroke-width', function (d) { return Math.log(parseInt(d.type) * Math.E ** 3); })
                 .style('stroke', "#666666")
                 .style('cursor', 'pointer')
-                .attr('marker-end', `url(#markovArrowhead${d})`)
+                .attr('marker-end', 'url(#markovhead)')
                 .attr('x1', (d) => { return d.source.x })
                 .attr('y1', (d) => { return d.source.y })
                 .attr('x2', (d) => { return d.target.x })

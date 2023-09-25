@@ -58,10 +58,10 @@ export default {
             numselect: 0,
             showline: true,
             loading: false,
-
-            nodeForchoose:{
-                "time_range":[],
-                "nodes":[]
+            flag:0,
+            nodeForchoose: {
+                "time_range": [],
+                "nodes": []
             }
         };
     },
@@ -87,6 +87,7 @@ export default {
                 // console.log(this.numselect);
                 // this.drawLayer();
                 this.drawOne()
+                this.flag = 0
 
             }
         },
@@ -100,6 +101,7 @@ export default {
                     nodesDataForDraw.push({ id: index, nameRe: str, name: e.name })
                 })
                 this.node2Draw = nodesDataForDraw
+                this.flag = 0
                 // fetchMesData().then(res => {
 
 
@@ -160,45 +162,57 @@ export default {
             // 组织结构数据
             // console.log(store.state.MarFromUser);
             let nodeset = new Set()
+            let nameset = new Set()
+            for (let n in store.state.userinfo.list) {
+                nameset.add(store.state.userinfo.list[n].dept)
+            }
+            
+
             for (let n in store.state.MarFromUser) {
                 nodeset.add(store.state.MarFromUser[n].id)
                 nodeset.add(store.state.MarFromUser[n].parentId)
-                linkForMuti.push(["F" + store.state.MarFromUser[n].id, "F" + store.state.MarFromUser[n].parentId, "dir"])
-                linkForMuti.push(["S" + store.state.MarFromUser[n].id, "S" + store.state.MarFromUser[n].parentId, "dir"])
+                // nameset.add(store.state.userinfo.list.find(e=>e.name == store.state.MarFromUser[n].id && e.name == store.state.MarFromUser[n].parentId).dept)
+                // 第1层连线 dept
+                linkForMuti.push([store.state.userinfo.list.find(e => e.name == store.state.MarFromUser[n].id).dept, store.state.userinfo.list.find(e => e.name == store.state.MarFromUser[n].parentId).dept, "dir"])
+                // 第2层连线 address
+                linkForMuti.push([store.state.userinfo.list.find(e => e.name == store.state.MarFromUser[n].id).address, store.state.userinfo.list.find(e => e.name == store.state.MarFromUser[n].parentId).address, "dir"])
+                // 第3层连线 IP
+                linkForMuti.push([store.state.MarFromUser[n].id, store.state.MarFromUser[n].parentId, "dir"])
+
             }
             nodeset = Array.from(nodeset)
+            nameset = Array.from(nameset)
             for (let n in nodeset) {
-                nodeForMuti.push({ "index": "F" + nodeset[n], "layer": 0 }, { "index": "S" + nodeset[n], "layer": 1 })
-                linkForMuti.push(["F" + nodeset[n], "S" + nodeset[n], "undir"], ["S" + nodeset[n], "T" + nodeset[n], "undir"])
+                nodeForMuti.push({ "index": nodeset[n], "layer": 2 }, { "index": store.state.userinfo.list.find(e => e.name == nodeset[n]).address, "layer": 1 })
+                linkForMuti.push([store.state.userinfo.list.find(e => e.name == nodeset[n]).address, nodeset[n], "undir"])
+                linkForMuti.push([ store.state.userinfo.list.find(e => e.name == nodeset[n]).dept,store.state.userinfo.list.find(e => e.name == nodeset[n]).address,  "undir"])
+                
             }
-            let nodeset2 = new Set()
-            for (let n in store.state.linkFByTime) {
-                nodeset2.add(store.state.linkFByTime[n].source.name)
-                nodeset2.add(store.state.linkFByTime[n].target.name)
-                linkForMuti.push(["T" + store.state.linkFByTime[n].source.name, "T" + store.state.linkFByTime[n].target.name, "dir"])
+
+            for (let n in nameset) {
+                nodeForMuti.push({ "index": nameset[n], "layer": 0 })
+                
+
             }
-            nodeset2 = Array.from(nodeset2)
-            for (let n in nodeset2) {
-                nodeForMuti.push({ "index": "T" + nodeset2[n], "layer": 2 })
-            }
-            console.log(nodeForMuti, linkForMuti);
+            console.log( linkForMuti,nodeForMuti);
 
             //nodes : [{'index':'1',layer:1,...},{'index':'2',layer:0,...},...]
             //links : [[index1,index2],...]
 
 
-            let nodesa = [{ "index": "192.68.1.1", "layer": 0 }, { "index": 1, "layer": 0 }, { "index": 2, "layer": 0 }, { "index": 3, "layer": 0 }, { "index": 4, "layer": 0 }, { "index": 5, "layer": 0 }, { "index": 6, "layer": 0 }, { "index": 7, "layer": 0 }, { "index": 8, "layer": 0 }, { "index": 9, "layer": 0 }, { "index": 10, "layer": 1 }, { "index": 11, "layer": 1 }, { "index": 12, "layer": 1 }, { "index": 13, "layer": 1 }, { "index": 14, "layer": 1 }, { "index": 15, "layer": 1 }, { "index": 16, "layer": 1 }, { "index": 17, "layer": 1 }, { "index": 18, "layer": 1 }, { "index": 19, "layer": 1 }, { "index": 20, "layer": 1 }, { "index": 21, "layer": 1 }, { "index": 22, "layer": 1 }, { "index": 23, "layer": 1 }, { "index": 24, "layer": 1 }, { "index": 25, "layer": 1 }, { "index": 26, "layer": 1 }, { "index": 27, "layer": 1 }, { "index": 28, "layer": 1 }, { "index": 29, "layer": 1 }, { "index": 30, "layer": 2 }, { "index": 31, "layer": 2 }, { "index": 32, "layer": 2 }, { "index": 33, "layer": 2 }, { "index": 34, "layer": 2 }, { "index": 35, "layer": 2 }, { "index": 36, "layer": 2 }, { "index": 37, "layer": 2 }, { "index": 38, "layer": 2 }, { "index": 39, "layer": 2 }, { "index": 40, "layer": 2 }, { "index": 41, "layer": 2 }, { "index": 42, "layer": 2 }, { "index": 43, "layer": 2 }, { "index": 44, "layer": 2 }, { "index": 45, "layer": 2 }, { "index": 46, "layer": 2 }, { "index": 47, "layer": 2 }, { "index": 48, "layer": 2 }, { "index": 49, "layer": 2 }, { "index": 50, "layer": 2 }, { "index": 51, "layer": 2 }, { "index": 52, "layer": 2 }, { "index": 53, "layer": 2 }, { "index": 54, "layer": 2 }, { "index": 55, "layer": 2 }, { "index": 56, "layer": 2 }, { "index": 57, "layer": 2 }, { "index": 58, "layer": 2 }, { "index": 59, "layer": 2 }, { "index": 60, "layer": 2 }, { "index": 61, "layer": 2 }, { "index": 62, "layer": 2 }, { "index": 63, "layer": 2 }, { "index": 64, "layer": 2 }, { "index": 65, "layer": 2 }, { "index": 66, "layer": 2 }, { "index": 67, "layer": 2 }, { "index": 68, "layer": 2 }, { "index": 69, "layer": 2 }, { "index": 70, "layer": 3 }, { "index": 71, "layer": 3 }, { "index": 72, "layer": 3 }, { "index": 73, "layer": 3 }, { "index": 74, "layer": 3 }, { "index": 75, "layer": 3 }, { "index": 76, "layer": 3 }, { "index": 77, "layer": 3 }, { "index": 78, "layer": 3 }, { "index": 79, "layer": 3 }, { "index": 80, "layer": 3 }, { "index": 81, "layer": 3 }, { "index": 82, "layer": 3 }, { "index": 83, "layer": 3 }, { "index": 84, "layer": 3 }, { "index": 85, "layer": 3 }, { "index": 86, "layer": 3 }, { "index": 87, "layer": 3 }, { "index": 88, "layer": 3 }, { "index": 89, "layer": 3 }, { "index": 90, "layer": 3 }, { "index": 91, "layer": 3 }, { "index": 92, "layer": 3 }, { "index": 93, "layer": 3 }, { "index": 94, "layer": 3 }, { "index": 95, "layer": 3 }, { "index": 96, "layer": 3 }, { "index": 97, "layer": 3 }, { "index": 98, "layer": 3 }, { "index": 99, "layer": 3 }, { "index": 100, "layer": 3 }, { "index": 101, "layer": 3 }, { "index": 102, "layer": 3 }, { "index": 103, "layer": 3 }, { "index": 104, "layer": 3 }, { "index": 105, "layer": 3 }, { "index": 106, "layer": 3 }, { "index": 107, "layer": 3 }, { "index": 108, "layer": 3 }, { "index": 109, "layer": 3 }, { "index": 110, "layer": 3 }, { "index": 111, "layer": 3 }, { "index": 112, "layer": 3 }, { "index": 113, "layer": 3 }, { "index": 114, "layer": 3 }, { "index": 115, "layer": 3 }, { "index": 116, "layer": 3 }, { "index": 117, "layer": 3 }, { "index": 118, "layer": 3 }, { "index": 119, "layer": 3 }, { "index": 120, "layer": 3 }, { "index": 121, "layer": 3 }, { "index": 122, "layer": 3 }, { "index": 123, "layer": 3 }, { "index": 124, "layer": 3 }, { "index": 125, "layer": 3 }, { "index": 126, "layer": 3 }, { "index": 127, "layer": 3 }, { "index": 128, "layer": 3 }, { "index": 129, "layer": 3 }, { "index": 130, "layer": 3 }, { "index": 131, "layer": 3 }, { "index": 132, "layer": 3 }, { "index": 133, "layer": 3 }, { "index": 134, "layer": 3 }, { "index": 135, "layer": 3 }, { "index": 136, "layer": 3 }, { "index": 137, "layer": 3 }, { "index": 138, "layer": 3 }, { "index": 139, "layer": 3 }, { "index": 140, "layer": 3 }, { "index": 141, "layer": 3 }, { "index": 142, "layer": 3 }, { "index": 143, "layer": 3 }, { "index": 144, "layer": 3 }, { "index": 145, "layer": 3 }, { "index": 146, "layer": 3 }, { "index": 147, "layer": 3 }, { "index": 148, "layer": 3 }, { "index": 149, "layer": 3 }]
-            let linksa = [["192.68.1.1", 4, "undir"], [2, 8, "undir"], [3, 7, "dir"], [10, 19, "undir"], [15, 19, "dir"], [15, 29, "undir"], [16, 19, "dir"], [21, 22, "undir"], [30, 39, "undir"], [31, 49, "dir"], [33, 37, "dir"], [33, 45, "dir"], [33, 59, "undir"], [33, 62, "undir"], [34, 63, "dir"], [35, 66, "undir"], [36, 53, "dir"], [37, 38, "undir"], [37, 40, "undir"], [37, 45, "undir"], [38, 40, "undir"], [38, 55, "undir"], [38, 69, "dir"], [40, 49, "dir"], [40, 62, "dir"], [42, 60, "undir"], [44, 51, "undir"], [45, 64, "dir"], [51, 61, "undir"], [59, 62, "dir"], [59, 65, "dir"], [61, 65, "undir"], [62, 65, "undir"], [70, 133, "undir"], [71, 109, "undir"], [71, 112, "undir"], [72, 87, "undir"], [73, 75, "dir"], [73, 88, "dir"], [73, 102, "dir"], [73, 127, "dir"], [73, 135, "dir"], [74, 88, "dir"], [74, 144, "dir"], [75, 102, "undir"], [75, 134, "dir"], [76, 125, "dir"], [77, 81, "dir"], [77, 86, "dir"], [77, 116, "dir"], [77, 141, "undir"], [78, 122, "undir"], [79, 97, "undir"], [80, 84, "dir"], [80, 91, "undir"], [80, 107, "dir"], [81, 85, "dir"], [83, 92, "undir"], [83, 140, "undir"], [83, 142, "dir"], [84, 91, "undir"], [84, 107, "dir"], [85, 93, "undir"], [85, 103, "undir"], [86, 95, "undir"], [86, 116, "dir"], [86, 141, "undir"], [87, 121, "dir"], [87, 124, "dir"], [88, 127, "dir"], [88, 135, "undir"], [88, 144, "dir"], [89, 118, "undir"], [89, 148, "undir"], [91, 107, "undir"], [91, 138, "undir"], [92, 140, "undir"], [92, 142, "undir"], [93, 103, "dir"], [93, 116, "undir"], [95, 116, "dir"], [95, 141, "dir"], [96, 105, "dir"], [96, 138, "undir"], [97, 110, "undir"], [97, 123, "dir"], [97, 143, "dir"], [98, 129, "undir"], [99, 149, "undir"], [102, 104, "dir"], [102, 134, "dir"], [104, 128, "dir"], [106, 115, "undir"], [106, 125, "undir"], [107, 138, "undir"], [108, 147, "undir"], [110, 143, "undir"], [115, 125, "undir"], [116, 141, "undir"], [118, 136, "undir"], [118, 148, "undir"], [121, 124, "undir"], [121, 139, "undir"], [124, 139, "undir"], [127, 144, "undir"], [132, 137, "undir"], [132, 142, "undir"], [134, 135, "undir"], [136, 148, "dir"], [139, 147, "dir"], [1, 17, "undir"], [2, 21, "dir"], [13, 63, "dir"], [23, 66, "dir"], [27, 31, "dir"], [13, 68, "dir"], [39, 140, "dir"], [66, 146, "undir"], [62, 74, "undir"], [56, 72, "undir"], [41, 149, "dir"], [38, 95, "dir"], [49, 118, "undir"], [52, 88, "undir"]]
-            nodesa = nodesa.map(node => ({ ...node, name: 111 }));
+            // let nodesa = [{ "index": "192.68.1.1", "layer": 0 }, { "index": 1, "layer": 0 }, { "index": 2, "layer": 0 }, { "index": 3, "layer": 0 }, { "index": 4, "layer": 0 }, { "index": 5, "layer": 0 }, { "index": 6, "layer": 0 }, { "index": 7, "layer": 0 }, { "index": 8, "layer": 0 }, { "index": 9, "layer": 0 }, { "index": 10, "layer": 1 }, { "index": 11, "layer": 1 }, { "index": 12, "layer": 1 }, { "index": 13, "layer": 1 }, { "index": 14, "layer": 1 }, { "index": 15, "layer": 1 }, { "index": 16, "layer": 1 }, { "index": 17, "layer": 1 }, { "index": 18, "layer": 1 }, { "index": 19, "layer": 1 }, { "index": 20, "layer": 1 }, { "index": 21, "layer": 1 }, { "index": 22, "layer": 1 }, { "index": 23, "layer": 1 }, { "index": 24, "layer": 1 }, { "index": 25, "layer": 1 }, { "index": 26, "layer": 1 }, { "index": 27, "layer": 1 }, { "index": 28, "layer": 1 }, { "index": 29, "layer": 1 }, { "index": 30, "layer": 2 }, { "index": 31, "layer": 2 }, { "index": 32, "layer": 2 }, { "index": 33, "layer": 2 }, { "index": 34, "layer": 2 }, { "index": 35, "layer": 2 }, { "index": 36, "layer": 2 }, { "index": 37, "layer": 2 }, { "index": 38, "layer": 2 }, { "index": 39, "layer": 2 }, { "index": 40, "layer": 2 }, { "index": 41, "layer": 2 }, { "index": 42, "layer": 2 }, { "index": 43, "layer": 2 }, { "index": 44, "layer": 2 }, { "index": 45, "layer": 2 }, { "index": 46, "layer": 2 }, { "index": 47, "layer": 2 }, { "index": 48, "layer": 2 }, { "index": 49, "layer": 2 }, { "index": 50, "layer": 2 }, { "index": 51, "layer": 2 }, { "index": 52, "layer": 2 }, { "index": 53, "layer": 2 }, { "index": 54, "layer": 2 }, { "index": 55, "layer": 2 }, { "index": 56, "layer": 2 }, { "index": 57, "layer": 2 }, { "index": 58, "layer": 2 }, { "index": 59, "layer": 2 }, { "index": 60, "layer": 2 }, { "index": 61, "layer": 2 }, { "index": 62, "layer": 2 }, { "index": 63, "layer": 2 }, { "index": 64, "layer": 2 }, { "index": 65, "layer": 2 }, { "index": 66, "layer": 2 }, { "index": 67, "layer": 2 }, { "index": 68, "layer": 2 }, { "index": 69, "layer": 2 }, { "index": 70, "layer": 3 }, { "index": 71, "layer": 3 }, { "index": 72, "layer": 3 }, { "index": 73, "layer": 3 }, { "index": 74, "layer": 3 }, { "index": 75, "layer": 3 }, { "index": 76, "layer": 3 }, { "index": 77, "layer": 3 }, { "index": 78, "layer": 3 }, { "index": 79, "layer": 3 }, { "index": 80, "layer": 3 }, { "index": 81, "layer": 3 }, { "index": 82, "layer": 3 }, { "index": 83, "layer": 3 }, { "index": 84, "layer": 3 }, { "index": 85, "layer": 3 }, { "index": 86, "layer": 3 }, { "index": 87, "layer": 3 }, { "index": 88, "layer": 3 }, { "index": 89, "layer": 3 }, { "index": 90, "layer": 3 }, { "index": 91, "layer": 3 }, { "index": 92, "layer": 3 }, { "index": 93, "layer": 3 }, { "index": 94, "layer": 3 }, { "index": 95, "layer": 3 }, { "index": 96, "layer": 3 }, { "index": 97, "layer": 3 }, { "index": 98, "layer": 3 }, { "index": 99, "layer": 3 }, { "index": 100, "layer": 3 }, { "index": 101, "layer": 3 }, { "index": 102, "layer": 3 }, { "index": 103, "layer": 3 }, { "index": 104, "layer": 3 }, { "index": 105, "layer": 3 }, { "index": 106, "layer": 3 }, { "index": 107, "layer": 3 }, { "index": 108, "layer": 3 }, { "index": 109, "layer": 3 }, { "index": 110, "layer": 3 }, { "index": 111, "layer": 3 }, { "index": 112, "layer": 3 }, { "index": 113, "layer": 3 }, { "index": 114, "layer": 3 }, { "index": 115, "layer": 3 }, { "index": 116, "layer": 3 }, { "index": 117, "layer": 3 }, { "index": 118, "layer": 3 }, { "index": 119, "layer": 3 }, { "index": 120, "layer": 3 }, { "index": 121, "layer": 3 }, { "index": 122, "layer": 3 }, { "index": 123, "layer": 3 }, { "index": 124, "layer": 3 }, { "index": 125, "layer": 3 }, { "index": 126, "layer": 3 }, { "index": 127, "layer": 3 }, { "index": 128, "layer": 3 }, { "index": 129, "layer": 3 }, { "index": 130, "layer": 3 }, { "index": 131, "layer": 3 }, { "index": 132, "layer": 3 }, { "index": 133, "layer": 3 }, { "index": 134, "layer": 3 }, { "index": 135, "layer": 3 }, { "index": 136, "layer": 3 }, { "index": 137, "layer": 3 }, { "index": 138, "layer": 3 }, { "index": 139, "layer": 3 }, { "index": 140, "layer": 3 }, { "index": 141, "layer": 3 }, { "index": 142, "layer": 3 }, { "index": 143, "layer": 3 }, { "index": 144, "layer": 3 }, { "index": 145, "layer": 3 }, { "index": 146, "layer": 3 }, { "index": 147, "layer": 3 }, { "index": 148, "layer": 3 }, { "index": 149, "layer": 3 }]
+            // let linksa = [["192.68.1.1", 4, "undir"], [2, 8, "undir"], [3, 7, "dir"], [10, 19, "undir"], [15, 19, "dir"], [15, 29, "undir"], [16, 19, "dir"], [21, 22, "undir"], [30, 39, "undir"], [31, 49, "dir"], [33, 37, "dir"], [33, 45, "dir"], [33, 59, "undir"], [33, 62, "undir"], [34, 63, "dir"], [35, 66, "undir"], [36, 53, "dir"], [37, 38, "undir"], [37, 40, "undir"], [37, 45, "undir"], [38, 40, "undir"], [38, 55, "undir"], [38, 69, "dir"], [40, 49, "dir"], [40, 62, "dir"], [42, 60, "undir"], [44, 51, "undir"], [45, 64, "dir"], [51, 61, "undir"], [59, 62, "dir"], [59, 65, "dir"], [61, 65, "undir"], [62, 65, "undir"], [70, 133, "undir"], [71, 109, "undir"], [71, 112, "undir"], [72, 87, "undir"], [73, 75, "dir"], [73, 88, "dir"], [73, 102, "dir"], [73, 127, "dir"], [73, 135, "dir"], [74, 88, "dir"], [74, 144, "dir"], [75, 102, "undir"], [75, 134, "dir"], [76, 125, "dir"], [77, 81, "dir"], [77, 86, "dir"], [77, 116, "dir"], [77, 141, "undir"], [78, 122, "undir"], [79, 97, "undir"], [80, 84, "dir"], [80, 91, "undir"], [80, 107, "dir"], [81, 85, "dir"], [83, 92, "undir"], [83, 140, "undir"], [83, 142, "dir"], [84, 91, "undir"], [84, 107, "dir"], [85, 93, "undir"], [85, 103, "undir"], [86, 95, "undir"], [86, 116, "dir"], [86, 141, "undir"], [87, 121, "dir"], [87, 124, "dir"], [88, 127, "dir"], [88, 135, "undir"], [88, 144, "dir"], [89, 118, "undir"], [89, 148, "undir"], [91, 107, "undir"], [91, 138, "undir"], [92, 140, "undir"], [92, 142, "undir"], [93, 103, "dir"], [93, 116, "undir"], [95, 116, "dir"], [95, 141, "dir"], [96, 105, "dir"], [96, 138, "undir"], [97, 110, "undir"], [97, 123, "dir"], [97, 143, "dir"], [98, 129, "undir"], [99, 149, "undir"], [102, 104, "dir"], [102, 134, "dir"], [104, 128, "dir"], [106, 115, "undir"], [106, 125, "undir"], [107, 138, "undir"], [108, 147, "undir"], [110, 143, "undir"], [115, 125, "undir"], [116, 141, "undir"], [118, 136, "undir"], [118, 148, "undir"], [121, 124, "undir"], [121, 139, "undir"], [124, 139, "undir"], [127, 144, "undir"], [132, 137, "undir"], [132, 142, "undir"], [134, 135, "undir"], [136, 148, "dir"], [139, 147, "dir"], [1, 17, "undir"], [2, 21, "dir"], [13, 63, "dir"], [23, 66, "dir"], [27, 31, "dir"], [13, 68, "dir"], [39, 140, "dir"], [66, 146, "undir"], [62, 74, "undir"], [56, 72, "undir"], [41, 149, "dir"], [38, 95, "dir"], [49, 118, "undir"], [52, 88, "undir"]]
+            // nodesa = nodesa.map(node => ({ ...node, name: 111 }));
             // console.log(nodesa);
             fetchMutiLinks().then(res => {
-                let links = linkForMuti
+                let links1 = linkForMuti
                 fetchMutiNodes().then(res => {
                     let nodes = nodeForMuti
                     //处理数据
                     let outerLinks = []
                     let innerGraphs = []
                     let node_to_layer_map = new Map()
+                    console.log(node_to_layer_map);
                     for (let n of nodes) {
                         node_to_layer_map.set(n['index'], n['layer'], n['name'])
                     }
@@ -212,7 +226,7 @@ export default {
                                 return {
                                     'id': v.index,
                                     'message': {
-                                        'title': `点${v.index}`,
+                                        'title': `${v.index}`,
                                         'data': [
                                             ['id', v.index]
                                         ]
@@ -221,9 +235,10 @@ export default {
                             }),
                             'links': [],
                         }
+                        
 
                         //获取innerLinks
-                        for (let l of links) {
+                        for (let l of links1) {
                             if (node_to_layer_map.get(l[0]) == i && node_to_layer_map.get(l[1]) == i) {
                                 iGraph.links.push({
                                     'source': l[0],
@@ -238,6 +253,7 @@ export default {
                                 })
                             }
                         }
+                        
                         innerGraphs.push(iGraph)
                     })
                     for (let i = 0; i < innerGraphs.length - 1; i++) {
@@ -245,9 +261,13 @@ export default {
                             'links': []
                         })
                     }
+                    console.log(outerLinks);
                     //获取outerLinks
-                    for (let l of links) {
+                    for (let l of links1) {
                         if (node_to_layer_map.get(l[0]) != node_to_layer_map.get(l[1])) {
+                            console.log(l);
+                            console.log(node_to_layer_map.get(l[0]),node_to_layer_map.get(l[1]));
+                            console.log( outerLinks[Math.min(node_to_layer_map.get(l[0]), node_to_layer_map.get(l[1]))]);
                             outerLinks[Math.min(node_to_layer_map.get(l[0]), node_to_layer_map.get(l[1]))].links.push({
                                 'source': l[0],
                                 'target': l[1],
@@ -261,6 +281,7 @@ export default {
                             })
                         }
                     }
+                    
                     // console.log(innerGraphs, outerLinks);
                     this.$refs['MultiLayer'].setData(innerGraphs, outerLinks)
                     this.$refs['MultiLayer'].draw()
@@ -271,8 +292,9 @@ export default {
             console.log('chosen:', val)
         },
         plotswitch(tab) {
-            console.log(tab.props.name);
-            if (tab.props.name == 'second') {
+            console.log(this.flag);
+            if (tab.props.name == 'second' && this.flag == 0) {
+                this.flag = 1
                 this.drawMutiLayers()
             }
 
@@ -345,6 +367,11 @@ export default {
                 .attr('y1', (d) => { return d.source.y })
                 .attr('x2', (d) => { return d.target.x })
                 .attr('y2', (d) => { return d.target.y })
+                .on("contextmenu", data => {
+                    event.preventDefault();
+                    console.log(data);
+                    d3.select(`#Deg${data.index}`).style('display', 'none')
+                })
 
 
 
@@ -383,7 +410,7 @@ export default {
                 .selectAll('text')
                 .data(node1Draw)
                 .join('text')
-                .text(d => d.name)
+                .text(function(d) { return store.state.userinfo.list.find(e => e.name == d.name).address})
                 .attr('x', function (d) {
                     return d.x - 0.5 * this.getBoundingClientRect().width
                 })

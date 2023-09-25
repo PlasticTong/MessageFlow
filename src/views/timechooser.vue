@@ -91,7 +91,7 @@ export default {
             deep: true,
             handler() {
                 this.datestart = this.formatDate(new Date(this.timevalue[0]))
-                this.dateend = this.formatDate(new Date(this.timevalue[0]))
+                this.dateend = this.formatDate(new Date(this.timevalue[1]))
             }
         }
 
@@ -367,7 +367,7 @@ export default {
 
             this.plotDataArray.push({
                 'index': this.plotDataIndex++,
-                'timeRange': this.timeSt + '  至  ' + this.timeEd,
+                'timeRange': this.datestart + '  至  ' + this.dateend,
                 'nodeData': nodesDataForDraw,
                 'linkData': uniqueArr,
                 'linkDataForDraw': uniqueArr2,
