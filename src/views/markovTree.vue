@@ -149,6 +149,7 @@ export default {
             this.marinfo2 = markovBy_real
             this.marinfo3 = markovBy_real3
             this.marinfo4 = markovBy_real4
+            console.log(markovBy_real);
 
             this.drawMarkov(2, markovBy_real, 1)
             this.drawMarkov(3, markovBy_real3, 1)

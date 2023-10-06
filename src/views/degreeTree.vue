@@ -58,10 +58,12 @@ export default {
             numselect: 0,
             showline: true,
             loading: false,
-            flag:0,
+            flag: 0,
             nodeForchoose: {
                 "time_range": [],
-                "nodes": []
+                // "nodes": [],
+                "links": [],
+                // "linksindex": [],
             }
         };
     },
@@ -88,6 +90,12 @@ export default {
                 // this.drawLayer();
                 this.drawOne()
                 this.flag = 0
+                this.nodeForchoose =  {
+                "time_range": [],
+                // "nodes": [],
+                "links": [],
+                // "linksindex": [],
+            }
 
             }
         },
@@ -166,7 +174,7 @@ export default {
             for (let n in store.state.userinfo.list) {
                 nameset.add(store.state.userinfo.list[n].dept)
             }
-            
+
 
             for (let n in store.state.MarFromUser) {
                 nodeset.add(store.state.MarFromUser[n].id)
@@ -185,16 +193,16 @@ export default {
             for (let n in nodeset) {
                 nodeForMuti.push({ "index": nodeset[n], "layer": 2 }, { "index": store.state.userinfo.list.find(e => e.name == nodeset[n]).address, "layer": 1 })
                 linkForMuti.push([store.state.userinfo.list.find(e => e.name == nodeset[n]).address, nodeset[n], "undir"])
-                linkForMuti.push([ store.state.userinfo.list.find(e => e.name == nodeset[n]).dept,store.state.userinfo.list.find(e => e.name == nodeset[n]).address,  "undir"])
-                
+                linkForMuti.push([store.state.userinfo.list.find(e => e.name == nodeset[n]).dept, store.state.userinfo.list.find(e => e.name == nodeset[n]).address, "undir"])
+
             }
 
             for (let n in nameset) {
                 nodeForMuti.push({ "index": nameset[n], "layer": 0 })
-                
+
 
             }
-            console.log( linkForMuti,nodeForMuti);
+            console.log(linkForMuti, nodeForMuti);
 
             //nodes : [{'index':'1',layer:1,...},{'index':'2',layer:0,...},...]
             //links : [[index1,index2],...]
@@ -235,7 +243,7 @@ export default {
                             }),
                             'links': [],
                         }
-                        
+
 
                         //获取innerLinks
                         for (let l of links1) {
@@ -253,7 +261,7 @@ export default {
                                 })
                             }
                         }
-                        
+
                         innerGraphs.push(iGraph)
                     })
                     for (let i = 0; i < innerGraphs.length - 1; i++) {
@@ -266,8 +274,8 @@ export default {
                     for (let l of links1) {
                         if (node_to_layer_map.get(l[0]) != node_to_layer_map.get(l[1])) {
                             console.log(l);
-                            console.log(node_to_layer_map.get(l[0]),node_to_layer_map.get(l[1]));
-                            console.log( outerLinks[Math.min(node_to_layer_map.get(l[0]), node_to_layer_map.get(l[1]))]);
+                            console.log(node_to_layer_map.get(l[0]), node_to_layer_map.get(l[1]));
+                            console.log(outerLinks[Math.min(node_to_layer_map.get(l[0]), node_to_layer_map.get(l[1]))]);
                             outerLinks[Math.min(node_to_layer_map.get(l[0]), node_to_layer_map.get(l[1]))].links.push({
                                 'source': l[0],
                                 'target': l[1],
@@ -281,7 +289,7 @@ export default {
                             })
                         }
                     }
-                    
+
                     // console.log(innerGraphs, outerLinks);
                     this.$refs['MultiLayer'].setData(innerGraphs, outerLinks)
                     this.$refs['MultiLayer'].draw()
@@ -313,7 +321,7 @@ export default {
                 .attr('markerWidth', 4)
                 .attr('markerHeight', 4)
                 .attr('viewBox', '0 -5 12 12')
-                .attr('refX', 20)
+                .attr('refX', 25)
                 .attr('refY', 0)
                 .attr('orient', 'auto')
                 .append('path')
@@ -369,8 +377,23 @@ export default {
                 .attr('y2', (d) => { return d.target.y })
                 .on("contextmenu", data => {
                     event.preventDefault();
-                    console.log(data);
+                    // console.log(data);
                     d3.select(`#Deg${data.index}`).style('display', 'none')
+                })
+                .on("click", data => {
+                    console.log(data);
+                    
+                    if (this.nodeForchoose.links.find(e => e.index == data.index) == null) {
+                        d3.select(`#Deg${data.index}`).style('stroke', "red")
+                        this.nodeForchoose.links.push({'source':data.source.name,'target':data.target.name,"index":data.index})
+                        console.log(this.nodeForchoose.links);
+                    }else{
+                        d3.select(`#Deg${data.index}`).style('stroke', "#666666")
+                        let index = this.nodeForchoose.links.indexOf({'source':data.source.name,'target':data.target.name,"index":data.index});
+                        this.nodeForchoose.links.splice(index, 1)
+                        console.log(this.nodeForchoose.links);
+                    }
+
                 })
 
 
@@ -383,7 +406,7 @@ export default {
                 .enter()
                 .append('circle')
                 .attr('id', (data) => { return `DegNode${data.nameRe}` })
-                .attr('r', 10)
+                .attr('r', 20)
                 .attr('fill', "#b256f0")
                 .attr('stroke', "white")
                 .attr('stroke-width', 2)
@@ -400,17 +423,17 @@ export default {
                     .on('start', started)
                     .on('drag', dragged)
                     .on('end', ended))
-                .on("contextmenu", data => {
-                    event.preventDefault();
-                    console.log(data);
-                    d3.select(`#DegNode${data.nameRe}`).attr('fill', "red")
-                })
+            // .on("contextmenu", data => {
+            //     event.preventDefault();
+            //     console.log(data);
+            //     d3.select(`#DegNode${data.nameRe}`).attr('fill', "red")
+            // })
             let label = plot.append('g')
                 .attr('class', 'labels')
                 .selectAll('text')
                 .data(node1Draw)
                 .join('text')
-                .text(function(d) { return store.state.userinfo.list.find(e => e.name == d.name).address})
+                .text(function (d) { return store.state.userinfo.list.find(e => e.name == d.name).address })
                 .attr('x', function (d) {
                     return d.x - 0.5 * this.getBoundingClientRect().width
                 })
@@ -428,12 +451,11 @@ export default {
                         d3.select(this).style('display', 'none')
                     }
                 })
-                .on("contextmenu", data => {
-                    event.preventDefault();
-                    console.log(data);
-                    d3.select(`#DegNode${data.nameRe}`).attr('fill', "red")
-                    this.nodeForchoose.nodes.push(data.name)
-                })
+                // .on("contextmenu", data => {
+                //     event.preventDefault();
+                //     d3.select(`#DegNode${data.nameRe}`).attr('fill', "red")
+                //     this.nodeForchoose.nodes.push(data.name)
+                // })
                 .call(d3.drag()
                     .on('start', started)
                     .on('drag', dragged)
@@ -444,7 +466,7 @@ export default {
                 .nodes(node1Draw)
 
             simulation
-                .force('charge_force', d3.forceManyBody().strength(-60))
+                .force('charge_force', d3.forceManyBody().strength(-600))
                 .force('center_force', d3.forceCenter(width / 2, height / 2))
 
             let linkForce = d3.forceLink(link1Draw)
