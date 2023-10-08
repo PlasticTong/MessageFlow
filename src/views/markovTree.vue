@@ -112,7 +112,7 @@ export default {
                 data: dataForchoose,
                 parameter: {
                     k: 2,
-                    delta: store.state.formInline.threshold
+                    delta: store.state.formInline.threshold*store.state.timeSlice*10
                 }
             }
             await markovData(dataSend).then(res => {

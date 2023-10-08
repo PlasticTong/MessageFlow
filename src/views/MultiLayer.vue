@@ -11,10 +11,11 @@
           width="300"
           trigger="click">
           <template #reference>
-          <el-row type="flex" justify="center">
+            <el-button type="primary" icon="Setting" circle></el-button>
+        </template>
+        <el-row type="flex" justify="center">
             <b>第{{index+1}}层-设置</b>
           </el-row>
-        </template>
           <hr style="margin-bottom:20px;border:2px solid lightgray;height: 0;"/>
           <el-row type="flex" align="center" style="margin-bottom:20px">
             <el-col :offset="2" :span="10" style="display:flex;align-items:center">模式：</el-col>
@@ -98,9 +99,9 @@
                 ></el-input-number>
             </el-col>
           </el-row>
-          <el-button slot="reference" type="primary" icon="Setting" circle></el-button>
+          
         </el-popover>
-        <el-button type="primary" icon="FullScreen" circle @click="resetPos(index)" style="margin-top:10px;"></el-button>
+        <el-button type="primary" icon="FullScreen" circle @click="resetPos(index)" style="margin-top:10px;margin-left:0px;"></el-button>
         <el-button type="primary" icon="delete" circle @click="resetChosen(index)" style="margin-top:10px;margin-left:0px;"></el-button>
  
     </div>
