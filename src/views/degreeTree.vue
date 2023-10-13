@@ -247,7 +247,7 @@ export default {
 
                         //获取innerLinks
                         for (let l of links1) {
-                            if (node_to_layer_map.get(l[0]) == i && node_to_layer_map.get(l[1]) == i) {
+                            if (node_to_layer_map.get(l[0]) == n[0] && node_to_layer_map.get(l[1]) == n[0]) {
                                 iGraph.links.push({
                                     'source': l[0],
                                     'target': l[1],
@@ -399,6 +399,12 @@ export default {
 
 
 
+            //把form表单中 IP段；IP段 分割
+            let IPfromChoose = []
+            if (store.state.formInline.user != "") {
+                IPfromChoose = store.state.formInline.user.split(";")
+            }
+            console.log(node1Draw);
             let node = plot.append('g')
                 .attr('class', 'nodes')
                 .selectAll('circle')
@@ -407,9 +413,23 @@ export default {
                 .append('circle')
                 .attr('id', (data) => { return `DegNode${data.nameRe}` })
                 .attr('r', 20)
-                .attr('fill', "#b256f0")
-                .attr('stroke', "white")
-                .attr('stroke-width', 2)
+                // .attr('fill', "#b256f0")
+                .attr("fill", function (d) {
+                        //对筛选条件进行判断，若是筛选的标红
+                        if (IPfromChoose != []) {
+                            for (let i = 0; i < IPfromChoose.length; i++) {
+                                let ip = IPfromChoose[i].split(".")[0]+'.'+IPfromChoose[i].split(".")[1]+'.'+ IPfromChoose[i].split(".")[2]
+                                if (d.name.match(ip)) {
+                                    return "red"
+                                }
+                            }
+                            return "#b256f0"
+                        } else {
+                            return "#b256f0"
+                        }
+                    })
+                // .attr('stroke', "white")
+                // .attr('stroke-width', 2)
                 .attr('cx', (d) => { return d.x })
                 .attr('cy', (d) => { return d.y })
                 // .on('mouseover', (d) => {

@@ -356,7 +356,7 @@ export default {
 
 
             // 定义箭头
-            var defs = linegroup.append("defs");
+            var defs = svg.append("defs");
 
             var arrowMarker = defs.append("marker")
                 .attr("id", "arrow")

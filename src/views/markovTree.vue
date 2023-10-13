@@ -183,24 +183,24 @@ export default {
             // .attr('id', `markovchartplot${d}`)
 
             // 添加defs元素
-            let defs = plot.append('defs')
+            let defs = svg.append('defs')
 
             //定义marker
             defs.append('marker')
-                .attr('id', 'markovhead')
-                .attr('markerWidth', 3)
-                .attr('markerHeight', 3)
+                .attr('id', 'markovhead123')
+                .attr('markerWidth', 4)
+                .attr('markerHeight', 40)
                 .attr('viewBox', '0 -5 12 12')
-                .attr('refX', 10)
+                .attr('refX', 25)
                 .attr('refY', 0)
                 .attr('orient', 'auto')
                 .append('path')
-                .attr('fill', '#434343')
+                .attr('fill', '#666666')
                 .attr('d', 'M 0,-5 L 10,0 L 0,5')
-
+            // console.log(defs);
 
             //定义文字背景滤镜    
-            let markovTextBackground = defs.append('filter')
+            let markovTextBackground = svg.append('filter')
                 .attr('id', `markovTextBackground${d}`)
                 .attr('x', -0.05)
                 .attr('y', -0.05)
@@ -305,7 +305,7 @@ export default {
                 .attr('stroke-width', function (d) { return Math.log(parseInt(d.type) * Math.E ** 3); })
                 .style('stroke', "#666666")
                 .style('cursor', 'pointer')
-                .attr('marker-end', 'url(#markovhead)')
+                .attr('marker-end', `url(#markovhead123)`)
                 .attr('x1', (d) => { return d.source.x })
                 .attr('y1', (d) => { return d.source.y })
                 .attr('x2', (d) => { return d.target.x })
@@ -314,7 +314,8 @@ export default {
                     event.preventDefault();
                     let mes = {
                         name: data.target.name,
-                        data: linksData
+                        data: linksData,
+                        node:nodesData
                     }
                     let result = []
                     await selectG(mes).then(res => {
@@ -558,24 +559,44 @@ export default {
                 d.fy = d.y
             }
 
-            // console.log(nodesData);
+            //把form表单中 IP段；IP段 分割
+            let IPfromChoose = []
+            if (store.state.formInline.user != "") {
+                IPfromChoose = store.state.formInline.user.split(";")
+            }
+
             let node = plot.append('g')
                 .attr('class', 'nodes')
                 .selectAll('circle')
                 .data(nodesData)
                 .enter()
                 .append('circle')
-                .attr('r', 10)
+                .attr('r', 5)
                 // .attr('fill', "#b256f0")
-                .attr('fill',(d)=>{
-                    if(d.name.match(store.state.filtermes.ip)){
-                        return 'red'
-                    }else{
-                        return "#b256f0"
-                    }
-                })
-                .attr('stroke', "white")
-                .attr('stroke-width', 2)
+                .attr("fill", function (d) {
+                        //对筛选条件进行判断，若是筛选的标红
+                        if (IPfromChoose != []) {
+                            for (let i = 0; i < IPfromChoose.length; i++) {
+                                let ip = IPfromChoose[i].split(".")[0]+'.'+IPfromChoose[i].split(".")[1]+'.'+ IPfromChoose[i].split(".")[2]
+                                if (d.name.match(ip)) {
+                                    return "red"
+                                }
+                            }
+                            return "#b256f0"
+                        } else {
+                            return "#b256f0"
+                        }
+                    })
+                
+                // .attr('fill',(d)=>{
+                //     if(d.name.match(store.state.filtermes.ip)){
+                //         return 'red'
+                //     }else{
+                //         return "#b256f0"
+                //     }
+                // })
+                // .attr('stroke', "white")
+                // .attr('stroke-width', 2)
                 .attr('cx', (d) => { return d.x })
                 .attr('cy', (d) => { return d.y })
                 .on('mouseover', (d) => {
@@ -756,10 +777,10 @@ svg {
     stroke-opacity: 0.6;
 }
 
-.nodes circle {
+/* .nodes circle {
     stroke: #fff;
     stroke-width: 0;
-}
+} */
 
 #markovchart {
     transform: scale(4);
