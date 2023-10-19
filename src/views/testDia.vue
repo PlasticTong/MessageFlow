@@ -10,6 +10,12 @@
                 </button>
             </el-upload>
         </div>
+        <div style="display: flex;flex-direction: row;">
+        <div class="testDia_text">目标准确度：</div>
+            <el-input v-model="this.aim" style="font-size: 30px;width: 40%;margin-top: 10px;">
+            </el-input>
+        </div>
+        
         <div class="testDia_text">当前数据：{{ this.filename }}</div>
         <div class="testDia_text">准确度：{{ this.store.state.testData.acc }}</div>
         <div class="testDia_text">用时：{{ this.timeacc }}秒
@@ -27,7 +33,8 @@ export default {
         return {
             filename: "",
             store: store,
-            timeacc:""
+            timeacc: "",
+            aim: ""
         }
     },
     computed: {
