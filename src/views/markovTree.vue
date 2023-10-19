@@ -80,7 +80,9 @@ export default {
             marinfo3: [],
             marinfo4: [],
             k: [false, false, false],
-            loading: true
+            loading: true,
+
+            stroke_width:4 // 10.19增加测试模式 (stroke_width是宽度)
         }
     },
 
@@ -112,7 +114,7 @@ export default {
                 data: dataForchoose,
                 parameter: {
                     k: 2,
-                    delta: store.state.formInline.threshold*store.state.timeSlice*10
+                    delta: store.state.formInline.threshold
                 }
             }
             await markovData(dataSend).then(res => {
@@ -257,7 +259,8 @@ export default {
             linksData = []
             const set = new Set();
             markovBy_real.forEach((value, index) => {
-                linksData.push({ id: index, source: value.source, target: value.target, type: value.type })
+                // 10.19增加测试模式 bug(type的值按照给的数据来)
+                linksData.push({ id: index, source: value.source, target: value.target, type: value.weight })
                 set.add(value.source)
                 set.add(value.target)
             })
@@ -295,6 +298,7 @@ export default {
             //     .range([padding, height - padding]);
 
             //创建元素
+            let that = this
             let link = plot.append('g')
                 .attr('class', 'links')
                 .selectAll('line')
@@ -302,7 +306,10 @@ export default {
                 .enter()
                 .append('line')
                 .attr('id', function (data) { return `Mar${d}K${data.id}` })
-                .attr('stroke-width', function (d) { return Math.log(parseInt(d.type) * Math.E ** 3); })
+
+                // 10.19增加测试模式 bug(stroke_width是宽度)
+                .attr('stroke-width', function (d) { 
+                    return Math.log(parseInt(d.type) * parseInt(that.stroke_width)); })
                 .style('stroke', "#666666")
                 .style('cursor', 'pointer')
                 .attr('marker-end', `url(#markovhead123)`)
@@ -367,6 +374,7 @@ export default {
                         result.forEach(dataAll => {
                             let index = this.currentchoose.indexOf(`Mar${d}K${dataAll.id}`);
                             this.currentchoose.splice(index, 1)
+                            
                             let index1 = store.state.marInfoTable.indexOf({ id: `#Mar${d}K${dataAll.id}`, source: dataAll.source.name, target: dataAll.target.name, type: dataAll.type });
                             store.state.marInfoTable.splice(index1, 1)
                             //取消选取
@@ -441,8 +449,10 @@ export default {
                     }
                     else {
                         let index = this.currentchoose.indexOf(`Mar${d}K${data.id}`);
+                        console.log(index);
                         this.currentchoose.splice(index, 1)
                         let index1 = store.state.marInfoTable.indexOf({ id: `#Mar${d}K${data.id}`, source: data.source.name, target: data.target.name, type: data.type });
+                        console.log(index1);
                         store.state.marInfoTable.splice(index1, 1)
                         //取消选取
                         // 匹配IPv4地址的正则表达式
@@ -772,10 +782,10 @@ svg {
     width:100%;
 }
 
-.links line {
+/* .links line {
     stroke: #999;
     stroke-opacity: 0.6;
-}
+} */
 
 /* .nodes circle {
     stroke: #fff;

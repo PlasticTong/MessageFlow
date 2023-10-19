@@ -114,6 +114,9 @@ export default {
             // this.timevalue[0] = this.formatDate(new Date(v[0]))
             // this.timevalue[1] = this.formatDate(new Date(v[1]))
             // this.drawTimeSketch()
+
+            // 10.19增加测试模式
+            this.addPlotData()
         },
         drawTimeSketch() {
             /**

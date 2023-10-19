@@ -94,6 +94,17 @@ export const store = createStore({
 			timeSlice:null,
 
 
+			// 10.19增加测试模式
+			testData:{
+				ansName:"",
+				ansList:[],
+				startTime:"",
+				endTime:"",
+				chooserList:[],
+				acc:""
+			}
+
+
 
 		}
 	},

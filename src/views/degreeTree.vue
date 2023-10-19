@@ -90,12 +90,12 @@ export default {
                 // this.drawLayer();
                 this.drawOne()
                 this.flag = 0
-                this.nodeForchoose =  {
-                "time_range": [],
-                // "nodes": [],
-                "links": [],
-                // "linksindex": [],
-            }
+                this.nodeForchoose = {
+                    "time_range": [],
+                    // "nodes": [],
+                    "links": [],
+                    // "linksindex": [],
+                }
 
             }
         },
@@ -160,7 +160,11 @@ export default {
         },
         exportData() {
             this.nodeForchoose.time_range = store.state.timeSlect
+            // 10.19测试模式
+            store.state.testData.chooserList = JSON.parse(JSON.stringify(this.nodeForchoose.links));
+            store.state.testData.endTime = Date.parse(new Date());
             console.log(this.nodeForchoose);
+
         },
         drawMutiLayers() {
             let nodeForMuti = []
@@ -382,14 +386,19 @@ export default {
                 })
                 .on("click", data => {
                     console.log(data);
-                    
+
                     if (this.nodeForchoose.links.find(e => e.index == data.index) == null) {
+                        ElMessage.success("选取成功" + `Deg${data.index}`);
                         d3.select(`#Deg${data.index}`).style('stroke', "red")
-                        this.nodeForchoose.links.push({'source':data.source.name,'target':data.target.name,"index":data.index})
+                        this.nodeForchoose.links.push({ source: data.source.name, target: data.target.name, index: data.index })
                         console.log(this.nodeForchoose.links);
-                    }else{
+                    } else {
+                        ElMessage.error("取消选取" + `Deg${data.index}`);
                         d3.select(`#Deg${data.index}`).style('stroke', "#666666")
-                        let index = this.nodeForchoose.links.indexOf({'source':data.source.name,'target':data.target.name,"index":data.index});
+                        // 10.19增加测试模式 bug
+                        let index = this.nodeForchoose.links.findIndex(link => {
+                            return link.source === data.source.name && link.target === data.target.name && link.index === data.index;
+                        });
                         this.nodeForchoose.links.splice(index, 1)
                         console.log(this.nodeForchoose.links);
                     }
@@ -415,19 +424,19 @@ export default {
                 .attr('r', 20)
                 // .attr('fill', "#b256f0")
                 .attr("fill", function (d) {
-                        //对筛选条件进行判断，若是筛选的标红
-                        if (IPfromChoose != []) {
-                            for (let i = 0; i < IPfromChoose.length; i++) {
-                                let ip = IPfromChoose[i].split(".")[0]+'.'+IPfromChoose[i].split(".")[1]+'.'+ IPfromChoose[i].split(".")[2]
-                                if (d.name.match(ip)) {
-                                    return "red"
-                                }
+                    //对筛选条件进行判断，若是筛选的标红
+                    if (IPfromChoose != []) {
+                        for (let i = 0; i < IPfromChoose.length; i++) {
+                            let ip = IPfromChoose[i].split(".")[0] + '.' + IPfromChoose[i].split(".")[1] + '.' + IPfromChoose[i].split(".")[2]
+                            if (d.name.match(ip)) {
+                                return "red"
                             }
-                            return "#b256f0"
-                        } else {
-                            return "#b256f0"
                         }
-                    })
+                        return "#b256f0"
+                    } else {
+                        return "#b256f0"
+                    }
+                })
                 // .attr('stroke', "white")
                 // .attr('stroke-width', 2)
                 .attr('cx', (d) => { return d.x })

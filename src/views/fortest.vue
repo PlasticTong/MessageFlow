@@ -1,9 +1,36 @@
 <template>
   <div class="fortest-importname">
     <label style="font-size: 50px;">组织结构挖掘</label>
+    <!-- 10.19增加测试模式 -->
+    <el-checkbox v-model="this.checked" style="zoom: 200%;margin-left: 10px;">
+      <label style="font-size: 20px;color: white; ">测试模式</label>
+    </el-checkbox>
     <button class="button-common-large" @click="importall"
       style="border-radius: 10px;margin-left: 30px;background-color: aquamarine; color: blue;">导入</button>
+      <!-- 10.19增加测试模式 -->
+    <button class="button-common-large" @click="testForAns" v-if="this.checked"
+      style="border-radius: 10px;margin-left: 30px;background-color: rgb(255, 142, 127); color: rgb(255, 255, 255);">测试</button>
   </div>
+
+  <!-- 10.19增加测试模式
+  <el-dialog v-model="this.dialogVisbleFotest">
+    <div style="font-size: 50px;text-align: center;">测试结果</div>
+    
+    <div>
+      <div style="font-size: 20px;">时间片：
+        <el-input v-model="this.timeSlice" placeholder="请输入" style="width: 20%;font-size: 20px;">
+        </el-input>
+        *10分钟
+      </div>
+      <el-upload action :http-request="uploadFileTest" :limit="1" :drag=true style="margin-top: 10px;">
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div style="font-size: 20px;">将文件拖到此处，或<em>点击上传</em></div>
+      </el-upload>
+    </div>
+  </el-dialog> -->
+
+<!-- 10.19增加测试模式 -->
+  <testDia v-model="this.dialogVisbleFotest"></testDia>
 
 
   <el-dialog v-model="this.dialogVisble">
@@ -55,12 +82,15 @@ import martree from "../views/markovTree.vue"
 import mtree from "../views/mestree.vue"
 import timechooser from "./timechooser.vue";
 import formchooserVue from "./formchooser.vue";
-import store from "../store/mesinfo"
+import store from "../store/mesinfo";
+// 10.19增加测试模式
+import testDia from "./testDia.vue";
 import { senddata, uploadfile, readdata, uploadCsvfile, readForCsv } from "../api/index.ts"
 
 export default {
   components: {
-    martree, mtree, timechooser, dagre, formchooserVue
+    // 10.19增加测试模式
+    martree, mtree, timechooser, dagre, formchooserVue,testDia
 
   },
   data() {
@@ -70,7 +100,10 @@ export default {
       forteststore: store,
       dialogVisble: false,
       selectFile: null,
-      timeSlice:null,
+      timeSlice: null,
+      // 10.19增加测试模式
+      checked: false,
+      dialogVisbleFotest:false
     }
   },
   computed: {
@@ -80,7 +113,7 @@ export default {
     fileNameAll() {
       return store.state.filename
     },
-    timeslicechange(){
+    timeslicechange() {
       return this.timeSlice
     },
     // fileANsAll() {
@@ -100,7 +133,7 @@ export default {
         this.dataname1 = store.state.filename
       }
     },
-    timeslicechange:{
+    timeslicechange: {
       deep: true,
       handler() {
         store.state.timeSlice = this.timeSlice
@@ -108,6 +141,10 @@ export default {
     }
   },
   methods: {
+    // 10.19增加测试模式
+    testForAns() {
+      this.dialogVisbleFotest = true
+    },
     importall() {
       this.dialogVisble = true
     },

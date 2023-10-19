@@ -92,6 +92,8 @@ export default {
 
             filterresFromUser: [], //用户选择好的数据，即导出数据
 
+            stroke_width:3 // 10.19增加测试模式(this.stroke_width替换宽度)
+
         };
     },
     computed: {
@@ -395,7 +397,8 @@ export default {
                     // .attr('fill', 'none')
 
                     .attr("marker-end", "url(#arrow)")
-                    .attr('stroke-width', 5)
+                    // 10.19增加测试模式(this.stroke_width替换宽度)
+                    .attr('stroke-width', this.stroke_width)
                     // .style("stroke", that.messageColor)
                     // .style("stroke-dasharray", 6)
                     .on("click", function () {
@@ -565,10 +568,13 @@ export default {
                 // svg.select('.linegroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${d3.event.transform.k})`);
                 // svg.select('.dotgroup').attr("transform",`translate(${d3.event.transform.x},${d3.event.transform.y}) scale(${d3.event.transform.k})`);
 
+
+                // 10.19增加测试模式(this.stroke_width替换宽度)
+
                 //连线的粗细随缩放保持不变
-                svg.select('.linegroup').selectAll('path').attr("stroke-width", 5 * 1.0 / d3.event.transform.k)
+                svg.select('.linegroup').selectAll('path').attr("stroke-width", this.stroke_width * 1.0 / d3.event.transform.k)
                 //连线的粗细随缩放保持不变
-                svg.select('.linegroup2').selectAll('path').attr("stroke-width", 5 * 1.0 / d3.event.transform.k)
+                svg.select('.linegroup2').selectAll('path').attr("stroke-width", this.stroke_width * 1.0 / d3.event.transform.k)
                 //点的大小随缩放保持不变
                 svg.select('.dotgroup').selectAll('circle').attr("r", `${8 * 1.0 / d3.event.transform.k}`)
                 //轴的字体大小，刻度线大小，轴的粗细保持不变
