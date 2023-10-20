@@ -84,7 +84,7 @@ export default {
                 //传入后台\
                 await searchData({
                    
-                        data: store.state.linkFByTimeDraw,
+                        data: store.state.linkFByTimeAll,
                         form: this.formInline
                     
                     

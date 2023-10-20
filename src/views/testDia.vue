@@ -20,7 +20,7 @@
         <div class="testDia_text">准确度：{{ this.store.state.testData.acc }}</div>
         <div class="testDia_text">用时：{{ this.timeacc }}秒
         </div>
-        <div class="testDia_suc" v-if="this.store.state.testData.acc >= 0.8">测试成功！</div>
+        <div class="testDia_suc" v-if="this.store.state.testData.acc >= this.aim">测试成功！</div>
     </el-dialog>
 </template>
 
@@ -34,7 +34,7 @@ export default {
             filename: "",
             store: store,
             timeacc: "",
-            aim: ""
+            aim: 0.8
         }
     },
     computed: {

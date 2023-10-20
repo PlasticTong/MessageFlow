@@ -126,7 +126,7 @@ export default {
              */
             this.timeEd = this.timevalue[1]
             this.timeSt = this.timevalue[0]
-            store.state.timeSlect={ start: this.formatDate(new Date(this.timevalue[0])), end: this.formatDate(new Date(this.timevalue[0])) }
+            store.state.timeSlect = { start: this.formatDate(new Date(this.timevalue[0])), end: this.formatDate(new Date(this.timevalue[0])) }
             // console.log(this.timevalue);
             const mesByTime1 = store.state.mesinfo.list.filter((e) => { return Date.parse(e.time) <= this.timeEd && Date.parse(e.time) >= this.timeSt })
             // console.log(mesByTime1);
@@ -321,16 +321,16 @@ export default {
              */
             this.timeEd = this.timevalue[1]
             this.timeSt = this.timevalue[0]
-            store.state.timeSlect={ start: this.formatDate(new Date(this.timevalue[0])), end: this.formatDate(new Date(this.timevalue[0])) }
+            store.state.timeSlect = { start: this.formatDate(new Date(this.timevalue[0])), end: this.formatDate(new Date(this.timevalue[0])) }
             // console.log(this.timevalue);
             const mesByTime1 = store.state.mesinfo.list.filter((e) => { return Date.parse(e.time) <= this.timeEd && Date.parse(e.time) >= this.timeSt })
             let uniqueArr = []
             mesByTime1.forEach((item, index) => {
+                item.weight = 10
+                item.timesecond = Date.parse(item.time)
                 if (!mesByTime1.slice(0, index).some((prevItem) => {
                     return (prevItem.target === item.target && prevItem.source === item.source);
                 })) {
-                    item.weight = 10
-                    item.timesecond = Date.parse(item.time)
                     uniqueArr.push(item)
                 }
                 else {

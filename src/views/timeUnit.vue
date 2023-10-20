@@ -25,7 +25,7 @@
                             <i class="el-icon-location-outline"></i>
                             边数
                         </template>
-                        {{ data.linkData.length }}
+                        {{ data.linkDataAll.length }}
                     </el-descriptions-item>
                 </el-descriptions>
             </div>

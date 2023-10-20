@@ -82,7 +82,7 @@ export default {
             k: [false, false, false],
             loading: true,
 
-            stroke_width:4 // 10.19增加测试模式 (stroke_width是宽度)
+            stroke_width: 4 // 10.19增加测试模式 (stroke_width是宽度)
         }
     },
 
@@ -102,63 +102,117 @@ export default {
         },
 
         async handleFliter() {
+            // 10.20分开绘制 重写绘制
+            console.log(this.activeName2);
             let threshold = store.state.threshold
-            let markovBy_real = []
             let dataForchoose = []
-            for(let i in store.state.filterresFromUser){
+            for (let i in store.state.filterresFromUser) {
                 // console.log(store.state.mesinfo.list[store.state.filterresFromUser[i]-1]);
-                dataForchoose.push(store.state.mesinfo.list[store.state.filterresFromUser[i]-1])
-                dataForchoose[i].timeForMar = (dataForchoose[i].timesecond - store.state.mesinfo.list[store.state.filterresFromUser[0]-1].timesecond)/(store.state.timeSlice * 60000 * 10)
+                dataForchoose.push(store.state.mesinfo.list[store.state.filterresFromUser[i] - 1])
+                dataForchoose[i].timeForMar = (dataForchoose[i].timesecond - store.state.mesinfo.list[store.state.filterresFromUser[0] - 1].timesecond) / (store.state.timeSlice * 60000 * 10)
             }
-            const dataSend = {
-                data: dataForchoose,
-                parameter: {
-                    k: 2,
-                    delta: store.state.formInline.threshold
-                }
+            switch (this.activeName2) {
+
+                case "first":
+                    let markovBy_real = []
+                    const dataSend = {
+                        data: dataForchoose,
+                        parameter: {
+                            k: 2,
+                            delta: store.state.formInline.threshold
+                        }
+                    }
+                    await markovData(dataSend).then(res => {
+                        markovBy_real = res.data
+                        store.state.marcal2 = JSON.parse(JSON.stringify(res.data))
+                    })
+                    this.marinfo2 = markovBy_real
+                    this.drawMarkov(2, markovBy_real, 1)
+                    store.state.mar2 = markovBy_real
+                    break;
+                case "second":
+                    let markovBy_real3 = []
+                    const dataSend3 = {
+                        data: dataForchoose,
+                        parameter: {
+                            k: 3,
+                            delta: store.state.formInline.threshold
+                        }
+                    }
+                    await markovData(dataSend3).then(res => {
+                        markovBy_real3 = res.data
+                        store.state.marcal3 = JSON.parse(JSON.stringify(res.data))
+                    })
+                    this.marinfo3 = markovBy_real3
+                    this.drawMarkov(3, markovBy_real3, 1)
+                    store.state.mar3 = markovBy_real3
+                    break;
+                case "third":
+                    let markovBy_real4 = []
+                    const dataSend4 = {
+                        data: dataForchoose,
+                        parameter: {
+                            k: 4,
+                            delta: store.state.formInline.threshold
+                        }
+                    }
+                    await markovData(dataSend4).then(res => {
+                        markovBy_real4 = res.data
+                        store.state.marcal4 = JSON.parse(JSON.stringify(res.data))
+                    })
+                    this.marinfo4 = markovBy_real4
+                    this.drawMarkov(4, markovBy_real4, 1)
+                    store.state.mar4 = markovBy_real4
+                    break;
             }
-            await markovData(dataSend).then(res => {
-                markovBy_real = res.data
-                store.state.marcal2 = JSON.parse(JSON.stringify(res.data))
-            })
+            // const dataSend = {
+            //     data: dataForchoose,
+            //     parameter: {
+            //         k: 2,
+            //         delta: store.state.formInline.threshold
+            //     }
+            // }
+            // await markovData(dataSend).then(res => {
+            //     markovBy_real = res.data
+            //     store.state.marcal2 = JSON.parse(JSON.stringify(res.data))
+            // })
 
-            let markovBy_real3 = []
-            const dataSend3 = {
-                data: dataForchoose,
-                parameter: {
-                    k: 3,
-                    delta: store.state.formInline.threshold
-                }
-            }
-            await markovData(dataSend3).then(res => {
-                markovBy_real3 = res.data
-                store.state.marcal3 = JSON.parse(JSON.stringify(res.data))
-            })
+            // let markovBy_real3 = []
+            // const dataSend3 = {
+            //     data: dataForchoose,
+            //     parameter: {
+            //         k: 3,
+            //         delta: store.state.formInline.threshold
+            //     }
+            // }
+            // await markovData(dataSend3).then(res => {
+            //     markovBy_real3 = res.data
+            //     store.state.marcal3 = JSON.parse(JSON.stringify(res.data))
+            // })
 
-            let markovBy_real4 = []
-            const dataSend4 = {
-                data: dataForchoose,
-                parameter: {
-                    k: 4,
-                    delta: store.state.formInline.threshold
-                }
-            }
-            await markovData(dataSend4).then(res => {
-                markovBy_real4 = res.data
-                store.state.marcal4 = JSON.parse(JSON.stringify(res.data))
-            })
+            // let markovBy_real4 = []
+            // const dataSend4 = {
+            //     data: dataForchoose,
+            //     parameter: {
+            //         k: 4,
+            //         delta: store.state.formInline.threshold
+            //     }
+            // }
+            // await markovData(dataSend4).then(res => {
+            //     markovBy_real4 = res.data
+            //     store.state.marcal4 = JSON.parse(JSON.stringify(res.data))
+            // })
 
-            this.marinfo2 = markovBy_real
-            this.marinfo3 = markovBy_real3
-            this.marinfo4 = markovBy_real4
-            console.log(markovBy_real);
+            // this.marinfo2 = markovBy_real
+            // this.marinfo3 = markovBy_real3
+            // this.marinfo4 = markovBy_real4
 
-            this.drawMarkov(2, markovBy_real, 1)
-            this.drawMarkov(3, markovBy_real3, 1)
-            this.drawMarkov(4, markovBy_real4, 1)
-            store.state.mar2 = markovBy_real
-            store.state.mar3 = markovBy_real3
-            store.state.mar4 = markovBy_real4
+            // this.drawMarkov(2, markovBy_real, 1)
+            // this.drawMarkov(3, markovBy_real3, 1)
+            // this.drawMarkov(4, markovBy_real4, 1)
+            // store.state.mar2 = markovBy_real
+            // store.state.mar3 = markovBy_real3
+            // store.state.mar4 = markovBy_real4
         },
         plotswitch(tab) {
             console.log(tab.props.name);
@@ -187,9 +241,12 @@ export default {
             // 添加defs元素
             let defs = svg.append('defs')
 
+
+
             //定义marker
             defs.append('marker')
-                .attr('id', 'markovhead123')
+                // 10.20分开绘制 增加箭头id
+                .attr('id', `markovhead${d}`)
                 .attr('markerWidth', 4)
                 .attr('markerHeight', 40)
                 .attr('viewBox', '0 -5 12 12')
@@ -308,11 +365,13 @@ export default {
                 .attr('id', function (data) { return `Mar${d}K${data.id}` })
 
                 // 10.19增加测试模式 bug(stroke_width是宽度)
-                .attr('stroke-width', function (d) { 
-                    return Math.log(parseInt(d.type) * parseInt(that.stroke_width)); })
+                .attr('stroke-width', function (d) {
+                    return Math.log(parseInt(d.type) * parseInt(that.stroke_width));
+                })
                 .style('stroke', "#666666")
                 .style('cursor', 'pointer')
-                .attr('marker-end', `url(#markovhead123)`)
+                // 10.20分开绘制 增加箭头id
+                .attr('marker-end', `url(#markovhead${d})`)
                 .attr('x1', (d) => { return d.source.x })
                 .attr('y1', (d) => { return d.source.y })
                 .attr('x2', (d) => { return d.target.x })
@@ -322,7 +381,7 @@ export default {
                     let mes = {
                         name: data.target.name,
                         data: linksData,
-                        node:nodesData
+                        node: nodesData
                     }
                     let result = []
                     await selectG(mes).then(res => {
@@ -374,7 +433,7 @@ export default {
                         result.forEach(dataAll => {
                             let index = this.currentchoose.indexOf(`Mar${d}K${dataAll.id}`);
                             this.currentchoose.splice(index, 1)
-                            
+
                             let index1 = store.state.marInfoTable.indexOf({ id: `#Mar${d}K${dataAll.id}`, source: dataAll.source.name, target: dataAll.target.name, type: dataAll.type });
                             store.state.marInfoTable.splice(index1, 1)
                             //取消选取
@@ -565,7 +624,7 @@ export default {
                 if (!d3.event.active) {
                     simulation.alphaTarget(0)
                 }
-                d.fx = d.x 
+                d.fx = d.x
                 d.fy = d.y
             }
 
@@ -584,20 +643,20 @@ export default {
                 .attr('r', 5)
                 // .attr('fill', "#b256f0")
                 .attr("fill", function (d) {
-                        //对筛选条件进行判断，若是筛选的标红
-                        if (IPfromChoose != []) {
-                            for (let i = 0; i < IPfromChoose.length; i++) {
-                                let ip = IPfromChoose[i].split(".")[0]+'.'+IPfromChoose[i].split(".")[1]+'.'+ IPfromChoose[i].split(".")[2]
-                                if (d.name.match(ip)) {
-                                    return "red"
-                                }
+                    //对筛选条件进行判断，若是筛选的标红
+                    if (IPfromChoose != []) {
+                        for (let i = 0; i < IPfromChoose.length; i++) {
+                            let ip = IPfromChoose[i].split(".")[0] + '.' + IPfromChoose[i].split(".")[1] + '.' + IPfromChoose[i].split(".")[2]
+                            if (d.name.match(ip)) {
+                                return "red"
                             }
-                            return "#b256f0"
-                        } else {
-                            return "#b256f0"
                         }
-                    })
-                
+                        return "#b256f0"
+                    } else {
+                        return "#b256f0"
+                    }
+                })
+
                 // .attr('fill',(d)=>{
                 //     if(d.name.match(store.state.filtermes.ip)){
                 //         return 'red'
@@ -765,21 +824,23 @@ svg {
     border: 1px solid #ccc;
 }
 
-::v-deep .el-tabs_item{
+::v-deep .el-tabs_item {
     font-size: 20px !important;
 }
+
 .chart-row {
     display: flex;
     justify-content: center;
 }
 
 .chart-column {
-    width:30%;
-    height:30%;
+    width: 30%;
+    height: 30%;
     display: flex;
 }
-.chart-column svg{
-    width:100%;
+
+.chart-column svg {
+    width: 100%;
 }
 
 /* .links line {
@@ -806,9 +867,9 @@ svg {
     width: 200px;
 }
 
-.mar-title{
+.mar-title {
     display: flex;
-    color:white;
+    color: white;
     background-color: #6d6d6d;
 }
 </style>
