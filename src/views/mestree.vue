@@ -13,10 +13,8 @@
                 <div class="container">
                     <div style="display: flex;flex-direction: row;">
                         <el-input v-model="this.accY" placeholder="纵轴精确度" style="width: 10%;margin-right: 10px;"></el-input>
-                        <el-button @click="generateVis2" type="primary"
-                            style="border-radius: 10px;">绘制</el-button>
-                        <el-button @click="generateVis2"
-                            style="border-radius: 10px; " type="danger">修改</el-button>
+                        <el-button @click="generateVis2" type="primary" style="border-radius: 10px;">绘制</el-button>
+                        <el-button @click="generateVis2" style="border-radius: 10px; " type="danger">修改</el-button>
                     </div>
                     <svg id="chart" width="800" height="500"></svg>
                     <!-- <el-form-item label="时间阈值">
@@ -92,7 +90,7 @@ export default {
 
             filterresFromUser: [], //用户选择好的数据，即导出数据
 
-            stroke_width:3 // 10.19增加测试模式(this.stroke_width替换宽度)
+            stroke_width: 4 // 10.19增加测试模式(this.stroke_width替换宽度)
 
         };
     },
@@ -379,8 +377,48 @@ export default {
             //     d.source = filterUserData.find(e=>e.name == d.source).ids;
             //     d.target = filterUserData.find(e=>e.name == d.target).ids;
             // })
+
+
+            //10.20选点 1、增加一个map
             //绘制边和箭头
+            // 创建一个Map对象
+            var keyValueTable = new Map();
+
+            // 添加键值对
+            keyValueTable.set("key1", "value1");
+            keyValueTable.set("key2", "value2");
+            keyValueTable.set("key3", "value3");
+
+            // 访问键值对
+            // console.log(keyValueTable.get("key1")); // 输出: value1
+            // console.log(keyValueTable.get("key2")); // 输出: value2
+            // console.log(keyValueTable.get("key3")); // 输出: value3
+
+            // 添加键值对，value 是一个数组
+            function addValue(key, value) {
+                if (keyValueTable.has(key)) {
+                    // 如果已经存在该 key，则获取值数组，并添加新的 value
+                    var values = keyValueTable.get(key);
+                    values.push(value);
+                } else {
+                    // 如果不存在该 key，则创建新的值数组，并添加 value
+                    var values = [value];
+                    keyValueTable.set(key, values);
+                }
+            }
+
+
             filterMesDataByHold.forEach(d => {
+                //10.20选点 2、定义id    
+                var source_name = d.source.replace(/\./g, "_"); // 将点替换为下划线
+                var source_time = Date.parse(d.time);
+                var target_name = d.target.replace(/\./g, "_"); // 将点替换为下划线
+                var target_time = Date.parse(d.time) + timeInterval;
+                //10.20选点 3、添加数据
+                addValue(source_name + source_time, d.id)
+                addValue(target_name + target_time, d.id)
+
+
                 linegroup.append('path')
                     .attr('d', line([{
                         name: d.source,
@@ -424,9 +462,13 @@ export default {
                         return `source: ${d.source}\ntarget: ${d.target}\ntime: ${d.time}\n`;
                     });
 
+
+
                 // 绘制点
                 dotgroup.append("circle")
-                    .attr("class", `T${d.source}`)
+                    //10.20选点 4、点id
+                    .attr("id", `DotS${source_name}_${source_time}`)
+                    // .attr("class", `T${d.source}`)
                     .attr("cy", yScale(d.source) + 0.5 * yband)
                     .attr("cx", xScale(formatDate(new Date(d.time))))
                     .attr("r", 8)
@@ -442,10 +484,39 @@ export default {
                         } else {
                             return "blue"
                         }
-                    });
+                    })
+                    //10.20选点 5、mouse事件
+                    .on("mouseover", function () {
+                        dotgroup.selectAll("circle").style('opacity', 0.1);
+                        d3.select(this).style('opacity', 1)
+                        linegroup.selectAll("path").style('opacity', 0.1)
+                        keyValueTable.get(source_name + source_time).forEach(e => {
+                            d3.select(`#E${e}`).style('opacity', 1)
+                            d3.select(`#DotS${filterMesDataByHold[e - 1].source.replace(/\./g, "_")}_${Date.parse(filterMesDataByHold[e - 1].time)}`).style('opacity', 1)
+                            d3.select(`#DotT${filterMesDataByHold[e - 1].target.replace(/\./g, "_")}_${Date.parse(filterMesDataByHold[e - 1].time) + timeInterval}`).style('opacity', 1)
+                        })
+
+                        // console.log(keyValueTable.get(source_name+source_time));
+                        // filterMesDataByHold.forEach(e => {
+                        //     if ((e.target == d.source && e.timesecond == d.timesecond - timeInterval) || (e.source == d.source && e.timesecond == d.timesecond)) {
+                        //         d3.select(`#E${e.id}`).style('opacity', 1)
+                        //     }
+                        // })
+
+
+                    })
+                    .on("mouseout", function () {
+
+                        dotgroup.selectAll("circle").style('opacity', 1);
+                        linegroup.selectAll("path").style('opacity', 1)
+
+                    })
+
 
                 dotgroup.append("circle")
-                    .attr("class", `T${d.target}`)
+                    //10.20选点 6、点id
+                    .attr("id", `DotT${target_name}_${target_time}`)
+                    // .attr("class", `T${d.target}`)
                     .attr("cy", yScale(d.target) + 0.5 * yband)
                     .attr("cx", xScale(formatDate(new Date(Date.parse(d.time) + timeInterval))))
                     .attr("r", 8)
@@ -461,8 +532,29 @@ export default {
                         } else {
                             return "blue"
                         }
-                    });
+                    })
+                    //10.20选点 7、mouse事件
+                    .on("mouseover", function () {
+                        dotgroup.selectAll("circle").style('opacity', 0.1);
+                        d3.select(this).style('opacity', 1)
+                        linegroup.selectAll("path").style('opacity', 0.1)
+                        keyValueTable.get(target_name + target_time).forEach(e => {
+                            d3.select(`#DotS${filterMesDataByHold[e - 1].source.replace(/\./g, "_")}_${Date.parse(filterMesDataByHold[e - 1].time)}`).style('opacity', 1)
+                            d3.select(`#E${e}`).style('opacity', 1)
+                        })
+                        // filterMesDataByHold.forEach(e => {
+                        //     if ((e.target == d.target && e.timesecond == d.timesecond)) {
+                        //         d3.select(`#E${e.id}`).style('opacity', 1)
+                        //     }
+                        // })
 
+                    })
+                    .on("mouseout", function () {
+
+                        dotgroup.selectAll("circle").style('opacity', 1);
+                        linegroup.selectAll("path").style('opacity', 1)
+
+                    })
             });
 
             //通过时间阈值对原始点进行连线
@@ -482,6 +574,15 @@ export default {
 
 
 
+            // // //加一个坐标轴的遮罩层
+            // let a = svg.select('#maingroup')
+            //     .append('rect')
+            //     .attr('x', 100)
+            //     .attr('y', 28)
+            //     .attr('width', "100%")
+            //     .attr('height', "100%")
+            //     .attr('fill', 'gray')
+            //     .style('opacity', 0.2); // 设置透明度为0.5，即50%的不透明度
 
             // //加一个坐标轴的遮罩层
             let xAxisModel = svg.select('#maingroup')
@@ -559,6 +660,8 @@ export default {
 
 
             svg.call(zoom)
+            // 10.20bug stroke_width替换this.stroke_width
+            let stroke_width = this.stroke_width
 
             function zoomed() {
                 const radio = 0.5
@@ -570,11 +673,12 @@ export default {
 
 
                 // 10.19增加测试模式(this.stroke_width替换宽度)
+                // 10.20bug stroke_width替换this.stroke_width
 
                 //连线的粗细随缩放保持不变
-                svg.select('.linegroup').selectAll('path').attr("stroke-width", this.stroke_width * 1.0 / d3.event.transform.k)
+                svg.select('.linegroup').selectAll('path').attr("stroke-width", stroke_width * 1.0 / d3.event.transform.k)
                 //连线的粗细随缩放保持不变
-                svg.select('.linegroup2').selectAll('path').attr("stroke-width", this.stroke_width * 1.0 / d3.event.transform.k)
+                svg.select('.linegroup2').selectAll('path').attr("stroke-width", stroke_width * 1.0 / d3.event.transform.k)
                 //点的大小随缩放保持不变
                 svg.select('.dotgroup').selectAll('circle').attr("r", `${8 * 1.0 / d3.event.transform.k}`)
                 //轴的字体大小，刻度线大小，轴的粗细保持不变
